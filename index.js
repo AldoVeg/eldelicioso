@@ -1,582 +1,649 @@
-/* ============================================================
-   index.js — Auditor Estructural de Evaluación Automatizada
-   (FORTALECIDO: Filtro Ético Compuesto, Umbral 35, Anti-Falsos Positivos)
-   ============================================================ */
+// El Delicioso: catálogo, carrito, pedido por WhatsApp y calculadora de invitados.
+// JavaScript puro. Las funciones "puras" no tocan el DOM, así se pueden probar en Node.
 
-// ─── Verificación de Dependencias CDN ───
-const REQUIRED_LIBS = {
-    pdfjsLib: 'PDF.js',
-    jspdf: 'jsPDF',
-    mammoth: 'Mammoth.js',
-    JSZip: 'JSZip'
+const NEGOCIO = {
+  nombre: "El Delicioso",
+  whatsapp: "51980592747",
+  anticipacionDias: 2
 };
 
-function checkDependencies() {
-    const missing = [];
-    for (const key in REQUIRED_LIBS) {
-        if (typeof window[key] === 'undefined' && key !== 'jspdf') {
-            missing.push(REQUIRED_LIBS[key]);
-        } else if (key === 'jspdf' && typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
-            missing.push(REQUIRED_LIBS[key]);
-        }
-    }
-    const alertEl = document.getElementById('cdn-alert');
-    const alertText = document.getElementById('cdn-alert-text');
-    
-    if (alertEl && alertText) {
-        if (missing.length > 0) {
-            alertEl.classList.remove('hidden');
-            alertText.textContent = 'Aviso: Faltan librerías (' + missing.join(', ') + '). Algunas funciones podrían no estar disponibles.';
-        } else {
-            alertEl.classList.add('hidden');
-        }
-    }
+const TAMANOS = [25, 50, 100];
+const BOCADITOS_POR_INVITADO = 6;
+const MAX_INVITADOS = 1000;
+const MAX_PACKS_POR_LINEA = 99;
+const CLAVE_ALMACENAMIENTO = "el-delicioso-carrito";
+const DURACION_REBOTE_MS = 300;
+const DURACION_AGREGADO_MS = 1200;
+
+const DIAS_SEMANA = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+  "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+/* ===== Funciones puras: dinero ===== */
+
+// Los precios se manejan en céntimos enteros para evitar errores de decimales.
+function aCentimos(texto) {
+  return Math.round(parseFloat(texto) * 100);
 }
 
-function configurePDFJS() {
-    if (typeof pdfjsLib !== 'undefined') {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    }
+// 3550 -> "S/ 35,50"; los miles se separan con espacio duro: "S/ 1 250,00".
+function formatearMoneda(centimos) {
+  const entero = Math.floor(centimos / 100);
+  const decimales = String(centimos % 100).padStart(2, "0");
+  const miles = String(entero).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  return `S/ ${miles},${decimales}`;
 }
 
-// ─── Utilidades ───
-const yieldUI = () => new Promise(resolve => setTimeout(resolve, 15));
-
-function escapeHTML(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+function formatearPrecioUnidad(centimosTotal, unidades) {
+  return `${formatearMoneda(Math.round(centimosTotal / unidades))} c/u`;
 }
 
-function getFileTypeIcon(type) {
-    if (type === 'pdf') return '📄';
-    if (type === 'docx') return '📝';
-    if (type === 'zip') return '📦';
-    return '📎';
-}
+/* ===== Funciones puras: calculadora de invitados ===== */
 
-function detectFileType(file) {
-    const name = file.name.toLowerCase();
-    if (name.endsWith('.pdf')) return 'pdf';
-    if (name.endsWith('.docx')) return 'docx';
-    if (name.endsWith('.zip')) return 'zip';
-    return 'other';
-}
-
-function normalizeText(text) {
-    return text.toLowerCase()
-        // Remover formatos sucios de PDF (N°, N.°, N.º, etc.)
-        .replace(/n[.°º\s]+(?=\d)/g, '') 
-        .replace(/\$n\^\{\\circ\}\$/g, '') 
-        .replace(/[áäâà]/g, 'a').replace(/[éëêè]/g, 'e').replace(/[íïîì]/g, 'i')
-        .replace(/[óöôò]/g, 'o').replace(/[úüûù]/g, 'u')
-        .replace(/ñ/g, 'ni')
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-}
-
-// ─── Estado Global ───
-let resultadosEvaluacion = [];
-let archivosDetectados = [];
-let abortController = null;
-let isProcessing = false;
-let sortColumn = null;
-let sortDirection = 'asc';
-
-const DOM = {};
-function cacheDOM() {
-    const ids = [
-        'drop-zone', 'file-input', 'folder-input', 'btn-folder',
-        'file-list', 'file-list-items', 'file-count',
-        'stat-pdf', 'stat-docx', 'stat-zip',
-        'status-text', 'progress-bar',
-        'btn-clear', 'btn-export-pdf', 'btn-export-csv',
-        'error-panel', 'error-list', 'btn-dismiss-errors',
-        'table-body', 'filter-input', 'results-count',
-        'loading-overlay', 'loading-title', 'loading-detail',
-        'btn-cancel'
-    ];
-    ids.forEach(id => { DOM[id] = document.getElementById(id); });
-}
-
-// ─── Gestión de UI de Archivos ───
-function updateFileListUI() {
-    const listEl = DOM['file-list-items'];
-    const fileList = DOM['file-list'];
-    if (!listEl || !fileList) return;
-
-    listEl.innerHTML = '';
-    if (archivosDetectados.length === 0) {
-        fileList.classList.add('hidden');
-        if (DOM['status-text']) DOM['status-text'].innerHTML = 'Esperando archivos...';
-        return;
-    }
-
-    fileList.classList.remove('hidden');
-    if (DOM['file-count']) DOM['file-count'].textContent = archivosDetectados.length;
-    if (DOM['status-text']) DOM['status-text'].innerHTML = archivosDetectados.length + ' archivo(s) en cola.';
-
-    archivosDetectados.forEach((f, i) => {
-        const chip = document.createElement('li');
-        chip.className = 'file-chip';
-        const displayName = f.name.length > 28 ? f.name.slice(0, 25) + '...' : f.name;
-        chip.innerHTML =
-            '<span class="chip-icon">' + getFileTypeIcon(f.type) + '</span> ' +
-            '<span title="' + escapeHTML(f.name) + '">' + escapeHTML(displayName) + '</span> ' +
-            '<button class="chip-remove" data-index="' + i + '">&times;</button>';
-        listEl.appendChild(chip);
-    });
-
-    listEl.querySelectorAll('.chip-remove').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (isProcessing) return;
-            archivosDetectados.splice(parseInt(this.dataset.index), 1);
-            updateFileListUI();
-        });
-    });
-}
-
-async function addFilesToList(files) {
-    const validTypes = ['pdf', 'docx', 'zip'];
-    let added = 0;
-    for (let i = 0; i < files.length; i++) {
-        const type = detectFileType(files[i]);
-        if (validTypes.includes(type)) {
-            const isDuplicate = archivosDetectados.some(f => f.name === files[i].name && f.size === files[i].size);
-            if (!isDuplicate) {
-                archivosDetectados.push({ name: files[i].name, type: type, file: files[i], size: files[i].size });
-                added++;
-            }
-        }
-    }
-    if (added > 0) updateFileListUI();
-}
-
-// ─── Extracción de Texto ───
-async function extractTextFromPDF(file) {
-    if (typeof pdfjsLib === 'undefined') throw new Error("La librería PDF.js no está cargada.");
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    let fullText = '';
-    for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        // Evitamos fragmentación pegando las líneas con un espacio
-        fullText += textContent.items.map(item => item.str).join(' ') + '\n';
-        page.cleanup();
-    }
-    return fullText;
-}
-
-async function extractTextFromDOCX(file) {
-    if (typeof mammoth === 'undefined') throw new Error("La librería Mammoth no está cargada.");
-    const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    return result.value || '';
-}
-
-// ═══════════════════════════════════════════════════════════
-// MOTOR AUDITOR: LÓGICA MINUCIOSA Y ANTI-FALSOS POSITIVOS
-// ═══════════════════════════════════════════════════════════
-
-const DICCIONARIOS = {
-    T1: {
-        keywords: [
-            'ley 29783', 'ley 27735', 'dl 650', 'dl 713', 'dl 892', 'dl 854', 'ley 854', 'ds 005 2012', 'ds 007 2002', 'ley 25129', 'ley 26790', 
-            'sst', 'beneficios laborales', 'gratificacion', 'gratificaciones', 'cts', 'vacaciones', 'asignacion familiar', 'utilidades', 
-            'horas extras', 'seguridad y salud', 'salud ocupacional', 'riesgos laborales', 'enfermedades ocupacionales', 'lesiones laborales',
-            'compensacion por tiempo', 'tiempo de servicios'
-        ]
-    },
-    T2: {
-        keywords: [
-            'ley 27942', 'convenio 190', 'ds 014 2019', 'ley 31156', 'dl 1410', 
-            'hostigamiento sexual', 'acoso sexual', 'acoso laboral', 'comite de intervencion', 'chantaje sexual', 
-            'violencia laboral', 'ambiente hostil', 'conducta no deseada', 'violencia sexual', 'acoso', 'hostigamiento'
-        ]
-    },
-    T3: {
-        keywords: [
-            'ley 28518', 'ds 011 2012', 'ley 31396', 'ley general de educacion', 
-            'modalidad formativa', 'modalidades formativas', 'practicas preprofesionales', 'practicas profesionales', 
-            'convenio de practicas', 'jornada formativa', 'flexibilidad horaria', 'facilidades horarias', 'empleo juvenil', 'jovenes en peru', 'practicas'
-        ]
-    }
-};
-
-const PATRONES_CASO = {
-    evidencia: ['http', 'https', 'www', '.pe', '.com', 'gob.pe', 'equidad.pe', 'infobae', 'la republica', 'el peruano', 'cronicaviva', 'defensoria', 'sunafil', 'minedu', 'rpp', 'noticia', 'diario', 'fuente', 'segun el informe', 'segun informo', 'comunicado', 'reporto', 'denuncia', 'expediente', 'resolucion', 'sentencia'],
-    actores: ['trabajador', 'emplead', 'colaborad', 'demandant', 'gerent', 'jef', 'supervis', 'practicant', 'victim', 'sindicat', 'docent', 'joven', 'personal', 'empresa', 'ripley', 'arcos dorados', 'call center', 'ministerio'],
-    acciones: ['despid', 'incumpl', 'vulner', 'sufri', 'acos', 'accident', 'omiti', 'afect', 'oblig', 'pago', 'hostig', 'infracci', 'abuso', 'denunci', 'huelg', 'reclam', 'sancion', 'mult', 'destitu', 'lesion', 'renunci']
-};
-
-function extractStudentIdentity(fileName, text) {
-    const patterns = [
-        /(?:estudiante|autor|presentado\s+por|elaborado\s+por|alumno|alumna)\s*:\s*([^\n\.]{3,60})/i,
-        /nombre\s*(?:del\s*)?(?:estudiante|alumno|autor)\s*:\s*([^\n\.]{3,60})/i,
-        /([A-ZÁÉÍÓÚÑ\s]{8,50})\s*,\s*[S|J0-9]{8,12}/i
-    ];
-    for (let i = 0; i < patterns.length; i++) {
-        const match = text.match(patterns[i]);
-        if (match && match[1] && match[1].trim().length >= 5) return match[1].trim();
-    }
-    return fileName.replace(/\.(pdf|docx|doc)$/i, '').replace(/[_\-]/g, ' ').trim();
-}
-
-function evaluateContent(fileName, text) {
-    const rawWords = text ? text.trim().split(/\s+/) : [];
-    const wordCount = rawWords.filter(w => w.match(/[a-z0-9]/i)).length;
-    const estudiante = extractStudentIdentity(fileName, text);
-    const normText = normalizeText(text);
-
-    if (wordCount < 30) {
-        return {
-            estudiante: estudiante,
-            c1: 0, c1Checks: [false, false, false],
-            c2: 0, c2Checks: [false, false, false],
-            c3: 0, c3Checks: [],
-            notaFinal: 0, wordCount: wordCount,
-            bibliografia: { ok: false, detalle: 'Documento vacío' },
-            observacion: 'Error: Contenido mínimo insuficiente para ser evaluado.'
-        };
-    }
-
-    // 1. Unificar oraciones rotas del PDF (Reemplaza los saltos de línea sencillos por espacios)
-    const textoAgrupado = text.replace(/(?<!\n)\n(?!\n)/g, ' ');
-    
-    // 2. Separar en bloques significativos (párrafos reales)
-    const bloques = textoAgrupado
-        .replace(/[\•\-\*]/g, ' ') 
-        .split(/(?:\r?\n){2,}/)
-        .map(b => normalizeText(b))
-        .filter(b => b.length > 10);
-
-    let t1Words = 0, t2Words = 0, t3Words = 0;
-    let hasT1_Case = false, hasT2_Case = false, hasT3_Case = false;
-
-    // Escaneo Secuencial con Ventana de Contexto (Amarrar Casos)
-    bloques.forEach((bloque, index) => {
-        const palabrasBloque = bloque.split(/\s+/).length;
-
-        // Detección C1
-        const isT1 = DICCIONARIOS.T1.keywords.some(kw => bloque.includes(kw));
-        const isT2 = DICCIONARIOS.T2.keywords.some(kw => bloque.includes(kw));
-        const isT3 = DICCIONARIOS.T3.keywords.some(kw => bloque.includes(kw));
-
-        if (isT1) t1Words += palabrasBloque;
-        if (isT2) t2Words += palabrasBloque;
-        if (isT3) t3Words += palabrasBloque;
-
-        // Detección C2
-        const tieneEvidencia = PATRONES_CASO.evidencia.some(kw => bloque.includes(kw));
-        const tieneActor = PATRONES_CASO.actores.some(kw => bloque.includes(kw));
-        const tieneAccion = PATRONES_CASO.acciones.some(kw => bloque.includes(kw));
-
-        const esCasoValido = tieneEvidencia || (tieneActor && tieneAccion);
-
-        if (esCasoValido) {
-            // Evaluamos a qué tema pertenece analizando este bloque y el anterior
-            let bloqueAnterior = index > 0 ? bloques[index - 1] : '';
-            let contextoAmpliando = bloque + ' ' + bloqueAnterior;
-
-            if (DICCIONARIOS.T1.keywords.some(kw => contextoAmpliando.includes(kw))) hasT1_Case = true;
-            if (DICCIONARIOS.T2.keywords.some(kw => contextoAmpliando.includes(kw))) hasT2_Case = true;
-            if (DICCIONARIOS.T3.keywords.some(kw => contextoAmpliando.includes(kw))) hasT3_Case = true;
-        }
-    });
-
-    // ─── C1: Filtro Teórico (UMBRAL ESTRICTO: 35 PALABRAS) ───
-    // Con 35 palabras, el T3 de Andrea (31 palabras) es marcado como INSUFICIENTE.
-    const UMBRAL = 35;
-    const hasT1_Norm = t1Words >= UMBRAL;
-    const hasT2_Norm = t2Words >= UMBRAL;
-    const hasT3_Norm = t3Words >= UMBRAL;
-
-    const c1Checks = [hasT1_Norm, hasT2_Norm, hasT3_Norm];
-    const c1Puntos = c1Checks.filter(Boolean).length * 2;
-
-    // ─── C2: Casos Reales ───
-    const c2Checks = [hasT1_Case, hasT2_Case, hasT3_Case];
-    const c2Puntos = c2Checks.filter(Boolean).length * 2;
-
-    // ─── C3: Ética y Postura Crítica (FRASES COMPUESTAS, 0 FALSOS POSITIVOS) ───
-    // Se eliminan palabras sueltas. Ahora se exigen conceptos articulados de RRHH y Ética.
-    const kwEtica = [
-        'dignidad humana', 'bienestar integral', 'justicia social', 'clima organizacional', 'clima laboral', 
-        'desarrollo humano', 'buenas practicas', 'calidad de vida', 'agente de transformacion', 
-        'responsabilidad etica', 'responsabilidad del profesional', 'rol de recursos humanos', 
-        'rol etico', 'desarrollo sostenible', 'derechos fundamentales', 'etica', 'moral', 'integridad'
-    ];
-    const kwLegalista = ['multa', 'sancion', 'reglamento', 'contingencia', 'demanda', 'evitar sanciones', 'riesgos legales'];
-
-    const hitEtica = kwEtica.filter(k => normText.includes(k)).length;
-    const hitLegalista = kwLegalista.filter(k => normText.includes(k)).length;
-
-    let c3Puntos = 0;
-    let stanceMsg = '';
-
-    if (hitEtica >= 2) {
-        c3Puntos = 8;
-        stanceMsg = 'Ética Impecable (Postura Humana Integral)';
-    } else if (hitEtica === 1) {
-        c3Puntos = 6;
-        stanceMsg = 'Ética Buena (Reflexión presente pero breve)';
-    } else if (hitLegalista >= 1) {
-        c3Puntos = 4;
-        stanceMsg = 'Ética Legalista (Enfocada en cumplimiento y sanciones)';
-    } else {
-        c3Puntos = 0; // Andrea cae aquí al no usar frases éticas reales.
-        stanceMsg = 'Sin reflexión crítica ni ética personal detectada';
-    }
-
-    // ─── Diagnóstico Sintético ───
-    const hasAPA = /\(\s*\d{4}\s*\).{0,60}?(recuperado|http|www|ley|resolucion|diario|sunafil)/i.test(normText) || normText.includes('recuperado de');
-    
-    const ausencias = [];
-    if (!hasT1_Norm) ausencias.push(t1Words > 0 ? 'T1 teórica (Insuficiente)' : 'T1 teórica (Ausente)');
-    if (!hasT2_Norm) ausencias.push(t2Words > 0 ? 'T2 teórica (Insuficiente)' : 'T2 teórica (Ausente)');
-    if (!hasT3_Norm) ausencias.push(t3Words > 0 ? 'T3 teórica (Insuficiente)' : 'T3 teórica (Ausente)');
-    
-    if (!hasT1_Case) ausencias.push('Caso T1');
-    if (!hasT2_Case) ausencias.push('Caso T2');
-    if (!hasT3_Case) ausencias.push('Caso T3');
-
-    let diagnostico = '';
-    if (ausencias.length > 0) diagnostico += 'Falta desarrollar: ' + ausencias.join(', ') + '. | ';
-    else diagnostico += 'Desarrollo conforme a la rúbrica. | ';
-    
-    diagnostico += stanceMsg + '.';
-    const notaFinal = Math.min(20, c1Puntos + c2Puntos + c3Puntos);
-
+// Devuelve { valido, invitados, mensaje }; acepta texto o número.
+function validarInvitados(valor) {
+  const texto = String(valor ?? "").trim();
+  const mensajeBase = `Escribe un número entero de invitados, de 1 a ${MAX_INVITADOS}.`;
+  if (!/^\d+$/.test(texto)) return { valido: false, mensaje: mensajeBase };
+  const invitados = Number(texto);
+  if (invitados < 1) return { valido: false, mensaje: mensajeBase };
+  if (invitados > MAX_INVITADOS) {
     return {
-        estudiante: estudiante,
-        c1: c1Puntos, c1Checks: c1Checks,
-        c2: c2Puntos, c2Checks: c2Checks,
-        c3: c3Puntos, c3Checks: [],
-        notaFinal: notaFinal,
-        wordCount: wordCount,
-        bibliografia: { ok: hasAPA, detalle: hasAPA ? 'Formato APA' : 'Sin APA' },
-        observacion: diagnostico
+      valido: false,
+      mensaje: `Para más de ${MAX_INVITADOS} invitados, escríbenos por WhatsApp y armamos tu pedido a medida.`
     };
+  }
+  return { valido: true, invitados };
 }
 
-// ─── Interfaz y Tabla ───
-function renderPill(label, isOk) {
-    if (isOk) {
-        return '<span style="display:inline-block; padding:2px 6px; margin:1px; font-size:0.75rem; font-weight:700; border-radius:4px; background:#dcfce7; color:#15803d; border:1px solid #86efac;">' + label + '</span>';
-    } else {
-        return '<span style="display:inline-block; padding:2px 6px; margin:1px; font-size:0.75rem; font-weight:700; border-radius:4px; background:#f3f4f6; color:#9ca3af; border:1px solid #d1d5db;">' + label + '</span>';
+// Hasta 16 invitados: el menor tamaño que cubra. Más: combinación de 100, 50 y 25 con el menor excedente.
+function calcularCombinacion(invitados) {
+  const necesarias = invitados * BOCADITOS_POR_INVITADO;
+  const paquetes = { 100: 0, 50: 0, 25: 0 };
+
+  const tamanoUnico = TAMANOS.find((tamano) => necesarias <= tamano);
+  if (tamanoUnico && invitados <= 16) {
+    paquetes[tamanoUnico] = 1;
+  } else {
+    // Todos los tamaños son múltiplos de 25, así que el menor total posible es el siguiente múltiplo de 25.
+    let restante = Math.ceil(necesarias / 25) * 25;
+    for (const tamano of [100, 50, 25]) {
+      paquetes[tamano] = Math.floor(restante / tamano);
+      restante -= paquetes[tamano] * tamano;
     }
+  }
+
+  const total = 100 * paquetes[100] + 50 * paquetes[50] + 25 * paquetes[25];
+  return { necesarias, paquetes, total };
 }
 
-function renderScoreBadge(score, max) {
-    let color = '#ef4444', bg = '#fef2f2';
-    const pct = score / max;
-    if (pct >= 0.7) { color = '#10b981'; bg = '#ecfdf5'; }
-    else if (pct >= 0.4) { color = '#f59e0b'; bg = '#fffbeb'; }
-    return '<div style="display:inline-block; text-align:center; padding:2px 6px; border-radius:6px; background:' + bg + '; color:' + color + '; border:1px solid ' + color + '33;"><span style="font-size:0.85rem; font-weight:800;">' + score + '</span><span style="font-size:0.65rem; opacity:0.8;">/' + max + '</span></div>';
-}
-
-function renderFinalBadge(nota) {
-    let bg = '#10b981';
-    if (nota < 11) bg = '#ef4444';
-    else if (nota < 14) bg = '#f59e0b';
-    return '<span style="display:inline-block; padding:4px 10px; font-weight:800; font-size:0.85rem; border-radius:20px; color:#ffffff; background:' + bg + ';">' + nota + ' / 20</span>';
-}
-
-function renderTable(filterText) {
-    const tbody = DOM['table-body'];
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-    let filtrados = filterText 
-        ? resultadosEvaluacion.filter(r => r.estudiante.toLowerCase().includes(filterText.toLowerCase())) 
-        : resultadosEvaluacion;
-
-    if (filtrados.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="empty-msg" style="text-align:center; padding:20px; color:#6b7280;">No se encontraron resultados de evaluación.</td></tr>';
-        if (DOM['results-count']) DOM['results-count'].classList.add('hidden');
-        return;
-    }
-
-    if (DOM['results-count']) {
-        DOM['results-count'].classList.remove('hidden');
-        DOM['results-count'].textContent = 'Mostrando ' + filtrados.length + ' de ' + resultadosEvaluacion.length;
-    }
-
-    filtrados.forEach((r, idx) => {
-        const bibIcon = r.bibliografia.ok ? '<span style="color:#10b981; font-weight:bold;">✓</span>' : '<span style="color:#9ca3af;">—</span>';
-        
-        const c1Pills = renderPill('T1', r.c1Checks[0]) + renderPill('T2', r.c1Checks[1]) + renderPill('T3', r.c1Checks[2]);
-        const c2Pills = renderPill('C1', r.c2Checks[0]) + renderPill('C2', r.c2Checks[1]) + renderPill('C3', r.c2Checks[2]);
-        
-        let c3Pills = '';
-        if (r.c3 === 8) c3Pills = renderPill('Óptimo', true);
-        else if (r.c3 === 6) c3Pills = renderPill('Bueno', true);
-        else if (r.c3 === 4) c3Pills = renderPill('Parcial', true);
-        else c3Pills = renderPill('Deficiente', false);
-
-        const tr = document.createElement('tr');
-        tr.innerHTML =
-            '<td style="text-align:center; font-weight:600; color:#6b7280; font-size:0.85rem;">' + (idx + 1) + '</td>' +
-            '<td style="font-weight:600; color:#111827; font-size:0.85rem;">' + escapeHTML(r.estudiante) + '</td>' +
-            '<td style="text-align:center;">' + renderScoreBadge(r.c1, 6) + '<br><div style="margin-top:4px;">' + c1Pills + '</div></td>' +
-            '<td style="text-align:center;">' + renderScoreBadge(r.c2, 6) + '<br><div style="margin-top:4px;">' + c2Pills + '</div></td>' +
-            '<td style="text-align:center;">' + renderScoreBadge(r.c3, 8) + '<br><div style="margin-top:4px;">' + c3Pills + '</div></td>' +
-            '<td style="text-align:center;">' + renderFinalBadge(r.notaFinal) + '</td>' +
-            '<td style="text-align:center; font-size:0.8rem; color:#4b5563;">' + r.wordCount + ' pal.</td>' +
-            '<td style="text-align:center;">' + bibIcon + '</td>' +
-            '<td style="font-size:0.8rem; color:#374151; line-height:1.35; padding: 8px;">' +
-                '<div style="background:#f9fafb; border-left:3px solid #6366f1; padding:6px 8px; border-radius:0 4px 4px 0;">' + 
-                   escapeHTML(r.observacion) + 
-                '</div>' +
-            '</td>';
-        tbody.appendChild(tr);
+function describirCombinacion({ paquetes, total }) {
+  const partes = [100, 50, 25]
+    .filter((tamano) => paquetes[tamano] > 0)
+    .map((tamano) => {
+      const cantidad = paquetes[tamano];
+      return `${cantidad} ${cantidad === 1 ? "paquete" : "paquetes"} de ${tamano}`;
     });
+  if (partes.length === 1 && partes[0].startsWith("1 ")) return `${partes[0]} unidades`;
+  const unidas = partes.length > 1
+    ? `${partes.slice(0, -1).join(", ")} y ${partes[partes.length - 1]}`
+    : partes[0];
+  return `${unidas} (${total} unidades en total)`;
 }
 
-// ─── Proceso Principal ───
-function addError(archivo, mensaje) {
-    if (!DOM['error-panel']) return;
-    DOM['error-panel'].classList.remove('hidden');
-    const li = document.createElement('li');
-    li.textContent = '[' + archivo + '] ' + mensaje;
-    if (DOM['error-list']) DOM['error-list'].appendChild(li);
+function textoResultadoCalculadora(invitados) {
+  const combinacion = calcularCombinacion(invitados);
+  return `Para ${invitados} ${invitados === 1 ? "invitado" : "invitados"} necesitas unas ${combinacion.necesarias} unidades. ` +
+    `Te sugerimos ${describirCombinacion(combinacion)}.`;
 }
 
-async function processAllFiles() {
-    if (isProcessing || archivosDetectados.length === 0) return;
+/* ===== Funciones puras: fechas ===== */
 
-    isProcessing = true;
-    abortController = new AbortController();
-    resultadosEvaluacion = [];
-    
-    if (DOM['loading-overlay']) DOM['loading-overlay'].classList.remove('hidden');
-    if (DOM['table-body']) DOM['table-body'].innerHTML = '';
-    if (DOM['error-list']) DOM['error-list'].innerHTML = '';
-    if (DOM['error-panel']) DOM['error-panel'].classList.add('hidden');
+function aISO(anio, mes, dia) {
+  return `${anio}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+}
 
+// Fecha local (no UTC) del objeto Date, en formato AAAA-MM-DD.
+function fechaISOLocal(fecha) {
+  return aISO(fecha.getFullYear(), fecha.getMonth() + 1, fecha.getDate());
+}
+
+// Devuelve { anio, mes, dia } si el texto es una fecha real AAAA-MM-DD; si no, null.
+function leerFechaISO(texto) {
+  const coincidencia = /^(\d{4})-(\d{2})-(\d{2})$/.exec(texto);
+  if (!coincidencia) return null;
+  const [anio, mes, dia] = coincidencia.slice(1).map(Number);
+  const fecha = new Date(Date.UTC(anio, mes - 1, dia));
+  const esReal = fecha.getUTCFullYear() === anio && fecha.getUTCMonth() === mes - 1 && fecha.getUTCDate() === dia;
+  return esReal ? { anio, mes, dia } : null;
+}
+
+// Se calcula en UTC para que el cambio de hora no altere el resultado.
+function sumarDias(iso, dias) {
+  const { anio, mes, dia } = leerFechaISO(iso);
+  const fecha = new Date(Date.UTC(anio, mes - 1, dia + dias));
+  return aISO(fecha.getUTCFullYear(), fecha.getUTCMonth() + 1, fecha.getUTCDate());
+}
+
+// "2026-09-23" -> "miércoles 23 de septiembre de 2026"
+function formatearFechaLarga(iso) {
+  const { anio, mes, dia } = leerFechaISO(iso);
+  const diaSemana = DIAS_SEMANA[new Date(Date.UTC(anio, mes - 1, dia)).getUTCDay()];
+  return `${diaSemana} ${dia} de ${MESES[mes - 1]} de ${anio}`;
+}
+
+function fechaMinimaEvento(hoy, dias = NEGOCIO.anticipacionDias) {
+  return sumarDias(fechaISOLocal(hoy), dias);
+}
+
+// Devuelve { valida, minimo, mensaje }.
+function validarFechaEvento(valor, hoy, dias = NEGOCIO.anticipacionDias) {
+  const minimo = fechaMinimaEvento(hoy, dias);
+  const texto = String(valor ?? "").trim();
+  if (texto === "") {
+    return { valida: false, minimo, mensaje: "Elige la fecha del evento para enviar tu pedido." };
+  }
+  if (!leerFechaISO(texto)) {
+    return { valida: false, minimo, mensaje: "La fecha no es válida. Elígela desde el calendario." };
+  }
+  if (texto < minimo) {
+    return {
+      valida: false,
+      minimo,
+      mensaje: `Necesitamos ${dias} días de anticipación. Elige una fecha desde el ${formatearFechaLarga(minimo)}.`
+    };
+  }
+  return { valida: true, minimo, mensaje: "" };
+}
+
+/* ===== Funciones puras: carrito ===== */
+
+// Una línea del carrito es { id, tamano, packs }; el nombre y el precio salen del catálogo.
+function claveLinea(linea) {
+  return `${linea.id}|${linea.tamano}`;
+}
+
+function agregarLinea(lineas, id, tamano) {
+  const existe = lineas.some((linea) => linea.id === id && linea.tamano === tamano);
+  if (!existe) return [...lineas, { id, tamano, packs: 1 }];
+  return lineas.map((linea) => (linea.id === id && linea.tamano === tamano
+    ? { ...linea, packs: Math.min(linea.packs + 1, MAX_PACKS_POR_LINEA) }
+    : linea));
+}
+
+function cambiarPacks(lineas, clave, cambio) {
+  return lineas.map((linea) => (claveLinea(linea) === clave
+    ? { ...linea, packs: Math.min(Math.max(linea.packs + cambio, 1), MAX_PACKS_POR_LINEA) }
+    : linea));
+}
+
+function quitarLinea(lineas, clave) {
+  return lineas.filter((linea) => claveLinea(linea) !== clave);
+}
+
+// Descarta datos guardados que ya no existan en el catálogo o estén dañados.
+function normalizarLineas(crudo, catalogo) {
+  if (!Array.isArray(crudo)) return [];
+  const vistas = new Set();
+  const limpias = [];
+  for (const item of crudo) {
+    if (!item || !catalogo.has(item.id) || !TAMANOS.includes(item.tamano)) continue;
+    if (!Number.isInteger(item.packs) || item.packs < 1) continue;
+    const linea = { id: item.id, tamano: item.tamano, packs: Math.min(item.packs, MAX_PACKS_POR_LINEA) };
+    if (vistas.has(claveLinea(linea))) continue;
+    vistas.add(claveLinea(linea));
+    limpias.push(linea);
+  }
+  return limpias;
+}
+
+// Añade a cada línea nombre, unidades y subtotal; y calcula total y cantidad de packs.
+function resumirCarrito(lineas, catalogo) {
+  const items = lineas.map((linea) => {
+    const producto = catalogo.get(linea.id);
+    return {
+      ...linea,
+      clave: claveLinea(linea),
+      nombre: producto.nombre,
+      unidades: linea.tamano * linea.packs,
+      subtotalCentimos: producto.precios[linea.tamano] * linea.packs
+    };
+  });
+  return {
+    items,
+    totalCentimos: items.reduce((suma, item) => suma + item.subtotalCentimos, 0),
+    cantidadPacks: items.reduce((suma, item) => suma + item.packs, 0)
+  };
+}
+
+/* ===== Funciones puras: mensaje de WhatsApp ===== */
+
+function describirUnidades(item) {
+  return item.packs === 1
+    ? `${item.unidades} unidades`
+    : `${item.unidades} unidades (${item.packs} x ${item.tamano})`;
+}
+
+function construirMensajePedido({ items, totalCentimos }, fechaISO, negocio = NEGOCIO) {
+  const lineas = items.map((item) =>
+    `- ${item.nombre}: ${describirUnidades(item)} - ${formatearMoneda(item.subtotalCentimos)}`);
+  return [
+    `Hola, ${negocio.nombre}. Quisiera hacer este pedido:`,
+    "",
+    ...lineas,
+    "",
+    `Total: ${formatearMoneda(totalCentimos)}`,
+    `Fecha del evento: ${formatearFechaLarga(fechaISO)}`,
+    "",
+    "¿Me confirman el costo del delivery y los datos de pago? Gracias."
+  ].join("\n");
+}
+
+function construirEnlaceWhatsApp(mensaje, negocio = NEGOCIO) {
+  return `https://wa.me/${negocio.whatsapp}?text=${encodeURIComponent(mensaje)}`;
+}
+
+/* ===== Medición neutral ===== */
+
+// Emite un evento del documento y, solo si ya existe window.dataLayer, lo empuja allí.
+// No carga ninguna herramienta ni envía datos personales (nada de fechas ni textos del pedido).
+function registrar(nombre, datos = {}) {
+  try {
+    if (typeof document !== "undefined" && typeof CustomEvent === "function") {
+      document.dispatchEvent(new CustomEvent("eldelicioso:evento", { detail: { nombre, ...datos } }));
+    }
+    if (typeof window !== "undefined" && window.dataLayer && typeof window.dataLayer.push === "function") {
+      window.dataLayer.push({ event: nombre, ...datos });
+    }
+  } catch (error) {
+    // La medición nunca debe romper la página.
+  }
+}
+
+// Céntimos enteros a soles (número), por ejemplo 3550 -> 35.5.
+function aSoles(centimos) {
+  return centimos / 100;
+}
+
+// Sugerencia de la calculadora en formato corto, por ejemplo "2x100+1x50".
+function codificarSugerencia({ paquetes }) {
+  return [100, 50, 25]
+    .filter((tamano) => paquetes[tamano] > 0)
+    .map((tamano) => `${paquetes[tamano]}x${tamano}`)
+    .join("+");
+}
+
+// Ubicación del enlace de WhatsApp: el atributo data-ubicacion o, si falta, la sección que lo contiene.
+function ubicacionWhatsApp(enlace) {
+  if (enlace.dataset.ubicacion) return enlace.dataset.ubicacion;
+  const seccion = enlace.closest("section[id], header[id], footer, aside[id]");
+  return (seccion && seccion.id) || "otra";
+}
+
+function esEnlaceWhatsApp(enlace) {
+  try {
+    return new URL(enlace.href).hostname === "wa.me";
+  } catch (error) {
+    return false;
+  }
+}
+
+/* ===== Interfaz (solo en el navegador) ===== */
+
+function iniciar() {
+  const $ = (id) => document.getElementById(id);
+  const rejilla = $("rejilla-catalogo");
+  const botonCarrito = $("boton-carrito");
+  const contador = $("contador-carrito");
+  const panel = $("carrito");
+  const fondo = $("carrito-fondo");
+  const botonCerrar = $("cerrar-carrito");
+  const lista = $("carrito-lista");
+  const textoVacio = $("carrito-vacio");
+  const totalSalida = $("carrito-total");
+  const formPedido = $("form-pedido");
+  const campoFecha = $("fecha-evento");
+  const errorFecha = $("error-fecha");
+  const mensajePedido = $("mensaje-pedido");
+  const plantilla = $("plantilla-item-carrito");
+  const formCalculadora = $("form-calculadora");
+  const campoInvitados = $("invitados");
+  const resultadoCalculadora = $("resultado-calculadora");
+
+  const catalogo = leerCatalogo(rejilla);
+  let lineas = normalizarLineas(leerAlmacenamiento(), catalogo);
+  let temporizadorRebote = 0;
+
+  /* --- Catálogo --- */
+
+  function leerCatalogo(contenedor) {
+    const mapa = new Map();
+    contenedor.querySelectorAll(".tarjeta").forEach((tarjeta) => {
+      const precios = {};
+      TAMANOS.forEach((tamano) => { precios[tamano] = aCentimos(tarjeta.getAttribute(`data-precio-${tamano}`)); });
+      mapa.set(tarjeta.dataset.id, {
+        nombre: tarjeta.querySelector(".tarjeta__nombre").textContent.trim(),
+        precios
+      });
+    });
+    return mapa;
+  }
+
+  function tamanoElegido(tarjeta) {
+    return Number(tarjeta.querySelector("input[type=radio]:checked").value);
+  }
+
+  function actualizarPrecioTarjeta(tarjeta) {
+    const tamano = tamanoElegido(tarjeta);
+    const total = catalogo.get(tarjeta.dataset.id).precios[tamano];
+    tarjeta.querySelector("[data-precio-total]").textContent = formatearMoneda(total);
+    tarjeta.querySelector("[data-precio-unidad]").textContent = formatearPrecioUnidad(total, tamano);
+  }
+
+  function aplicarFiltro(categoria) {
+    registrar("filtrar_catalogo", { filtro: categoria });
+    document.querySelectorAll(".filtro").forEach((boton) => {
+      boton.setAttribute("aria-pressed", String(boton.dataset.filtro === categoria));
+    });
+    rejilla.querySelectorAll(".tarjeta").forEach((tarjeta) => {
+      tarjeta.hidden = categoria !== "todos" && tarjeta.dataset.categoria !== categoria;
+    });
+  }
+
+  function marcarAgregado(boton) {
+    if (!boton.dataset.textoOriginal) {
+      boton.dataset.textoOriginal = boton.textContent;
+      boton.dataset.etiquetaOriginal = boton.getAttribute("aria-label") || "";
+    }
+    const nombre = boton.closest(".tarjeta").querySelector(".tarjeta__nombre").textContent.trim();
+    boton.textContent = "Agregado";
+    boton.setAttribute("aria-label", `${nombre} agregado al carrito`);
+    clearTimeout(Number(boton.dataset.temporizador));
+    boton.dataset.temporizador = String(setTimeout(() => {
+      boton.textContent = boton.dataset.textoOriginal;
+      boton.setAttribute("aria-label", boton.dataset.etiquetaOriginal);
+    }, DURACION_AGREGADO_MS));
+  }
+
+  function agregarDesdeTarjeta(boton) {
+    const tarjeta = boton.closest(".tarjeta");
+    const tamano = tamanoElegido(tarjeta);
+    lineas = agregarLinea(lineas, tarjeta.dataset.id, tamano);
+    registrar("agregar_al_carrito", {
+      producto_id: tarjeta.dataset.id,
+      tamano,
+      valor: aSoles(catalogo.get(tarjeta.dataset.id).precios[tamano])
+    });
+    guardarLineas();
+    dibujarCarrito();
+    rebotarContador();
+    marcarAgregado(boton);
+  }
+
+  /* --- Carrito: almacenamiento --- */
+
+  function leerAlmacenamiento() {
     try {
-        for (let i = 0; i < archivosDetectados.length; i++) {
-            if (abortController.signal.aborted) break;
-            const item = archivosDetectados[i];
-            
-            if (DOM['loading-detail']) DOM['loading-detail'].textContent = 'Evaluando: ' + escapeHTML(item.name);
-            
-            try {
-                let text = '';
-                if (item.type === 'pdf') {
-                    text = await extractTextFromPDF(item.file);
-                } else if (item.type === 'docx') {
-                    text = await extractTextFromDOCX(item.file);
-                }
-
-                if (!text || text.trim().length < 20) {
-                    addError(item.name, 'No se pudo extraer texto. Documento vacío o protegido.');
-                } else {
-                    const resultado = evaluateContent(item.name, text);
-                    resultadosEvaluacion.push(resultado);
-                }
-            } catch (err) {
-                addError(item.name, 'Fallo de lectura: ' + err.message);
-            }
-            await yieldUI();
-        }
-    } finally {
-        isProcessing = false;
-        if (DOM['loading-overlay']) DOM['loading-overlay'].classList.add('hidden');
-        
-        if (resultadosEvaluacion.length > 0) {
-            if (DOM['btn-export-pdf']) DOM['btn-export-pdf'].disabled = false;
-            if (DOM['btn-export-csv']) DOM['btn-export-csv'].disabled = false;
-            if (DOM['btn-clear']) DOM['btn-clear'].disabled = false;
-            renderTable();
-        } else {
-            if (DOM['table-body']) DOM['table-body'].innerHTML = '<tr><td colspan="9" class="empty-msg" style="text-align:center; padding:20px; color:#ef4444;">No se generaron evaluaciones. Revisa el panel de errores.</td></tr>';
-        }
+      return JSON.parse(window.localStorage.getItem(CLAVE_ALMACENAMIENTO));
+    } catch (error) {
+      return []; // Sin almacenamiento el carrito sigue funcionando en memoria.
     }
+  }
+
+  function guardarLineas() {
+    try {
+      window.localStorage.setItem(CLAVE_ALMACENAMIENTO, JSON.stringify(lineas));
+    } catch (error) {
+      // Almacenamiento bloqueado o lleno: se ignora.
+    }
+  }
+
+  /* --- Carrito: dibujo --- */
+
+  function rebotarContador() {
+    contador.classList.remove("rebote");
+    void contador.offsetWidth; // Reinicia la animación si se agrega varias veces seguidas.
+    contador.classList.add("rebote");
+    clearTimeout(temporizadorRebote);
+    temporizadorRebote = setTimeout(() => contador.classList.remove("rebote"), DURACION_REBOTE_MS);
+  }
+
+  function crearFila(item) {
+    const fila = plantilla.content.firstElementChild.cloneNode(true);
+    const detalle = item.packs === 1
+      ? `${item.unidades} unidades`
+      : `${item.packs} x ${item.tamano} = ${item.unidades} unidades`;
+    const descripcion = `${item.nombre}, ${item.tamano} unidades`;
+
+    fila.dataset.clave = item.clave;
+    fila.querySelector(".carrito__item-nombre").textContent = item.nombre;
+    fila.querySelector(".carrito__item-detalle").textContent = detalle;
+    fila.querySelector(".carrito__item-precio").textContent = formatearMoneda(item.subtotalCentimos);
+    fila.querySelector(".carrito__packs").setAttribute("aria-label", `Paquetes de ${descripcion}`);
+    fila.querySelector(".carrito__packs-numero").textContent = item.packs;
+
+    const menos = fila.querySelector("[data-disminuir]");
+    menos.setAttribute("aria-label", `Disminuir un paquete de ${descripcion}`);
+    menos.disabled = item.packs <= 1;
+    const mas = fila.querySelector("[data-aumentar]");
+    mas.setAttribute("aria-label", `Aumentar un paquete de ${descripcion}`);
+    mas.disabled = item.packs >= MAX_PACKS_POR_LINEA;
+    fila.querySelector("[data-quitar]").setAttribute("aria-label", `Quitar ${descripcion}`);
+    return fila;
+  }
+
+  function dibujarCarrito() {
+    const resumen = resumirCarrito(lineas, catalogo);
+    lista.replaceChildren(...resumen.items.map(crearFila));
+    textoVacio.hidden = resumen.items.length > 0;
+    totalSalida.textContent = formatearMoneda(resumen.totalCentimos);
+    contador.textContent = resumen.cantidadPacks;
+    ocultarMensajePedido();
+  }
+
+  // Tras redibujar la lista se pierde el foco; este método lo devuelve al botón que se usó.
+  function restaurarFoco(clave, accion) {
+    const fila = lista.querySelector(`[data-clave="${CSS.escape(clave)}"]`);
+    if (!fila) {
+      const primera = lista.querySelector("button:not([disabled])");
+      (primera || botonCerrar).focus();
+      return;
+    }
+    const boton = fila.querySelector(`[${accion}]:not([disabled])`) || fila.querySelector("[data-aumentar]:not([disabled])");
+    (boton || fila.querySelector("[data-quitar]")).focus();
+  }
+
+  function manejarAccionFila(boton) {
+    const clave = boton.closest(".carrito__item").dataset.clave;
+    if (boton.hasAttribute("data-quitar")) lineas = quitarLinea(lineas, clave);
+    else if (boton.hasAttribute("data-aumentar")) lineas = cambiarPacks(lineas, clave, 1);
+    else lineas = cambiarPacks(lineas, clave, -1);
+    guardarLineas();
+    dibujarCarrito();
+    const accion = ["data-quitar", "data-aumentar", "data-disminuir"].find((nombre) => boton.hasAttribute(nombre));
+    restaurarFoco(clave, accion);
+  }
+
+  /* --- Carrito: panel --- */
+
+  function carritoAbierto() {
+    return panel.classList.contains("abierto");
+  }
+
+  function abrirCarrito() {
+    const resumen = resumirCarrito(lineas, catalogo);
+    registrar("abrir_carrito", { articulos: resumen.cantidadPacks, valor: aSoles(resumen.totalCentimos) });
+    actualizarMinimoFecha();
+    panel.classList.add("abierto");
+    fondo.classList.add("abierto");
+    botonCarrito.setAttribute("aria-expanded", "true");
+    document.documentElement.classList.add("sin-scroll");
+    botonCerrar.focus();
+  }
+
+  function cerrarCarrito() {
+    panel.classList.remove("abierto");
+    fondo.classList.remove("abierto");
+    botonCarrito.setAttribute("aria-expanded", "false");
+    document.documentElement.classList.remove("sin-scroll");
+    botonCarrito.focus();
+  }
+
+  // Mantiene el tabulador dentro del panel mientras está abierto.
+  function atraparTabulador(evento) {
+    const enfocables = [...panel.querySelectorAll("button:not([disabled]), input, a[href]")]
+      .filter((elemento) => !elemento.hidden && elemento.offsetParent !== null);
+    if (enfocables.length === 0) return;
+    const primero = enfocables[0];
+    const ultimo = enfocables[enfocables.length - 1];
+    if (evento.shiftKey && document.activeElement === primero) {
+      evento.preventDefault();
+      ultimo.focus();
+    } else if (!evento.shiftKey && document.activeElement === ultimo) {
+      evento.preventDefault();
+      primero.focus();
+    }
+  }
+
+  /* --- Pedido --- */
+
+  function actualizarMinimoFecha() {
+    campoFecha.min = fechaMinimaEvento(new Date());
+  }
+
+  function mostrarErrorFecha(mensaje) {
+    errorFecha.textContent = mensaje;
+    errorFecha.hidden = false;
+    campoFecha.setAttribute("aria-invalid", "true");
+  }
+
+  function ocultarErrorFecha() {
+    errorFecha.hidden = true;
+    campoFecha.removeAttribute("aria-invalid");
+  }
+
+  function mostrarMensajePedido(texto, esError) {
+    mensajePedido.textContent = texto;
+    mensajePedido.className = esError ? "campo__error" : "campo__ayuda";
+    mensajePedido.hidden = false;
+  }
+
+  function ocultarMensajePedido() {
+    mensajePedido.hidden = true;
+  }
+
+  function abrirWhatsApp(enlace) {
+    const ventana = window.open(enlace, "_blank");
+    if (ventana) ventana.opener = null;
+    else window.location.href = enlace; // Ventana emergente bloqueada: se abre en esta pestaña.
+    return Boolean(ventana);
+  }
+
+  function enviarPedido(evento) {
+    evento.preventDefault();
+    ocultarMensajePedido();
+    const resumen = resumirCarrito(lineas, catalogo);
+    const fecha = validarFechaEvento(campoFecha.value, new Date());
+
+    if (fecha.valida) ocultarErrorFecha();
+    else mostrarErrorFecha(fecha.mensaje);
+
+    if (resumen.items.length === 0) {
+      mostrarMensajePedido("Tu carrito está vacío. Agrega al menos un producto para enviar el pedido.", true);
+      return;
+    }
+    if (!fecha.valida) {
+      campoFecha.focus();
+      return;
+    }
+
+    const mensaje = construirMensajePedido(resumen, campoFecha.value);
+    registrar("enviar_pedido", {
+      valor_total: aSoles(resumen.totalCentimos),
+      lineas: resumen.items.length,
+      unidades: resumen.items.reduce((suma, item) => suma + item.unidades, 0)
+    });
+    const seAbrioEnPestana = abrirWhatsApp(construirEnlaceWhatsApp(mensaje));
+    if (seAbrioEnPestana) {
+      mostrarMensajePedido("Abrimos WhatsApp con tu pedido. Tu carrito sigue guardado por si quieres cambiar algo.", false);
+    }
+  }
+
+  /* --- Calculadora --- */
+
+  function calcularInvitados(evento) {
+    evento.preventDefault();
+    const validacion = validarInvitados(campoInvitados.value);
+    resultadoCalculadora.classList.toggle("calculadora__resultado--error", !validacion.valido);
+    if (!validacion.valido) {
+      campoInvitados.setAttribute("aria-invalid", "true");
+      resultadoCalculadora.textContent = validacion.mensaje;
+      return;
+    }
+    campoInvitados.removeAttribute("aria-invalid");
+    resultadoCalculadora.textContent = textoResultadoCalculadora(validacion.invitados);
+    registrar("usar_calculadora", {
+      invitados: validacion.invitados,
+      sugerencia: codificarSugerencia(calcularCombinacion(validacion.invitados))
+    });
+  }
+
+  /* --- Eventos --- */
+
+  document.querySelectorAll(".filtro").forEach((boton) => {
+    boton.addEventListener("click", () => aplicarFiltro(boton.dataset.filtro));
+  });
+
+  rejilla.addEventListener("change", (evento) => {
+    if (evento.target.matches("input[type=radio]")) actualizarPrecioTarjeta(evento.target.closest(".tarjeta"));
+  });
+
+  rejilla.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("[data-agregar]");
+    if (boton) agregarDesdeTarjeta(boton);
+  });
+
+  lista.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("button");
+    if (boton) manejarAccionFila(boton);
+  });
+
+  document.addEventListener("click", (evento) => {
+    const enlace = evento.target.closest("a[href]");
+    if (enlace && esEnlaceWhatsApp(enlace)) registrar("clic_whatsapp", { ubicacion: ubicacionWhatsApp(enlace) });
+  });
+
+  botonCarrito.addEventListener("click", () => (carritoAbierto() ? cerrarCarrito() : abrirCarrito()));
+  botonCerrar.addEventListener("click", cerrarCarrito);
+  fondo.addEventListener("click", cerrarCarrito);
+
+  document.addEventListener("keydown", (evento) => {
+    if (!carritoAbierto()) return;
+    if (evento.key === "Escape") cerrarCarrito();
+    else if (evento.key === "Tab") atraparTabulador(evento);
+  });
+
+  campoFecha.addEventListener("input", ocultarErrorFecha);
+  formPedido.addEventListener("submit", enviarPedido);
+  formCalculadora.addEventListener("submit", calcularInvitados);
+  campoInvitados.addEventListener("input", () => campoInvitados.removeAttribute("aria-invalid"));
+
+  /* --- Arranque --- */
+
+  rejilla.querySelectorAll(".tarjeta").forEach(actualizarPrecioTarjeta);
+  actualizarMinimoFecha();
+  dibujarCarrito();
 }
 
-// ─── Eventos e Inicialización ───
-function setupEvents() {
-    const dz = DOM['drop-zone'];
-    if (dz) {
-        dz.addEventListener('click', function(e) {
-            if (e.target !== dz && e.target.closest('button')) return;
-            if (DOM['file-input']) DOM['file-input'].click();
-        });
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
-            dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
-        });
-        dz.addEventListener('dragover', () => dz.classList.add('dragover'));
-        dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-        dz.addEventListener('drop', async function(e) {
-            dz.classList.remove('dragover');
-            if (isProcessing) return;
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                await addFilesToList(files);
-                processAllFiles();
-            }
-        });
-    }
+if (typeof document !== "undefined") iniciar();
 
-    if (DOM['file-input']) {
-        DOM['file-input'].addEventListener('change', async function(e) {
-            if (this.files.length > 0) {
-                await addFilesToList(this.files);
-                this.value = '';
-                processAllFiles();
-            }
-        });
-    }
-
-    if (DOM['btn-clear']) {
-        DOM['btn-clear'].addEventListener('click', function() {
-            if (abortController) abortController.abort();
-            isProcessing = false;
-            resultadosEvaluacion = [];
-            archivosDetectados = [];
-            updateFileListUI();
-            if (DOM['table-body']) DOM['table-body'].innerHTML = '<tr><td colspan="9" class="empty-msg" style="text-align:center; padding:20px;">Esperando documentos...</td></tr>';
-            if (DOM['btn-export-pdf']) DOM['btn-export-pdf'].disabled = true;
-            if (DOM['btn-export-csv']) DOM['btn-export-csv'].disabled = true;
-            if (DOM['error-panel']) DOM['error-panel'].classList.add('hidden');
-        });
-    }
-
-    if (DOM['filter-input']) {
-        DOM['filter-input'].addEventListener('input', function() { renderTable(this.value); });
-    }
-    if (DOM['btn-cancel']) {
-        DOM['btn-cancel'].addEventListener('click', function() {
-            if (abortController) abortController.abort();
-            isProcessing = false;
-            if (DOM['loading-overlay']) DOM['loading-overlay'].classList.add('hidden');
-        });
-    }
-    if (DOM['btn-dismiss-errors']) {
-        DOM['btn-dismiss-errors'].addEventListener('click', function() {
-            if (DOM['error-panel']) DOM['error-panel'].classList.add('hidden');
-        });
-    }
-}
-
-function init() {
-    cacheDOM();
-    setupEvents();
-    checkDependencies();
-    configurePDFJS();
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-} else {
-    init();
+// Permite probar las funciones puras desde Node.
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    NEGOCIO, formatearMoneda, formatearPrecioUnidad, validarInvitados, calcularCombinacion,
+    describirCombinacion, textoResultadoCalculadora, validarFechaEvento, fechaMinimaEvento,
+    formatearFechaLarga, agregarLinea, cambiarPacks, quitarLinea, normalizarLineas,
+    resumirCarrito, construirMensajePedido, construirEnlaceWhatsApp, aCentimos,
+    registrar, aSoles, codificarSugerencia
+  };
 }

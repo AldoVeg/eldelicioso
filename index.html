@@ -1,113 +1,703 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evaluador Académico Automático - Gestión Humana</title>
-    <link rel="stylesheet" href="index.css">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bocaditos para eventos en Lima | El Delicioso</title>
+  <meta name="description" content="El placer de pecar. Bocaditos caseros dulces y salados para eventos en Lima. Pide 25, 50 o 100 por WhatsApp con 2 días de anticipación.">
+  <meta name="theme-color" content="#FFFBF6">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_PE">
+  <meta property="og:site_name" content="El Delicioso">
+  <meta property="og:title" content="Bocaditos para eventos en Lima | El Delicioso">
+  <meta property="og:description" content="El placer de pecar. Bocaditos caseros dulces y salados para eventos en Lima. Pide 25, 50 o 100 por WhatsApp con 2 días de anticipación.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="index.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Bakery",
+    "name": "El Delicioso",
+    "description": "El placer de pecar. Bocaditos caseros dulces y salados para eventos en Lima. Pide 25, 50 o 100 por WhatsApp con 2 días de anticipación.",
+    "slogan": "El placer de pecar.",
+    "telephone": "+51980592747",
+    "areaServed": { "@type": "City", "name": "Lima" },
+    "address": { "@type": "PostalAddress", "addressLocality": "Lima", "addressCountry": "PE" },
+    "servesCuisine": ["Bocaditos", "Postres", "Repostería casera"],
+    "paymentAccepted": "Efectivo, Yape, Plin, transferencia",
+    "currenciesAccepted": "PEN",
+    "priceRange": "S/ 26 - S/ 150"
+  }
+  </script>
+  <script src="index.js" defer></script>
 </head>
 <body>
-    <header class="app-header">
-        <div class="header-container">
-            <h1>📋 Sistema de Evaluación Automática de Ensayos</h1>
-            <p>Auditoría Experta: Normativa Ampliada (6P), Evidencias (6P) y Postura Ética (8P)</p>
-        </div>
-    </header>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="icono-whatsapp" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></symbol>
+    <symbol id="icono-bolsa" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></symbol>
+    <symbol id="icono-cerrar" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
+  </svg>
 
-    <main class="app-container">
-        <div id="cdn-alert" class="alert-box alert-warning hidden">
-            <span>⚠️</span> <span id="cdn-alert-text">Cargando componentes...</span>
-        </div>
+  <a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
 
-        <section class="upload-card">
-            <div id="drop-zone" class="drop-zone">
-                <div class="drop-zone-content">
-                    <div class="upload-icon">📁</div>
-                    <h3>Arrastra y suelta aquí la carpeta o archivos</h3>
-                    <p>Soporta carpetas completas, archivos individuales <strong>.PDF</strong>, <strong>.DOCX</strong> o <strong>.ZIP</strong></p>
-                    <div class="button-group">
-                        <label class="btn btn-primary">
-                            📄 Seleccionar Archivos
-                            <input type="file" id="file-input" multiple accept=".pdf,.docx,.zip" class="hidden">
-                        </label>
-                        <button id="btn-folder" class="btn btn-secondary">📂 Cargar Carpeta Completa</button>
-                        <input type="file" id="folder-input" webkitdirectory directory multiple class="hidden">
-                    </div>
-                </div>
-            </div>
-
-            <div id="file-list" class="file-list-container hidden">
-                <div class="file-list-header">
-                    <h4>Archivos en cola (<span id="file-count">0</span>)</h4>
-                    <button id="btn-clear" class="btn btn-small btn-danger">Limpiar todo</button>
-                </div>
-                <ul id="file-list-items" class="file-chips-grid"></ul>
-            </div>
-        </section>
-
-        <div id="error-panel" class="alert-box alert-error hidden">
-            <div class="error-header">
-                <strong>Observaciones en lectura de archivos:</strong>
-                <button id="btn-dismiss-errors" class="btn-text">&times;</button>
-            </div>
-            <ul id="error-list"></ul>
-        </div>
-
-        <section class="results-card">
-            <div class="results-header">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <h2>📊 Consolidado General</h2>
-                    <span id="results-count" class="badge-info hidden">Mostrando 0 resultados</span>
-                </div>
-                <div class="action-tools">
-                    <input type="text" id="filter-input" placeholder="🔍 Buscar estudiante..." class="search-input">
-                    <button id="btn-export-csv" class="btn btn-success" disabled>📥 Excel (CSV)</button>
-                    <button id="btn-export-pdf" class="btn btn-dark" disabled>📄 PDF</button>
-                </div>
-            </div>
-
-            <div class="table-wrapper">
-                <table class="results-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 40px;">#</th>
-                            <th class="sortable" data-sort="estudiante">Estudiante</th>
-                            <th class="sortable" data-sort="c1" style="text-align: center;">C1: Normativa (6P)</th>
-                            <th class="sortable" data-sort="c2" style="text-align: center;">C2: Evidencias (6P)</th>
-                            <th class="sortable" data-sort="c3" style="text-align: center;">C3: Ética (8P)</th>
-                            <th class="sortable" data-sort="notaFinal" style="text-align: center;">Nota Final</th>
-                            <th style="text-align: center;">Extensión</th>
-                            <th style="text-align: center;">Fuentes</th>
-                            <th style="width: 40%;">Diagnóstico (Ausencias y Fortalecimiento)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        <tr>
-                            <td colspan="9" class="empty-msg">Sube o arrastra archivos para iniciar la evaluación automática.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </main>
-
-    <div id="loading-overlay" class="overlay hidden">
-        <div class="loader-card">
-            <div class="spinner"></div>
-            <h3 id="loading-title">Evaluando documentos...</h3>
-            <p id="loading-detail">Analizando mapeo jurídico integral, APA y ética...</p>
-            <progress id="overlay-progress" value="0" max="100"></progress>
-            <span id="overlay-percent">0%</span>
-            <br>
-            <button id="btn-cancel" class="btn btn-small btn-secondary" style="margin-top:15px;">Cancelar / Desbloquear</button>
-        </div>
+  <header id="inicio" class="encabezado">
+    <div class="contenedor encabezado__interior">
+      <a class="logo" href="#inicio">El Delicioso</a>
+      <nav class="menu" aria-label="Principal">
+        <a href="#catalogo">Catálogo</a>
+        <a href="#ocasiones">Ocasiones</a>
+        <a href="#como-pedir">Cómo pedir</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+      <button type="button" class="boton-carrito" id="boton-carrito" aria-controls="carrito" aria-expanded="false">
+        <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-bolsa"/></svg>
+        <span class="boton-carrito__texto">Carrito</span>
+        <span class="contador-carrito" id="contador-carrito" aria-live="polite" aria-atomic="true">0</span>
+        <span class="solo-lectores">artículos</span>
+      </button>
     </div>
+  </header>
 
-    <script src="index.js"></script>
+  <main id="contenido">
+    <section id="portada" class="portada" aria-labelledby="titulo-portada">
+      <div class="contenedor portada__interior">
+        <div class="portada__texto">
+          <p class="sobretitulo">El Delicioso</p>
+          <h1 id="titulo-portada" class="portada__titulo">El placer de <em>pecar.</em></h1>
+          <p class="portada__subtitulo">Bocaditos caseros, dulces y salados, para mesas que se recuerdan. Por 25, 50 o 100.</p>
+          <div class="portada__acciones">
+            <a class="boton boton--principal" href="#catalogo">Descubrir el catálogo</a>
+            <a class="boton boton--whatsapp" data-ubicacion="portada" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Quisiera%20hacer%20un%20pedido%20de%20bocaditos." target="_blank" rel="noopener noreferrer">
+              <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-whatsapp"/></svg>
+              Pedir por WhatsApp
+            </a>
+          </div>
+        </div>
+        <figure class="portada__foto">
+          <img src="img/portada.jpg" width="1365" height="1706" alt="Mini tartaleta con crema batida y media fresa, con un mordisco que muestra el relleno, sobre una mesa blanca con más tartaletas al fondo" fetchpriority="high" decoding="async">
+        </figure>
+      </div>
+    </section>
+
+    <section id="ventajas" class="seccion ventajas" aria-labelledby="titulo-ventajas">
+      <div class="contenedor">
+        <h2 id="titulo-ventajas" class="solo-lectores">Por qué El Delicioso</h2>
+        <ul class="ventajas__lista">
+          <li class="ventaja">
+            <span class="ventaja__numero" aria-hidden="true">01</span>
+            <h3 class="ventaja__titulo">Sabor casero</h3>
+            <p>Hechos en casa, con un sabor que se recuerda.</p>
+          </li>
+          <li class="ventaja">
+            <span class="ventaja__numero" aria-hidden="true">02</span>
+            <h3 class="ventaja__titulo">Precios claros</h3>
+            <p>Elige 25, 50 o 100 unidades y mira el precio al instante.</p>
+          </li>
+          <li class="ventaja">
+            <span class="ventaja__numero" aria-hidden="true">03</span>
+            <h3 class="ventaja__titulo">Un solo mensaje</h3>
+            <p>Elige, indica la fecha y envía tu pedido por WhatsApp.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="catalogo" class="seccion catalogo" aria-labelledby="titulo-catalogo">
+      <div class="contenedor">
+        <header class="seccion__cabecera">
+          <span class="filete" aria-hidden="true"></span>
+          <h2 id="titulo-catalogo" class="seccion__titulo">Nuestro catálogo</h2>
+          <p class="seccion__intro">Elige 25, 50 o 100 unidades de cada sabor. El precio por unidad ya está calculado y puedes mezclar sabores en un mismo pedido.</p>
+          <noscript><p class="aviso">Para pedir sin activar JavaScript, escríbenos por WhatsApp al 980 592 747.</p></noscript>
+        </header>
+
+        <div class="filtros" role="group" aria-label="Filtrar el catálogo por tipo">
+          <button type="button" class="filtro" data-filtro="todos" aria-pressed="true">Todos</button>
+          <button type="button" class="filtro" data-filtro="dulce" aria-pressed="false">Dulces</button>
+          <button type="button" class="filtro" data-filtro="salado" aria-pressed="false">Salados</button>
+        </div>
+
+        <div class="catalogo__rejilla" id="rejilla-catalogo">
+        <article class="tarjeta tarjeta--destacada" data-id="pettit-pollo" data-categoria="salado" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="135.00">
+          <div class="tarjeta__foto">
+            <img src="img/pettit-pollo.jpg" width="594" height="594" alt="Pettit pan con pollo cremoso entre pan dorado y brillante, sobre una tabla de madera" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Salado</p>
+            <h3 class="tarjeta__nombre">Pettit pan con pollo</h3>
+            <p class="tarjeta__frase">El clásico salado que nunca falta en la mesa.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-pettit-pollo" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 35</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-pettit-pollo" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 68</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-pettit-pollo" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 135</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 35,00</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,40 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="pettit-pollo-apio" data-categoria="salado" data-precio-25="35.50" data-precio-50="70.00" data-precio-100="136.00">
+          <div class="tarjeta__foto">
+            <img src="img/pettit-pollo-apio.jpg" width="407" height="450" alt="Pettit pan con relleno de pollo y hojas verdes, con ajonjolí en la corteza, sobre un mantel a cuadros" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Salado</p>
+            <h3 class="tarjeta__nombre">Pettit pan con pollo y apio</h3>
+            <p class="tarjeta__frase">Pollo y apio: un salado con toque fresco.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-pettit-pollo-apio" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 35,50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-pettit-pollo-apio" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 70</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-pettit-pollo-apio" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 136</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 35,50</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,42 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo y apio al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="pettit-pollo-durazno" data-categoria="salado" data-precio-25="38.00" data-precio-50="75.00" data-precio-100="150.00">
+          <div class="tarjeta__foto">
+            <img src="img/pettit-pollo-durazno.jpg" width="648" height="810" alt="Pettit panes con ajonjolí y relleno cremoso, amontonados en una bandeja" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Salado</p>
+            <h3 class="tarjeta__nombre">Pettit pan con pollo y durazno</h3>
+            <p class="tarjeta__frase">Pollo con durazno, salado y dulce en un bocado.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-pettit-pollo-durazno" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 38</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-pettit-pollo-durazno" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 75</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-pettit-pollo-durazno" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 150</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 38,00</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,52 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo y durazno al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-alfajores-coco" data-categoria="dulce" data-precio-25="26.00" data-precio-50="50.00" data-precio-100="98.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-alfajores-coco.jpg" width="600" height="900" alt="Torre de alfajores con coco rallado en el relleno y azúcar impalpable, sobre un plato de cerámica" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini alfajores con coco</h3>
+            <p class="tarjeta__frase">Alfajor en miniatura, con coco y tentación asegurada.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-coco" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 26</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-coco" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-coco" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 98</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 26,00</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,04 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfajores con coco al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-alfachips" data-categoria="dulce" data-precio-25="27.00" data-precio-50="52.00" data-precio-100="100.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-alfachips.jpg" width="475" height="593" alt="Alfachips: galletas con chispas de chocolate y relleno, apiladas sobre una bandeja blanca" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini alfachips</h3>
+            <p class="tarjeta__frase">Pequeño, dulce y difícil de resistir.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfachips" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 27</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfachips" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 52</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfachips" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 27,00</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,08 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfachips al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-alfajores-chocolate" data-categoria="dulce" data-precio-25="28.00" data-precio-50="55.00" data-precio-100="105.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-alfajores-chocolate.jpg" width="768" height="768" alt="Alfajor bañado en chocolate cortado por la mitad, con el relleno a la vista, sobre fondo claro" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini alfajores con chocolate</h3>
+            <p class="tarjeta__frase">Chocolate en formato mini, para los golosos.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-chocolate" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 28</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-chocolate" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 55</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-chocolate" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 105</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 28,00</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,12 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfajores con chocolate al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta tarjeta--destacada" data-id="mini-tartaleta-fresa-durazno" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-tartaleta-fresa-durazno.jpg" width="1573" height="1178" alt="Mini tartaletas con crema batida y frutas frescas, sobre una tabla blanca" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini tartaleta de fresa/durazno</h3>
+            <p class="tarjeta__frase">Fresa o durazno en una tartaleta de un bocado.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-fresa-durazno" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 32</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-fresa-durazno" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 60</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-fresa-durazno" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 116</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 32,00</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,28 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini tartaleta de fresa/durazno al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-pay-limon" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-pay-limon.jpg" width="540" height="686" alt="Mini pay de limón con crema batida y ralladura verde, sobre una mesa de mármol" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini pay de limón</h3>
+            <p class="tarjeta__frase">Limón suave y fresco, con final dulce.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-limon" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 32</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-limon" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 60</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-limon" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 116</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 32,00</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,28 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini pay de limón al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-pay-manzana" data-categoria="dulce" data-precio-25="33.00" data-precio-50="66.00" data-precio-100="130.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-pay-manzana.jpg" width="403" height="403" alt="Mini pays de manzana con masa dorada y brillante, en moldes de papel sobre una bandeja" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini pay de manzana</h3>
+            <p class="tarjeta__frase">Manzana en mini pay, con sabor a postre de casa.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-manzana" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 33</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-manzana" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 66</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-manzana" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 130</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 33,00</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,32 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini pay de manzana al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-empanaditas-pollo" data-categoria="salado" data-precio-25="30.00" data-precio-50="60.00" data-precio-100="120.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-empanaditas-pollo.jpg" width="810" height="540" alt="Mini empanaditas doradas y brillantes, recién horneadas, sobre una tabla de madera" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Salado</p>
+            <h3 class="tarjeta__nombre">Mini empanaditas de pollo</h3>
+            <p class="tarjeta__frase">Pollo en empanadita mini, salado para picar.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-empanaditas-pollo" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 30</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-empanaditas-pollo" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 60</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-empanaditas-pollo" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 120</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 30,00</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,20 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini empanaditas de pollo al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-empanaditas-mixtas" data-categoria="salado" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="135.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-empanaditas-mixtas.jpg" width="864" height="576" alt="Mini empanaditas doradas en filas ordenadas, sobre un mantelito de papel calado" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Salado</p>
+            <h3 class="tarjeta__nombre">Mini empanaditas mixtas</h3>
+            <p class="tarjeta__frase">Para quien no quiere elegir solo un sabor.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-empanaditas-mixtas" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 35</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-empanaditas-mixtas" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 68</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-empanaditas-mixtas" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 135</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 35,00</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,40 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini empanaditas mixtas al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta tarjeta--destacada" data-id="trufas-chocolate" data-categoria="dulce" data-precio-25="33.00" data-precio-50="65.00" data-precio-100="125.00">
+          <div class="tarjeta__foto">
+            <img src="img/trufas-chocolate.jpg" width="840" height="630" alt="Trufas de chocolate cubiertas de cacao, en cápsulas de papel color cobre" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Trufas de chocolate</h3>
+            <p class="tarjeta__frase">Chocolate en su forma más tentadora.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-trufas-chocolate" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 33</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-trufas-chocolate" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 65</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-trufas-chocolate" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 125</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 33,00</span>
+              <span class="precio__unidad" data-precio-unidad>S/ 1,32 c/u</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Trufas de chocolate al carrito">Agregar</button>
+          </div>
+        </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="ocasiones" class="seccion ocasiones" aria-labelledby="titulo-ocasiones">
+      <div class="contenedor">
+        <header class="seccion__cabecera">
+          <span class="filete" aria-hidden="true"></span>
+          <h2 id="titulo-ocasiones" class="seccion__titulo">Para tu ocasión</h2>
+          <p class="seccion__intro">Dinos qué celebras y elegimos contigo.</p>
+        </header>
+
+        <div class="ocasiones__rejilla">
+          <article class="ocasion ocasion--cumpleanos">
+            <h3 class="ocasion__titulo">Cumpleaños</h3>
+            <p>Que los invitados vuelvan por más.</p>
+            <a class="ocasion__enlace" data-ubicacion="ocasion_cumpleanos" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Celebro%20un%20cumplea%C3%B1os%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+          </article>
+          <article class="ocasion ocasion--baby">
+            <h3 class="ocasion__titulo">Baby shower</h3>
+            <p>Una bienvenida dulce (y salada) para el bebé.</p>
+            <a class="ocasion__enlace" data-ubicacion="ocasion_baby" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Organizo%20un%20baby%20shower%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+          </article>
+          <article class="ocasion">
+            <h3 class="ocasion__titulo">Reunión de trabajo</h3>
+            <p>Un detalle para que la pausa sepa mejor.</p>
+            <a class="ocasion__enlace" data-ubicacion="ocasion_trabajo" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Tengo%20una%20reuni%C3%B3n%20de%20trabajo%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+          </article>
+          <article class="ocasion">
+            <h3 class="ocasion__titulo">Colegio o iglesia</h3>
+            <p>Para compartir con todos, en cantidad.</p>
+            <a class="ocasion__enlace" data-ubicacion="ocasion_colegio" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Organizo%20un%20evento%20en%20un%20colegio%20o%20iglesia%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+          </article>
+          <article class="ocasion">
+            <h3 class="ocasion__titulo">Otro evento</h3>
+            <p>¿Otro plan? Escríbenos y lo armamos contigo.</p>
+            <a class="ocasion__enlace" data-ubicacion="ocasion_otro" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Tengo%20otro%20plan%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+          </article>
+
+          <div class="calculadora" id="calculadora" role="group" aria-labelledby="titulo-calculadora">
+            <div class="calculadora__texto">
+              <h3 id="titulo-calculadora" class="calculadora__titulo">¿Cuántos bocaditos necesito?</h3>
+              <p>Calculamos 6 por invitado y ajustamos a 25, 50 o 100.</p>
+              <p class="calculadora__nota">Puedes mezclar sabores al armar tu pedido.</p>
+            </div>
+            <form class="calculadora__formulario" id="form-calculadora" novalidate>
+              <div class="campo">
+                <label for="invitados">Número de invitados</label>
+                <input type="number" id="invitados" name="invitados" min="1" step="1" inputmode="numeric" placeholder="Por ejemplo, 20">
+              </div>
+              <button type="submit" class="boton boton--principal">Calcular</button>
+              <p class="calculadora__resultado" id="resultado-calculadora" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="como-pedir" class="seccion como-pedir" aria-labelledby="titulo-como-pedir">
+      <div class="contenedor">
+        <header class="seccion__cabecera">
+          <span class="filete" aria-hidden="true"></span>
+          <h2 id="titulo-como-pedir" class="seccion__titulo">Cómo pedir</h2>
+        </header>
+        <ol class="pasos">
+          <li class="paso">
+            <h3 class="paso__titulo">Elige</h3>
+            <p>Elige tus favoritos y la cantidad.</p>
+          </li>
+          <li class="paso">
+            <h3 class="paso__titulo">Indica la fecha</h3>
+            <p>Dinos la fecha del evento. Pide con 2 días de anticipación, según la cantidad.</p>
+          </li>
+          <li class="paso">
+            <h3 class="paso__titulo">Envía por WhatsApp</h3>
+            <p>En un solo mensaje, ya redactado.</p>
+          </li>
+          <li class="paso">
+            <h3 class="paso__titulo">Confirma y paga</h3>
+            <p>Paga con efectivo, Yape, Plin o transferencia.</p>
+          </li>
+        </ol>
+        <p class="nota-entrega">Hay delivery en Lima. El costo te lo confirmamos por WhatsApp antes de pagar. Te respondemos por WhatsApp para confirmar tu pedido.</p>
+      </div>
+    </section>
+
+    <section id="nosotros" class="seccion nosotros" aria-labelledby="titulo-nosotros">
+      <div class="contenedor nosotros__interior">
+        <div>
+          <header class="seccion__cabecera">
+            <span class="filete" aria-hidden="true"></span>
+            <h2 id="titulo-nosotros" class="seccion__titulo">Nosotros</h2>
+          </header>
+          <p class="nosotros__lema">El Delicioso prepara bocaditos caseros, dulces y salados, para eventos en Lima.</p>
+          <p class="pendiente pendiente--bloque" hidden>[historia del negocio]</p>
+        </div>
+        <ul class="datos">
+          <li class="datos__item"><strong>Hechos en casa</strong><span>Con el sabor de siempre.</span></li>
+          <li class="datos__item"><strong>25, 50 o 100 unidades</strong><span>Puedes mezclar sabores.</span></li>
+          <li class="datos__item"><strong>Pedidos con 2 días de anticipación</strong><span>Según la cantidad.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="contacto" class="seccion contacto" aria-labelledby="titulo-contacto">
+      <div class="contenedor contacto__interior">
+        <div>
+          <header class="seccion__cabecera">
+            <span class="filete" aria-hidden="true"></span>
+            <h2 id="titulo-contacto" class="seccion__titulo">Contacto</h2>
+            <p class="seccion__intro">Escríbenos y armamos tu pedido.</p>
+          </header>
+          <a class="boton boton--whatsapp" data-ubicacion="contacto_boton" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Quisiera%20hacer%20una%20consulta." target="_blank" rel="noopener noreferrer">
+            <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-whatsapp"/></svg>
+            Pedir por WhatsApp
+          </a>
+        </div>
+        <dl class="contacto__datos">
+          <div class="contacto__dato"><dt>WhatsApp</dt><dd><a data-ubicacion="contacto_dato" href="https://wa.me/51980592747" target="_blank" rel="noopener noreferrer">+51 980 592 747</a></dd></div>
+          <div class="contacto__dato" hidden><dt>Redes</dt><dd>@ELDELICIOSO</dd></div>
+          <div class="contacto__dato"><dt>Zona</dt><dd>Lima</dd></div>
+          <div class="contacto__dato"><dt>Delivery</dt><dd>Hay delivery en Lima. El costo te lo confirmamos por WhatsApp antes de pagar.</dd></div>
+          <div class="contacto__dato" hidden><dt>Horario</dt><dd><span class="pendiente">[horario]</span></dd></div>
+          <div class="contacto__dato"><dt>Formas de pago</dt><dd>Efectivo, Yape, Plin o transferencia</dd></div>
+        </dl>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor pie__interior">
+      <p class="pie__marca">El Delicioso <span>El placer de pecar.</span></p>
+      <p><a href="#inicio">Volver al inicio</a></p>
+    </div>
+  </footer>
+
+  <div class="carrito-fondo" id="carrito-fondo"></div>
+  <aside class="carrito" id="carrito" role="dialog" aria-modal="true" aria-labelledby="carrito-titulo">
+    <div class="carrito__cabecera">
+      <h2 class="carrito__titulo" id="carrito-titulo">Tu pedido</h2>
+      <button type="button" class="carrito__cerrar" id="cerrar-carrito" aria-label="Cerrar carrito">
+        <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-cerrar"/></svg>
+      </button>
+    </div>
+    <div class="carrito__cuerpo">
+      <p class="carrito__vacio" id="carrito-vacio">Tu carrito está vacío. Agrega tus bocaditos favoritos desde el catálogo.</p>
+      <ul class="carrito__lista" id="carrito-lista"></ul>
+    </div>
+    <form class="carrito__pie" id="form-pedido" novalidate>
+      <p class="carrito__total"><span>Total</span> <output id="carrito-total" for="carrito-lista">S/ 0,00</output></p>
+      <div class="campo">
+        <label for="fecha-evento">Fecha del evento <span class="campo__obligatorio">(obligatoria)</span></label>
+        <input type="date" id="fecha-evento" name="fecha" required aria-describedby="ayuda-fecha error-fecha">
+        <p class="campo__ayuda" id="ayuda-fecha">Pide con 2 días de anticipación, según la cantidad.</p>
+        <p class="campo__error" id="error-fecha" role="alert" hidden>Elige la fecha del evento para enviar tu pedido.</p>
+      </div>
+      <p id="mensaje-pedido" role="alert" hidden></p>
+      <button type="submit" class="boton boton--whatsapp boton--bloque" id="enviar-pedido">
+        <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-whatsapp"/></svg>
+        Enviar pedido por WhatsApp
+      </button>
+    </form>
+  </aside>
+
+  <template id="plantilla-item-carrito">
+    <li class="carrito__item">
+      <div>
+        <p class="carrito__item-nombre"></p>
+        <p class="carrito__item-detalle"></p>
+      </div>
+      <p class="carrito__item-precio"></p>
+      <div class="carrito__packs" role="group">
+        <button type="button" class="carrito__paso" data-disminuir>&minus;</button>
+        <span class="carrito__packs-numero"></span>
+        <button type="button" class="carrito__paso" data-aumentar>+</button>
+      </div>
+      <button type="button" class="carrito__quitar" data-quitar>Quitar</button>
+    </li>
+  </template>
+
+  <a class="whatsapp-flotante" data-ubicacion="flotante" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Quisiera%20consultar%20por%20sus%20bocaditos." target="_blank" rel="noopener noreferrer" aria-label="Escribir por WhatsApp">
+    <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-whatsapp"/></svg>
+  </a>
 </body>
 </html>
