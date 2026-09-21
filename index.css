@@ -70,7 +70,6 @@
 
   --ancho-max: 75rem;
   --alto-encabezado: 6.25rem;
-  --ancho-lista: 21rem;        /* columna "Tu lista de compras" en escritorio */
   --alto-barra-lista: 3.5rem;  /* barra compacta de la lista en móvil */
 }
 
@@ -114,9 +113,6 @@ button, input { font: inherit; color: inherit; }
 button { cursor: pointer; }
 
 [hidden] { display: none !important; }
-
-/* El script la añade a <html> mientras el carrito está abierto */
-html.sin-scroll { overflow: hidden; }
 
 :focus-visible {
   outline: 3px solid var(--foco);
@@ -251,7 +247,7 @@ html.sin-scroll { overflow: hidden; }
 .encabezado__interior {
   display: grid;
   grid-template-columns: 1fr auto;
-  grid-template-areas: "logo carrito" "menu menu";
+  grid-template-areas: "logo lista" "menu menu";
   align-items: center;
   column-gap: var(--e-4);
   padding-block: var(--e-2);
@@ -289,8 +285,8 @@ html.sin-scroll { overflow: hidden; }
 .menu a:focus-visible { outline-offset: -2px; }
 .menu a:hover { background: var(--fondo-rosado); color: var(--acento-hover); }
 
-.boton-carrito {
-  grid-area: carrito;
+.boton-lista {
+  grid-area: lista;
   display: inline-flex;
   align-items: center;
   gap: var(--e-2);
@@ -304,9 +300,9 @@ html.sin-scroll { overflow: hidden; }
   font-weight: 600;
   transition: background-color .2s, border-color .2s;
 }
-.boton-carrito:hover { background: var(--fondo-rosado); border-color: var(--acento); }
+.boton-lista:hover { background: var(--fondo-rosado); border-color: var(--acento); }
 
-.contador-carrito {
+.contador-lista {
   display: inline-grid;
   place-items: center;
   min-width: 1.5rem;
@@ -571,6 +567,14 @@ html.sin-scroll { overflow: hidden; }
 .tarjeta[data-categoria="dulce"] .insignia { background: #FDE6E9; border-color: var(--rosa-fresa); }
 .tarjeta[data-categoria="dulce"] .insignia::before { background: var(--acento); }
 
+/* Producto especial: segunda insignia en dorado más intenso (mismo estilo de insignia) */
+.tarjeta__insignias { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.insignia--especial { background: var(--acento-2); border-color: var(--dorado-texto); }
+.insignia--especial::before { background: var(--texto); }
+/* Sin precio: el botón baja al pie de la tarjeta (queda alineado con las vecinas) y deja aire sobre él */
+.tarjeta--especial .selector { margin-bottom: var(--e-3); }
+.tarjeta--especial [data-solicitar] { margin-top: auto; }
+
 .tarjeta__nombre { font-size: var(--t-lg); font-weight: 700; }
 .tarjeta__frase { color: var(--texto-suave); font-size: var(--t-sm); }
 
@@ -692,7 +696,8 @@ html.sin-scroll { overflow: hidden; }
 
 .ocasion--baby { background: #FFF1D6; border-color: rgba(224, 162, 74, .6); }
 
-/* Calculadora: panel con barra superior degradada (rojo a dorado) */
+/* Planificador: tarjeta con barra superior degradada (rojo a dorado).
+   Cabecera (título y campos), barra de resultado y cuerpo (datos a la izquierda, caminos a la derecha). */
 .calculadora {
   position: relative;
   overflow: hidden;
@@ -706,8 +711,7 @@ html.sin-scroll { overflow: hidden; }
   border-radius: var(--r-lg);
   box-shadow: var(--sombra);
 }
-.calculadora::before,
-.carrito::before {
+.calculadora::before {
   content: "";
   position: absolute;
   top: 0;
@@ -716,6 +720,7 @@ html.sin-scroll { overflow: hidden; }
   height: 6px;
   background: var(--gradiente-pasion);
 }
+.calculadora__cabecera { display: grid; gap: var(--e-5); align-items: start; }
 .calculadora__texto { display: grid; gap: var(--e-3); align-content: start; }
 .calculadora__formulario { display: grid; gap: var(--e-4); align-content: start; }
 /* Dos campos lado a lado cuando caben (mínimo 11 rem cada uno); si no, apilados */
@@ -725,18 +730,123 @@ html.sin-scroll { overflow: hidden; }
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
   align-items: start;
 }
-.calculadora__resultado {
-  min-height: 1.6em;
-  font-family: var(--fuente-titulo);
-  font-size: var(--t-md);
-  font-weight: 600;
-}
-.calculadora__resultado:not(:empty) {
+
+/* Barra ancha de resultado: la frase, o el aviso si un dato no vale */
+.calculadora__frase {
   padding: var(--e-3) var(--e-4);
   background: var(--fondo-rosado);
   border-radius: var(--r-sm);
+  font-family: var(--fuente-titulo);
+  font-size: var(--t-md);
+  font-weight: 600;
+  line-height: 1.35;
 }
-.calculadora__resultado--error { font-family: var(--fuente-texto); font-size: var(--t-sm); color: var(--acento); }
+.calculadora__frase:empty { display: none; }
+.calculadora__frase--error { font-family: var(--fuente-texto); font-size: var(--t-sm); font-weight: 600; color: var(--acento); }
+
+.calculadora__cuerpo { display: grid; gap: var(--e-5); align-items: start; min-width: 0; }
+.calculadora__datos,
+.calculadora__caminos { display: grid; gap: var(--e-3); align-content: start; min-width: 0; }
+/* Reparto: lo que sobra del total sugerido y cuánto tocaría a cada invitado */
+.calculadora__sobrantes { font-size: var(--t-sm); line-height: 1.45; color: var(--texto-suave); }
+.calculadora__camino-titulo { font-size: var(--t-lg); font-weight: 800; }
+
+/* Datos a considerar: ítems separados (etiqueta corta en Space Mono + una línea), sin agruparlos en un párrafo */
+.considerar { display: grid; gap: var(--e-2); }
+.considerar__titulo {
+  font-family: var(--fuente-mono);
+  font-size: var(--t-mono);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+.considerar__lista { display: grid; gap: var(--e-2); }
+.considerar__item {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--e-2) var(--e-4);
+  background: var(--fondo-rosado);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-sm);
+  box-shadow: inset 4px 0 0 var(--acento-2);
+  overflow-wrap: anywhere;
+}
+.considerar__etiqueta {
+  font-family: var(--fuente-mono);
+  font-size: var(--t-mono);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--acento-hover);
+}
+.considerar__texto { font-size: var(--t-sm); line-height: 1.4; color: var(--texto); }
+
+/* Los tres caminos: tres filas apiladas, cada una con resumen (izquierda) y detalle (derecha) */
+.calculadora__opciones { display: grid; gap: var(--e-3); }
+.opcion {
+  display: grid;
+  gap: var(--e-3);
+  min-width: 0;
+  padding: var(--e-4);
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  overflow-wrap: anywhere;
+}
+.opcion__resumen,
+.opcion__detalle { display: grid; gap: var(--e-1); align-content: center; min-width: 0; }
+/* Móvil: el detalle queda bajo el resumen, separado por una línea fina */
+.opcion__detalle { gap: var(--e-2); padding-top: var(--e-3); border-top: 1px solid var(--borde); }
+.opcion__titulo { margin: 0; font-family: var(--fuente-titulo); font-size: var(--t-md); font-weight: 700; line-height: 1.2; }
+.opcion__unidades {
+  font-family: var(--fuente-titulo);
+  font-size: clamp(1.625rem, 1.2rem + 1.2vw, 1.875rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+.opcion__reparto { font-size: var(--t-sm); color: var(--texto-suave); }
+.opcion__sobrantes { font-size: var(--t-xs); line-height: 1.4; color: var(--texto-suave); }
+/* Sugerencia concreta: productos con su cantidad, agrupados por categoría en el mixto */
+.opcion__grupo { display: grid; gap: var(--e-1); }
+.opcion__grupo-titulo {
+  font-family: var(--fuente-mono);
+  font-size: var(--t-mono);
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+.opcion__lineas { display: grid; gap: var(--e-1); margin: 0; padding: 0; list-style: none; }
+.opcion__linea {
+  padding-left: var(--e-3);
+  border-left: 2px solid var(--borde);
+  font-size: var(--t-sm);
+  line-height: 1.35;
+}
+.opcion__linea--mas { color: var(--texto-suave); font-style: italic; }
+.opcion__elegir { margin-top: var(--e-2); min-height: 44px; padding-inline: var(--e-4); }
+/* Camino elegido: botón oscuro con marca (no depende solo del color) y borde rojo en la fila */
+.opcion__elegir[aria-pressed="true"] { background: var(--texto); box-shadow: none; }
+.opcion__elegir[aria-pressed="true"]::before { content: "\2713"; content: "\2713" / ""; }
+.opcion:has(.opcion__elegir[aria-pressed="true"]) { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento); }
+
+/* Tablet: cada fila reparte resumen y detalle lado a lado */
+@media (min-width: 40em) {
+  .opcion { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: var(--e-5); }
+  .opcion__detalle { padding: 0 0 0 var(--e-5); border-top: 0; border-left: 1px solid var(--borde); }
+}
+@media (min-width: 48em) {
+  .calculadora__cabecera { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-7); }
+}
+/* Escritorio: cabecera y cuerpo comparten las mismas columnas (5/12 y 7/12) */
+@media (min-width: 62.5em) {
+  .calculadora__cabecera,
+  .calculadora__cuerpo { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--e-7); }
+  /* Las tres filas miden lo mismo, así se leen como un conjunto */
+  .calculadora__opciones { grid-auto-rows: 1fr; }
+}
 
 /* ===== Campos ===== */
 .campo { display: grid; gap: var(--e-2); }
@@ -874,125 +984,7 @@ html.sin-scroll { overflow: hidden; }
 .whatsapp-flotante:hover { background: var(--whatsapp-hover); color: #fff; box-shadow: 0 10px 26px rgba(15, 122, 62, .45); }
 .whatsapp-flotante .icono { width: 1.75rem; height: 1.75rem; }
 
-/* ===== Carrito (panel lateral) ===== */
-.carrito-fondo {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  background: rgba(46, 27, 27, .45);
-  opacity: 0;
-  visibility: hidden;
-}
-.carrito-fondo.abierto { opacity: 1; visibility: visible; }
-
-.carrito {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  width: min(100%, 25rem);
-  background: var(--superficie);
-  border-left: 1px solid var(--borde);
-  box-shadow: -12px 0 40px rgba(120, 50, 30, .15);
-  transform: translateX(100%);
-  visibility: hidden;
-}
-.carrito.abierto { transform: none; visibility: visible; }
-
-.carrito__cabecera {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--e-4) var(--e-5);
-  padding-top: calc(var(--e-4) + 6px);
-  border-bottom: 1px solid var(--borde);
-}
-.carrito__titulo { font-size: var(--t-lg); font-weight: 800; }
-.carrito__cerrar {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  background: transparent;
-  border: 0;
-  border-radius: 50%;
-  transition: background-color .2s;
-}
-.carrito__cerrar:hover { background: var(--fondo-rosado); }
-
-.carrito__cuerpo { flex: 1; overflow-y: auto; padding: var(--e-5); }
-.carrito__vacio { color: var(--texto-suave); }
-
-.carrito__item {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--e-1) var(--e-3);
-  padding-block: var(--e-4);
-  border-bottom: 1px solid var(--borde);
-}
-.carrito__item-nombre { font-weight: 600; }
-.carrito__item-detalle { font-size: var(--t-sm); color: var(--texto-suave); }
-.carrito__item-precio { font-family: var(--fuente-titulo); font-size: 1.125rem; font-weight: 700; color: var(--acento); }
-.carrito__quitar {
-  grid-column: 2;
-  justify-self: end;
-  padding: var(--e-1) 0;
-  background: none;
-  border: 0;
-  font-size: var(--t-sm);
-  color: var(--acento);
-  text-decoration: underline;
-  text-underline-offset: .2em;
-}
-.carrito__quitar:hover { color: var(--acento-hover); }
-
-.carrito__packs { display: inline-flex; align-items: center; gap: var(--e-2); }
-.carrito__paso {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  background: var(--superficie);
-  border: 1.5px solid var(--borde-campo);
-  border-radius: 50%;
-  font-size: var(--t-md);
-  line-height: 1;
-  transition: background-color .2s, border-color .2s;
-}
-.carrito__paso:hover:not(:disabled) { background: var(--fondo-rosado); border-color: var(--acento); }
-.carrito__paso:disabled { opacity: .4; cursor: not-allowed; }
-.carrito__packs-numero { min-width: 2ch; text-align: center; font-weight: 600; }
-
-.carrito__pie {
-  display: grid;
-  gap: var(--e-4);
-  padding: var(--e-5);
-  background: var(--superficie);
-  border-top: 1px solid var(--borde);
-}
-.carrito__total {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  font-weight: 600;
-}
-.carrito__total output {
-  font-family: var(--fuente-titulo);
-  font-size: var(--t-lg);
-  font-weight: 800;
-  color: var(--acento);
-}
-
 /* ===== Tablet ===== */
-@media (min-width: 26em) {
-  .carrito::before { border-top-left-radius: var(--r-lg); }
-  .carrito { border-radius: var(--r-lg) 0 0 var(--r-lg); }
-}
-
 @media (min-width: 40em) {
   .portada__acciones { display: flex; flex-wrap: wrap; }
   .catalogo__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-5); }
@@ -1012,15 +1004,13 @@ html.sin-scroll { overflow: hidden; }
 
   .encabezado__interior {
     grid-template-columns: auto 1fr auto;
-    grid-template-areas: "logo menu carrito";
+    grid-template-areas: "logo menu lista";
     padding-block: var(--e-3);
   }
   .menu { justify-content: center; }
 
   .calculadora {
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    gap: var(--e-7);
+    gap: var(--e-6);
     padding: var(--e-7);
     padding-top: calc(var(--e-7) + 6px);
   }
@@ -1068,7 +1058,7 @@ html.sin-scroll { overflow: hidden; }
   html { scroll-behavior: smooth; }
 
   /* 1. Rebote del contador: el script añade la clase "rebote" al agregar */
-  .contador-carrito.rebote { animation: rebote .3s ease-out; }
+  .contador-lista.rebote { animation: rebote .3s ease-out; }
   @keyframes rebote {
     0% { transform: scale(1); }
     40% { transform: scale(1.4); }
@@ -1103,126 +1093,8 @@ html.sin-scroll { overflow: hidden; }
       to { opacity: 1; transform: none; }
     }
   }
-
-  /* Panel del carrito: deslizamiento y fondo */
-  .carrito { transition: transform .3s ease, visibility 0s linear .3s; }
-  .carrito.abierto { transition: transform .3s ease, visibility 0s; }
-  .carrito-fondo { transition: opacity .3s ease, visibility 0s linear .3s; }
-  .carrito-fondo.abierto { transition: opacity .3s ease, visibility 0s; }
 }
 
-/* ===== Calculadora ampliada: frase, tres formas de armar el pedido y productos =====
-   Bloque propio; el resultado ahora ocupa todo el ancho de la calculadora. */
-.calculadora { --hueco-calculadora: var(--e-5); }
-@media (min-width: 48em) {
-  .calculadora { --hueco-calculadora: var(--e-7); }
-}
-
-.calculadora__resultado { grid-column: 1 / -1; align-self: stretch; min-width: 0; }
-/* Vacío no debe dejar un hueco de más en la rejilla */
-.calculadora__resultado:empty { min-height: 0; margin-top: calc(var(--hueco-calculadora) * -1); }
-.calculadora .calculadora__resultado:not(:empty) {
-  display: grid;
-  gap: var(--e-4);
-  padding: 0;
-  background: none;
-  border-radius: 0;
-  font-family: var(--fuente-texto);
-  font-size: var(--t-base);
-  font-weight: 400;
-}
-.calculadora .calculadora__resultado--error:not(:empty) {
-  display: block;
-  padding: var(--e-3) var(--e-4);
-  background: var(--fondo-rosado);
-  border-radius: var(--r-sm);
-  font-size: var(--t-sm);
-  color: var(--acento);
-}
-
-.calculadora__frase {
-  padding: var(--e-3) var(--e-4);
-  background: var(--fondo-rosado);
-  border-radius: var(--r-sm);
-  font-family: var(--fuente-titulo);
-  font-size: var(--t-md);
-  font-weight: 600;
-}
-.calculadora__regla {
-  font-family: var(--fuente-mono);
-  font-size: var(--t-mono);
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  color: var(--texto-suave);
-}
-
-.calculadora__opciones {
-  display: grid;
-  gap: var(--e-4);
-  grid-template-columns: minmax(0, 1fr);
-}
-.opcion {
-  display: flex;
-  flex-direction: column;
-  gap: var(--e-2);
-  min-width: 0;
-  padding: var(--e-4);
-  background: var(--fondo);
-  border: 1px solid var(--borde);
-  border-top: 4px solid var(--acento);
-  border-radius: var(--r-md);
-  overflow-wrap: anywhere;
-}
-.opcion--dulces { border-top-color: var(--rosa-fresa); }
-.opcion--salados { border-top-color: var(--acento-2); }
-.opcion__titulo { margin: 0; font-family: var(--fuente-titulo); font-size: var(--t-md); font-weight: 700; line-height: 1.2; }
-.opcion__unidades {
-  font-family: var(--fuente-titulo);
-  font-size: var(--t-xl);
-  font-weight: 800;
-  line-height: 1.1;
-}
-.opcion__reparto { font-size: var(--t-sm); color: var(--texto-suave); }
-/* Sugerencia concreta: productos con su cantidad, agrupados por categoría en el mixto */
-.opcion__grupo { display: grid; gap: var(--e-1); }
-.opcion__grupo-titulo {
-  font-family: var(--fuente-mono);
-  font-size: var(--t-mono);
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  color: var(--acento);
-}
-.opcion__lineas { display: grid; gap: var(--e-1); margin: 0; padding: 0; list-style: none; }
-.opcion__linea {
-  padding-left: var(--e-3);
-  border-left: 2px solid var(--borde);
-  font-size: var(--t-sm);
-  line-height: 1.35;
-}
-.opcion__linea--mas { color: var(--texto-suave); font-style: italic; }
-.opcion__precio {
-  margin-top: auto;
-  padding-top: var(--e-3);
-  border-top: 1px dashed var(--borde-campo);
-  font-family: var(--fuente-titulo);
-  font-size: var(--t-md);
-  font-weight: 800;
-  line-height: 1.2;
-  color: var(--acento);
-}
-
-.calculadora__camino-titulo { font-size: var(--t-lg); font-weight: 800; margin-top: var(--e-2); }
-.opcion__elegir { margin-top: var(--e-2); padding-inline: var(--e-4); }
-/* Camino elegido: botón oscuro con marca, para no depender solo del color */
-.opcion__elegir[aria-pressed="true"] { background: var(--texto); box-shadow: none; }
-.opcion__elegir[aria-pressed="true"]::before { content: "\2713"; content: "\2713" / ""; }
-.opcion:has(.opcion__elegir[aria-pressed="true"]) { border-color: var(--acento); box-shadow: 0 0 0 2px var(--acento); }
-
-@media (min-width: 62.5em) {
-  .calculadora__opciones { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
 
 /* ===== Planificador: sube a la portada y comparte su lenguaje (rojo pasión, dorado, cuadrícula) ===== */
 .planificador {
@@ -1261,8 +1133,8 @@ html.sin-scroll { overflow: hidden; }
 }
 
 /* ===== Tu lista de compras =====
-   Móvil: barra inferior que se expande como panel. 62,5em: cajón lateral con pestaña.
-   75em: columna fija a la derecha y el contenido cede espacio. */
+   Móvil: barra inferior que se expande como panel. Desde 62,5em: panel horizontal que se desliza
+   hacia abajo desde el botón "Mi lista" del encabezado. */
 .boton--principal[disabled]:hover { background: var(--acento); }
 
 .lista {
@@ -1356,6 +1228,18 @@ html.sin-scroll { overflow: hidden; }
   border-bottom: 1px solid var(--borde);
 }
 .lista__titulo { font-size: var(--t-lg); font-weight: 800; }
+.lista__cerrar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  transition: background-color .2s;
+}
+.lista__cerrar:hover { background: var(--fondo-rosado); }
 .lista__titulo:focus { outline: none; }
 .lista__titulo:focus-visible { outline: 3px solid var(--foco); outline-offset: 3px; border-radius: 4px; }
 
@@ -1365,10 +1249,14 @@ html.sin-scroll { overflow: hidden; }
   gap: var(--e-3);
   align-content: start;
   min-height: 0;
-  padding: var(--e-4) var(--e-5);
+  padding: var(--e-4) var(--e-5) var(--e-5);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
+/* En móvil las tres partes (resumen, líneas y cierre) fluyen como una sola columna */
+.lista__resumen,
+.lista__detalle,
+.lista__cierre { display: contents; }
 
 .lista__camino { font-family: var(--fuente-titulo); font-size: var(--t-md); font-weight: 700; line-height: 1.3; }
 
@@ -1427,28 +1315,55 @@ html.sin-scroll { overflow: hidden; }
 .lista__paso:hover:not(:disabled) { background: var(--fondo-rosado); border-color: var(--acento); }
 .lista__paso:disabled { opacity: .4; cursor: not-allowed; }
 .lista__packs-numero { min-width: 2ch; text-align: center; font-weight: 600; }
-.lista__quitar { grid-column: 2; grid-row: 3; align-self: end; }
+.lista__quitar {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: end;
+  justify-self: end;
+  padding: var(--e-1) 0;
+  background: none;
+  border: 0;
+  font-size: var(--t-sm);
+  color: var(--acento);
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+.lista__quitar:hover { color: var(--acento-hover); }
 
 .lista__enlace { font-size: var(--t-sm); }
 
-.lista__pie {
-  display: grid;
-  flex: none;
-  gap: var(--e-2);
-  padding: var(--e-3) var(--e-5) var(--e-4);
-  background: var(--superficie);
-  border-top: 1px solid var(--borde);
+/* Total al final de la lista */
+.lista__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: var(--e-3);
+  font-weight: 600;
 }
-.lista__pie .boton { min-height: 44px; padding-inline: var(--e-4); font-size: 1rem; }
-.lista__total { display: flex; align-items: baseline; justify-content: space-between; font-weight: 600; }
 .lista__total output { font-family: var(--fuente-titulo); font-size: var(--t-lg); font-weight: 800; color: var(--acento); }
 
-/* Botón flotante de WhatsApp: sube sobre la barra y no estorba al panel */
-html.lista-visible .whatsapp-flotante {
-  bottom: calc(var(--alto-barra-lista) + var(--e-4) + env(safe-area-inset-bottom, 0px));
+/* Último paso: fecha obligatoria y envío por WhatsApp, bajo la lista y el total */
+.pedido {
+  display: grid;
+  gap: var(--e-3);
+  padding: var(--e-4) var(--e-3) var(--e-4) var(--e-4);
+  background: var(--fondo-rosado);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-md);
+  box-shadow: inset 4px 0 0 var(--whatsapp);
 }
-html.lista-visible .pie { padding-bottom: 9rem; }
-html.lista-abierta .whatsapp-flotante { visibility: hidden; }
+.pedido__titulo { font-size: var(--t-md); font-weight: 800; }
+.pedido__intro { font-size: var(--t-sm); color: var(--texto-suave); }
+.pedido .boton { min-height: 48px; padding-inline: var(--e-2); font-size: .9375rem; }
+
+/* Móvil: el botón flotante de WhatsApp sube sobre la barra y se oculta con el panel abierto */
+@media (max-width: 62.49em) {
+  html.lista-visible .whatsapp-flotante {
+    bottom: calc(var(--alto-barra-lista) + var(--e-4) + env(safe-area-inset-bottom, 0px));
+  }
+  html.lista-visible .pie { padding-bottom: 9rem; }
+  html.lista-abierta .whatsapp-flotante { visibility: hidden; }
+}
 
 /* Fila recién agregada: destello suave (solo con movimiento permitido) */
 @media (prefers-reduced-motion: no-preference) {
@@ -1461,64 +1376,70 @@ html.lista-abierta .whatsapp-flotante { visibility: hidden; }
   .lista.abierta .lista__panel { transition: opacity .25s ease, translate .25s ease, visibility 0s; }
   .avance__relleno { transition: width .4s ease; }
   @media (min-width: 62.5em) {
-    .lista { transition: transform .3s ease; }
+    /* Se desliza hacia abajo: el recorte va descubriendo el panel mientras baja unos píxeles */
+    .lista__panel { transition: opacity .3s ease, translate .3s ease, clip-path .3s ease, visibility 0s linear .3s; }
+    .lista.abierta .lista__panel { transition: opacity .3s ease, translate .3s ease, clip-path .3s ease, visibility 0s; }
   }
 }
 
-/* Cajón lateral (62,5em a 75em) y columna fija (75em en adelante) */
+/* Escritorio y tablet (desde 62,5em): panel horizontal bajo el encabezado, alineado con "Mi lista" */
 @media (min-width: 62.5em) {
   .lista {
-    top: var(--alto-encabezado);
+    top: calc(var(--alto-encabezado) + var(--e-1));
+    bottom: auto;
     left: auto;
-    width: var(--ancho-lista);
+    /* Borde derecho del contenedor: coincide con el borde derecho del botón "Mi lista" */
+    right: calc((100% - min(100% - 2rem, var(--ancho-max))) / 2);
+    width: min(64rem, calc(100% - 2rem));
     padding-bottom: 0;
     background: transparent;
     box-shadow: none;
-    transform: translateX(100%);
+    pointer-events: none; /* La caja vacía no debe tapar clics; solo el panel abierto los recibe */
   }
-  .lista.abierta { transform: none; }
-
-  /* La pestaña asoma a la izquierda del cajón y queda a la vista aunque esté cerrado */
-  .lista__pestana {
-    position: absolute;
-    top: var(--e-6);
-    right: 100%;
-    flex-direction: column;
-    gap: var(--e-2);
-    width: auto;
-    min-height: 0;
-    padding: var(--e-3) var(--e-2);
-    background: var(--acento);
-    border-radius: var(--r-md) 0 0 var(--r-md);
-    box-shadow: -6px 6px 18px rgba(120, 50, 30, .22);
-    text-align: center;
-  }
-  .lista__pestana-titulo { writing-mode: vertical-rl; }
-  .lista__pestana-bocaditos { font-weight: 700; }
-  .lista__pestana-unidad,
-  .lista__pestana-total,
-  .lista__pestana-accion { display: none; }
+  .lista__pestana { display: none; }
 
   .lista__panel {
     position: static;
-    height: 100%;
-    max-height: none;
-    border: 0;
-    border-left: 1px solid var(--borde);
-    border-radius: 0;
-    box-shadow: -12px 0 40px rgba(120, 50, 30, .15);
-    translate: none;
+    max-height: 70vh;
+    max-height: min(70vh, calc(100dvh - var(--alto-encabezado) - 6.5rem)); /* nunca llega al botón de WhatsApp */
+    border: 1px solid var(--borde);
+    border-radius: var(--r-lg);
+    box-shadow: var(--sombra);
+    pointer-events: auto;
+    opacity: 0;
+    translate: 0 -1rem;
+    clip-path: inset(0 -3rem 100% -3rem);
+  }
+  .lista.abierta .lista__panel {
     opacity: 1;
+    translate: 0 0;
+    clip-path: inset(0 -3rem -3rem -3rem);
   }
 
-  html.lista-visible .whatsapp-flotante { bottom: var(--e-4); }
-  html.lista-visible .pie { padding-bottom: var(--e-7); }
-}
+  /* Tres columnas; cada una se desplaza por su cuenta si no cabe */
+  .lista__cuerpo {
+    grid-template-columns: minmax(0, .95fr) minmax(0, 1.2fr) minmax(0, 1.1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  .lista__resumen,
+  .lista__detalle,
+  .lista__cierre {
+    display: grid;
+    gap: var(--e-3);
+    align-content: start;
+    min-height: 0;
+    padding: var(--e-4) var(--e-5) var(--e-5);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .lista__detalle,
+  .lista__cierre { border-left: 1px solid var(--borde); }
 
-@media (min-width: 75em) {
-  /* Columna abierta: el contenido cede el ancho de la columna y nada queda tapado */
-  html.lista-abierta main,
-  html.lista-abierta .pie { margin-right: calc(var(--ancho-lista) + var(--e-4)); }
-  html.lista-abierta .lista__pestana { display: none; }
-  html.lista-abierta .whatsapp-flotante { visibility: visible; right: calc(var(--ancho-lista) + var(--e-4)); }
+  /* Sin nada en la lista: solo el resumen y "Seguir eligiendo" */
+  .lista--vacia .lista__cuerpo { grid-template-columns: minmax(0, 1fr) auto; }
+  .lista--vacia .lista__detalle,
+  .lista--vacia .lista__total { display: none; }
 }

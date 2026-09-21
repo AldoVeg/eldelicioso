@@ -1,4 +1,4 @@
-// El Delicioso: catálogo, planificador de invitados, lista de compras, carrito y pedido por WhatsApp.
+// El Delicioso: catálogo, planificador de invitados, lista de compras y pedido por WhatsApp.
 // JavaScript puro. Las funciones "puras" no tocan el DOM, así se pueden probar en Node.
 
 const NEGOCIO = {
@@ -8,21 +8,21 @@ const NEGOCIO = {
 };
 
 const TAMANOS = [25, 50, 100];
-// Valor por defecto del dato "bocaditos por invitado"; el visitante puede cambiarlo (de 1 a 30).
-const BOCADITOS_POR_INVITADO_DEFECTO = 6;
-const MIN_BOCADITOS_POR_INVITADO = 1;
-const MAX_BOCADITOS_POR_INVITADO = 30;
+// "Bocaditos por invitado" no tiene valor inicial: el visitante lo escribe siempre (de 3 a 10).
+const MIN_BOCADITOS_POR_INVITADO = 3;
+const MAX_BOCADITOS_POR_INVITADO = 10;
 const MAX_INVITADOS = 1000;
 // Tope de unidades totales que se arman en línea; más allá se atiende por WhatsApp.
 const MAX_UNIDADES = 10000;
 // Máximo de líneas de producto que muestra cada categoría en la sugerencia.
 const MAX_LINEAS_SUGERENCIA = 6;
 const MAX_PACKS_POR_LINEA = 99;
+// La clave conserva su nombre original para no perder las listas que los visitantes ya guardaron.
 const CLAVE_ALMACENAMIENTO = "el-delicioso-carrito";
 const CLAVE_PLAN = "el-delicioso-plan";
 // Desde este excedente por categoría la lista avisa que te pasas de la meta.
 const UMBRAL_EXCEDIDO = 25;
-// Productos que cambiaron de id al ampliar el catálogo (carritos guardados antes del cambio).
+// Productos que cambiaron de id al ampliar el catálogo (listas guardadas antes del cambio).
 const ALIAS_IDS = { "trufas-chocolate": "mini-trufas-chocolate" };
 const DURACION_REBOTE_MS = 300;
 const DURACION_AGREGADO_MS = 1200;
@@ -74,11 +74,17 @@ function validarInvitados(valor) {
   return { valido: true, invitados };
 }
 
-// Devuelve { valido, porInvitado, mensaje }; vacío o ausente = valor por defecto (6).
+// Devuelve { valido, porInvitado, mensaje }; el dato es obligatorio (vacío o ausente no vale).
 function validarBocaditosPorInvitado(valor) {
   const texto = String(valor ?? "").trim();
-  if (texto === "") return { valido: true, porInvitado: BOCADITOS_POR_INVITADO_DEFECTO };
-  const mensaje = `Escribe un número entero de bocaditos por invitado, de ${MIN_BOCADITOS_POR_INVITADO} a ${MAX_BOCADITOS_POR_INVITADO}.`;
+  if (texto === "") {
+    return {
+      valido: false,
+      mensaje: `Indica cuántos bocaditos por invitado, de ${MIN_BOCADITOS_POR_INVITADO} a ${MAX_BOCADITOS_POR_INVITADO}.`
+    };
+  }
+  const mensaje = `Escribe un número entero de ${MIN_BOCADITOS_POR_INVITADO} a ${MAX_BOCADITOS_POR_INVITADO} bocaditos por invitado. ` +
+    "Para más, escríbenos por WhatsApp.";
   if (!/^\d+$/.test(texto)) return { valido: false, mensaje };
   const porInvitado = Number(texto);
   if (porInvitado < MIN_BOCADITOS_POR_INVITADO || porInvitado > MAX_BOCADITOS_POR_INVITADO) {
@@ -136,7 +142,7 @@ function combinarPaquetes(necesarias) {
 
 // Si las unidades necesarias caben en un paquete (hasta 100): el menor tamaño que las cubra.
 // Más: combinación de menor excedente.
-function calcularCombinacion(invitados, porInvitado = BOCADITOS_POR_INVITADO_DEFECTO) {
+function calcularCombinacion(invitados, porInvitado) {
   const necesarias = invitados * porInvitado;
   const tamanoUnico = TAMANOS.find((tamano) => necesarias <= tamano);
   if (tamanoUnico) {
@@ -168,10 +174,24 @@ function describirCombinacion({ paquetes, total }) {
   return `${lista} (${total} unidades en total)`;
 }
 
-function textoResultadoCalculadora(invitados, porInvitado = BOCADITOS_POR_INVITADO_DEFECTO) {
+function textoResultadoCalculadora(invitados, porInvitado) {
   const combinacion = calcularCombinacion(invitados, porInvitado);
   return `Para ${invitados} ${invitados === 1 ? "invitado" : "invitados"} necesitas unas ${combinacion.necesarias} unidades. ` +
     `Te sugerimos ${describirCombinacion(combinacion)}.`;
+}
+
+// "Sobra 1 bocadito" / "Sobran 5 bocaditos"; "sustantivo" es [singular, plural].
+function textoSobran(cantidad, sustantivo) {
+  return cantidad === 1 ? `Sobra 1 ${sustantivo[0]}` : `Sobran ${cantidad} ${sustantivo[1]}`;
+}
+
+// Línea de equidad de la frase principal: lo que sobra del total sugerido y cuánto tocaría a cada invitado.
+function textoSobrantesEquidad(invitados, porInvitado) {
+  const { necesarias, total } = calcularCombinacion(invitados, porInvitado);
+  const sobran = total - necesarias;
+  if (sobran === 0) return `Reparto exacto: cada invitado recibe ${textoBocaditos(porInvitado)}.`;
+  return `${textoSobran(sobran, ["bocadito", "bocaditos"])}: ` +
+    `${sobran === 1 ? "repartido" : "repartidos"} por igual, cada invitado recibiría ${formatearNumero(total / invitados)}.`;
 }
 
 /* ===== Funciones puras: tres formas de armar el pedido ===== */
@@ -186,7 +206,7 @@ const CAMINOS = {
   mixto: {
     clave: "mixto",
     nombre: "Mixto",
-    titulo: "Mixto (dulces y salados)",
+    titulo: "Mixto",
     descripcion: "Mitad dulces, mitad salados: variedad para todos los gustos.",
     boton: "Elegir mixto",
     ayuda: "Debajo verás todos los productos",
@@ -220,8 +240,13 @@ function esCaminoValido(clave) {
 }
 
 // El catálogo es un Map id -> { nombre, categoria, precios: { 25, 50, 100 } en céntimos }.
+// Un producto "por cotizar" no tiene precios: no se suma, no se sugiere y no se puede agregar a la lista.
+function tienePrecios(producto) {
+  return Boolean(producto && producto.precios && TAMANOS.every((tamano) => Number.isFinite(producto.precios[tamano])));
+}
+
 function productosDeCategoria(catalogo, categoria) {
-  return [...catalogo.values()].filter((producto) => producto.categoria === categoria);
+  return [...catalogo.values()].filter((producto) => producto.categoria === categoria && tienePrecios(producto));
 }
 
 // Sugerencia concreta de una categoría: reparte los paquetes (de mayor a menor tamaño) entre productos
@@ -282,12 +307,15 @@ function armarOpcion(clave, titulo, partes, invitados, catalogo) {
     precio = precio !== null && sugerencia.total !== null ? precio + sugerencia.total : null;
   }
   const unidades = partes.dulce.total + partes.salado.total;
+  // Sobrantes por categoría: lo que pasa de la meta de esa categoría.
+  const sobran = { dulce: partes.dulce.total - partes.dulce.necesarias, salado: partes.salado.total - partes.salado.necesarias };
   return {
     clave,
     titulo,
     dulce: partes.dulce,
     salado: partes.salado,
     unidades,
+    sobran,
     porInvitado: unidades / invitados,
     sugerencias,
     precio
@@ -296,7 +324,7 @@ function armarOpcion(clave, titulo, partes, invitados, catalogo) {
 
 // Mixto: mitad dulces y mitad salados (la mitad se redondea hacia arriba), cada una con menor excedente.
 // Solo dulces o solo salados: la misma combinación que sugiere la frase principal.
-function calcularOpciones(invitados, catalogo, porInvitado = BOCADITOS_POR_INVITADO_DEFECTO) {
+function calcularOpciones(invitados, catalogo, porInvitado) {
   const necesarias = invitados * porInvitado;
   const mitad = Math.ceil(necesarias / 2);
   const completa = calcularCombinacion(invitados, porInvitado);
@@ -314,27 +342,38 @@ function describirParte(parte) {
   return `${parte.total} unidades (${listarPaquetes(parte.paquetes)})`;
 }
 
+// Sobrantes de una opción: "Reparto exacto", "Sobran 5 unidades" o, en el mixto, "Sobran 30: 15 dulces y 15 salados".
+function textoSobrantesOpcion(opcion) {
+  const total = opcion.sobran.dulce + opcion.sobran.salado;
+  if (total === 0) return "Reparto exacto";
+  if (opcion.clave !== "mixto") return textoSobran(total, ["unidad", "unidades"]);
+  const partes = CATEGORIAS
+    .filter((categoria) => opcion.sobran[categoria.clave] > 0)
+    .map((categoria) => `${opcion.sobran[categoria.clave]} ${opcion.sobran[categoria.clave] === 1 ? categoria.singular : categoria.unidad}`);
+  return `${total === 1 ? "Sobra" : "Sobran"} ${total}: ${unirLista(partes)}`;
+}
+
 // Modelo de texto de todo el resultado; la interfaz solo lo dibuja.
 // Cada opción trae "grupos": [{ etiqueta, lineas: [{ texto, extra }] }]; la etiqueta (Dulces/Salados)
 // solo aparece en el mixto, donde hay dos grupos.
-function describirResultado(invitados, catalogo, porInvitado = BOCADITOS_POR_INVITADO_DEFECTO) {
+function describirResultado(invitados, catalogo, porInvitado) {
   const opciones = calcularOpciones(invitados, catalogo, porInvitado).map((opcion) => ({
     clave: opcion.clave,
     titulo: opcion.titulo,
     boton: CAMINOS[opcion.clave].boton,
     unidades: `${opcion.unidades} unidades`,
     reparto: opcion.clave === "mixto" ? `${opcion.dulce.total} dulces + ${opcion.salado.total} salados` : "",
+    sobrantes: textoSobrantesOpcion(opcion),
     grupos: CATEGORIAS
       .filter((categoria) => opcion.sugerencias[categoria.clave])
       .map((categoria) => ({
         etiqueta: opcion.clave === "mixto" ? categoria.etiqueta : "",
         lineas: describirSugerencia(opcion.sugerencias[categoria.clave])
-      })),
-    precio: opcion.precio === null ? "" : `Total sugerido: ${formatearMoneda(opcion.precio)}`
+      }))
   }));
   return {
     frase: textoResultadoCalculadora(invitados, porInvitado),
-    regla: `Cada invitado recibe ${textoBocaditos(porInvitado)}.`,
+    sobrantes: textoSobrantesEquidad(invitados, porInvitado),
     tituloCaminos: "Elige tu camino",
     opciones
   };
@@ -343,13 +382,18 @@ function describirResultado(invitados, catalogo, porInvitado = BOCADITOS_POR_INV
 /* ===== Funciones puras: plan (invitados y camino) y avance de la lista ===== */
 
 // Datos guardados del plan -> { invitados, porInvitado, camino }; descarta lo dañado o inexistente.
-// Los planes viejos sin "porInvitado" (o con un valor dañado) se leen con el valor por defecto (6).
+// Los planes viejos sin "porInvitado" válido (ausente o fuera de 3 a 10) conservan los invitados si son
+// válidos, dejan "porInvitado" en null y pierden el camino: sin ese dato no se puede calcular la meta.
 function normalizarPlan(crudo) {
-  const vacio = { invitados: null, porInvitado: BOCADITOS_POR_INVITADO_DEFECTO, camino: null };
+  const vacio = { invitados: null, porInvitado: null, camino: null };
   if (!crudo || typeof crudo !== "object") return vacio;
+  const invitadosGuardados = validarInvitados(crudo.invitados);
+  if (!invitadosGuardados.valido) return vacio;
   const porInvitadoGuardado = validarBocaditosPorInvitado(crudo.porInvitado);
-  const porInvitado = porInvitadoGuardado.valido ? porInvitadoGuardado.porInvitado : BOCADITOS_POR_INVITADO_DEFECTO;
-  const validacion = validarEntradaCalculadora(crudo.invitados, porInvitado);
+  if (!porInvitadoGuardado.valido) {
+    return { invitados: invitadosGuardados.invitados, porInvitado: null, camino: null };
+  }
+  const validacion = validarEntradaCalculadora(crudo.invitados, porInvitadoGuardado.porInvitado);
   if (!validacion.valido) return vacio;
   return {
     invitados: validacion.invitados,
@@ -358,9 +402,9 @@ function normalizarPlan(crudo) {
   };
 }
 
-// Bocaditos por invitado de un plan; sin el dato (planes incompletos) vale el valor por defecto.
-function porInvitadoDe(plan) {
-  return plan && Number.isInteger(plan.porInvitado) ? plan.porInvitado : BOCADITOS_POR_INVITADO_DEFECTO;
+// Un plan sirve para calcular metas solo con los tres datos: invitados, bocaditos por invitado y camino.
+function planCompleto(plan) {
+  return Boolean(plan && plan.camino && plan.invitados && Number.isInteger(plan.porInvitado));
 }
 
 function textoInvitados(invitados) {
@@ -369,7 +413,7 @@ function textoInvitados(invitados) {
 
 // Meta de unidades por categoría; null si el camino no incluye esa categoría.
 // Mixto: mitad dulces y mitad salados (cada una se redondea hacia arriba).
-function calcularMetas(invitados, camino, porInvitado = BOCADITOS_POR_INVITADO_DEFECTO) {
+function calcularMetas(invitados, camino, porInvitado) {
   const total = invitados * porInvitado;
   if (camino === "mixto") {
     const mitad = Math.ceil(total / 2);
@@ -389,8 +433,8 @@ function evaluarAvance(llevas, meta) {
 
 // "Camino: Mixto · 20 invitados · 6 bocaditos por invitado · meta: 60 dulces y 60 salados"
 function textoContextoCamino(plan) {
-  if (!plan || !plan.camino || !plan.invitados) return "";
-  const porInvitado = porInvitadoDe(plan);
+  if (!planCompleto(plan)) return "";
+  const porInvitado = plan.porInvitado;
   const metas = calcularMetas(plan.invitados, plan.camino, porInvitado);
   const partes = CATEGORIAS
     .filter((categoria) => metas[categoria.clave] !== null)
@@ -402,8 +446,8 @@ function textoContextoCamino(plan) {
 // "Evento: 20 invitados, 6 bocaditos por invitado, camino solo dulces" (línea del mensaje de WhatsApp);
 // vacío sin camino.
 function textoEventoPedido(plan) {
-  if (!plan || !plan.camino || !plan.invitados) return "";
-  return `Evento: ${textoInvitados(plan.invitados)}, ${textoBocaditos(porInvitadoDe(plan))} por invitado, ` +
+  if (!planCompleto(plan)) return "";
+  return `Evento: ${textoInvitados(plan.invitados)}, ${textoBocaditos(plan.porInvitado)} por invitado, ` +
     `camino ${CAMINOS[plan.camino].texto}`;
 }
 
@@ -433,17 +477,25 @@ function describirEstadoLista(hayLineas, categorias) {
     return { tipo: "excedido", texto: `Te pasas por ${sobran} unidades: habrá para repetir.` };
   }
   const meta = categorias.reduce((suma, categoria) => suma + categoria.meta, 0);
+  // Aquí ninguna categoría llega a 25 de excedente; se avisa lo que sobra, si algo sobra.
+  const sobranPoco = categorias.reduce((suma, categoria) => suma + categoria.sobran, 0);
+  if (sobranPoco > 0) {
+    return {
+      tipo: "completo",
+      texto: `Cubres las ${meta} unidades y ${sobranPoco === 1 ? "sobra 1" : `sobran ${sobranPoco}`}.`
+    };
+  }
   return { tipo: "completo", texto: `¡Listo! Cubres las ${meta} unidades.` };
 }
 
-// Todo lo que muestra la lista de compras, a partir de las líneas del carrito (resumirCarrito) y el plan.
+// Todo lo que muestra la lista de compras, a partir de las líneas de la lista (resumirCarrito) y el plan.
 function describirLista({ items }, plan) {
   const llevado = { dulce: 0, salado: 0 };
   items.forEach((item) => { llevado[item.categoria] += item.unidades; });
   const unidadesTotales = items.reduce((suma, item) => suma + item.unidades, 0);
-  const hayPlan = Boolean(plan && plan.camino && plan.invitados);
+  const hayPlan = planCompleto(plan);
   const metas = hayPlan
-    ? calcularMetas(plan.invitados, plan.camino, porInvitadoDe(plan))
+    ? calcularMetas(plan.invitados, plan.camino, plan.porInvitado)
     : { dulce: null, salado: null };
 
   const categorias = CATEGORIAS
@@ -467,7 +519,7 @@ function describirLista({ items }, plan) {
     unidadesTotales,
     llevado,
     textoCamino: hayPlan
-      ? `Para ${textoInvitados(plan.invitados)} necesitas unas ${plan.invitados * porInvitadoDe(plan)} unidades.`
+      ? `Para ${textoInvitados(plan.invitados)} necesitas unas ${plan.invitados * plan.porInvitado} unidades.`
       : "",
     categorias,
     estado: describirEstadoLista(items.length > 0, categorias),
@@ -539,9 +591,9 @@ function validarFechaEvento(valor, hoy, dias = NEGOCIO.anticipacionDias) {
   return { valida: true, minimo, mensaje: "" };
 }
 
-/* ===== Funciones puras: carrito ===== */
+/* ===== Funciones puras: líneas de la lista de compras (lo guardado se llama "carrito" por historia) ===== */
 
-// Una línea del carrito es { id, tamano, packs }; el nombre y el precio salen del catálogo.
+// Una línea de la lista es { id, tamano, packs }; el nombre y el precio salen del catálogo.
 function claveLinea(linea) {
   return `${linea.id}|${linea.tamano}`;
 }
@@ -572,7 +624,7 @@ function normalizarLineas(crudo, catalogo) {
   for (const item of crudo) {
     if (!item) continue;
     const id = ALIAS_IDS[item.id] || item.id;
-    if (!catalogo.has(id) || !TAMANOS.includes(item.tamano)) continue;
+    if (!tienePrecios(catalogo.get(id)) || !TAMANOS.includes(item.tamano)) continue;
     if (!Number.isInteger(item.packs) || item.packs < 1) continue;
     const linea = { id, tamano: item.tamano, packs: Math.min(item.packs, MAX_PACKS_POR_LINEA) };
     if (vistas.has(claveLinea(linea))) continue;
@@ -625,6 +677,12 @@ function construirMensajePedido({ items, totalCentimos }, fechaISO, negocio = NE
     "",
     "¿Me confirman el costo del delivery y los datos de pago? Gracias."
   ].join("\n");
+}
+
+// Mensaje para cotizar un producto sin precio: solo lleva la cantidad, nunca datos personales.
+function construirMensajeCotizacion(cantidad, nombreProducto, negocio = NEGOCIO) {
+  return `Hola, ${negocio.nombre}. Quisiera cotizar ${cantidad} unidades de ${nombreProducto.toLowerCase()}. ` +
+    "¿Me indican el precio y la disponibilidad?";
 }
 
 function construirEnlaceWhatsApp(mensaje, negocio = NEGOCIO) {
@@ -685,25 +743,17 @@ function iniciar() {
   const seccionCatalogo = $("catalogo");
   const tituloCatalogo = $("titulo-catalogo");
   const contextoCamino = $("catalogo-contexto");
-  const botonCarrito = $("boton-carrito");
-  const contador = $("contador-carrito");
-  const panel = $("carrito");
-  const fondo = $("carrito-fondo");
-  const botonCerrar = $("cerrar-carrito");
-  const lista = $("carrito-lista");
-  const textoVacio = $("carrito-vacio");
-  const totalSalida = $("carrito-total");
-  const formPedido = $("form-pedido");
-  const campoFecha = $("fecha-evento");
-  const errorFecha = $("error-fecha");
-  const mensajePedido = $("mensaje-pedido");
-  const plantilla = $("plantilla-item-carrito");
+  const botonLista = $("boton-lista");
+  const contador = $("contador-lista");
   const formCalculadora = $("form-calculadora");
   const campoInvitados = $("invitados");
   const campoBocaditos = $("bocaditos-por-invitado");
   const resultadoCalculadora = $("resultado-calculadora");
+  const sobrantesCalculadora = $("calculadora-sobrantes");
+  const caminosCalculadora = $("calculadora-caminos");
+  const opcionesCalculadora = $("calculadora-opciones");
 
-  // Lista de compras (resumen vivo del carrito)
+  // Lista de compras: lista, total y último paso del pedido (panel horizontal en escritorio, barra en móvil)
   const listaRaiz = $("lista-compras");
   const listaPestana = $("lista-pestana");
   const listaCifra = $("lista-pestana-cifra");
@@ -719,33 +769,43 @@ function iniciar() {
   const listaItems = $("lista-items");
   const listaEnlacePlanificador = $("lista-enlace-planificador");
   const listaTotal = $("lista-total");
-  const listaContinuar = $("lista-continuar");
   const listaSeguir = $("lista-seguir");
   const plantillaLista = $("plantilla-item-lista");
   const saltarLista = $("saltar-lista");
+  const formPedido = $("form-pedido");
+  const campoFecha = $("fecha-evento");
+  const errorFecha = $("error-fecha");
+  const mensajePedido = $("mensaje-pedido");
 
   const catalogo = leerCatalogo(rejilla);
   let lineas = normalizarLineas(leerAlmacenamiento(CLAVE_ALMACENAMIENTO), catalogo);
   let plan = normalizarPlan(leerAlmacenamiento(CLAVE_PLAN));
   let temporizadorRebote = 0;
 
-  // En pantalla ancha la lista nace abierta (columna fija); en las demás, colapsada (pestaña o barra).
-  const consultaAncha = window.matchMedia("(min-width: 75em)");
+  // Escritorio y tablet (desde 62,5em): panel que se desliza desde "Mi lista". Móvil: barra inferior con panel.
+  // En ambos casos la lista nace cerrada.
+  const consultaEscritorio = window.matchMedia("(min-width: 62.5em)");
   const consultaMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)");
-  let listaAbierta = consultaAncha.matches;
+  let listaAbierta = false;
+  // Verdadero mientras el visitante mantiene la lista pedida (botón "Mi lista"): así se ve aunque esté vacía.
+  let listaPedida = false;
+  // Elemento que abrió la lista: al cerrarla, el foco vuelve a él.
+  let origenLista = null;
 
   /* --- Catálogo --- */
 
+  // Solo entran al catálogo los productos con los tres precios; uno "por cotizar" (sin data-precio-*) se omite.
   function leerCatalogo(contenedor) {
     const mapa = new Map();
     contenedor.querySelectorAll(".tarjeta").forEach((tarjeta) => {
       const precios = {};
       TAMANOS.forEach((tamano) => { precios[tamano] = aCentimos(tarjeta.getAttribute(`data-precio-${tamano}`)); });
-      mapa.set(tarjeta.dataset.id, {
+      const producto = {
         nombre: tarjeta.querySelector(".tarjeta__nombre").textContent.trim(),
         categoria: tarjeta.dataset.categoria,
         precios
-      });
+      };
+      if (tienePrecios(producto)) mapa.set(tarjeta.dataset.id, producto);
     });
     return mapa;
   }
@@ -755,9 +815,18 @@ function iniciar() {
   }
 
   function actualizarPrecioTarjeta(tarjeta) {
-    const tamano = tamanoElegido(tarjeta);
-    const total = catalogo.get(tarjeta.dataset.id).precios[tamano];
-    tarjeta.querySelector("[data-precio-total]").textContent = formatearMoneda(total);
+    const producto = catalogo.get(tarjeta.dataset.id);
+    const salida = tarjeta.querySelector("[data-precio-total]");
+    if (!producto || !salida) return; // Producto por cotizar: no hay precio que mostrar.
+    salida.textContent = formatearMoneda(producto.precios[tamanoElegido(tarjeta)]);
+  }
+
+  // Producto por cotizar: el enlace de WhatsApp lleva la cantidad elegida.
+  function actualizarCotizacion(tarjeta) {
+    const enlace = tarjeta.querySelector("[data-solicitar]");
+    if (!enlace) return;
+    const nombre = tarjeta.querySelector(".tarjeta__nombre").textContent.trim();
+    enlace.href = construirEnlaceWhatsApp(construirMensajeCotizacion(tamanoElegido(tarjeta), nombre));
   }
 
   // "medir" es falso cuando el filtro se sincroniza solo (al elegir un camino o al restaurar el plan).
@@ -778,7 +847,7 @@ function iniciar() {
     }
     const nombre = boton.closest(".tarjeta").querySelector(".tarjeta__nombre").textContent.trim();
     boton.textContent = "Agregado";
-    boton.setAttribute("aria-label", `${nombre} agregado al carrito`);
+    boton.setAttribute("aria-label", `${nombre} agregado a la lista`);
     clearTimeout(Number(boton.dataset.temporizador));
     boton.dataset.temporizador = String(setTimeout(() => {
       boton.textContent = boton.dataset.textoOriginal;
@@ -788,6 +857,7 @@ function iniciar() {
 
   function agregarDesdeTarjeta(boton) {
     const tarjeta = boton.closest(".tarjeta");
+    if (!catalogo.has(tarjeta.dataset.id)) return; // Sin precio no se agrega a la lista.
     const tamano = tamanoElegido(tarjeta);
     lineas = agregarLinea(lineas, tarjeta.dataset.id, tamano);
     registrar("agregar_al_carrito", {
@@ -796,7 +866,13 @@ function iniciar() {
       valor: aSoles(catalogo.get(tarjeta.dataset.id).precios[tamano])
     });
     guardarLineas();
-    dibujarTodo(claveLinea({ id: tarjeta.dataset.id, tamano }));
+    // En escritorio la lista se abre sola al agregar, para que el visitante la vea sumar; el foco no se mueve.
+    if (consultaEscritorio.matches && !listaAbierta) {
+      listaAbierta = true;
+      origenLista = null;
+      actualizarMinimoFecha();
+    }
+    dibujarLista(claveLinea({ id: tarjeta.dataset.id, tamano }));
     rebotarContador();
     marcarAgregado(boton);
   }
@@ -827,7 +903,7 @@ function iniciar() {
     escribirAlmacenamiento(CLAVE_PLAN, plan);
   }
 
-  /* --- Carrito: dibujo --- */
+  /* --- Filas de la lista --- */
 
   function rebotarContador() {
     contador.classList.remove("rebote");
@@ -837,24 +913,7 @@ function iniciar() {
     temporizadorRebote = setTimeout(() => contador.classList.remove("rebote"), DURACION_REBOTE_MS);
   }
 
-  function crearFila(item) {
-    const fila = plantilla.content.firstElementChild.cloneNode(true);
-    const detalle = item.packs === 1
-      ? `${item.unidades} unidades`
-      : `${item.packs} x ${item.tamano} = ${item.unidades} unidades`;
-    const descripcion = `${item.nombre}, ${item.tamano} unidades`;
-
-    fila.dataset.clave = item.clave;
-    fila.querySelector(".carrito__item-nombre").textContent = item.nombre;
-    fila.querySelector(".carrito__item-detalle").textContent = detalle;
-    fila.querySelector(".carrito__item-precio").textContent = formatearMoneda(item.subtotalCentimos);
-    fila.querySelector(".carrito__packs").setAttribute("aria-label", `Paquetes de ${descripcion}`);
-    fila.querySelector(".carrito__packs-numero").textContent = item.packs;
-    configurarControles(fila, item, descripcion);
-    return fila;
-  }
-
-  // Los botones −, + y quitar son iguales en el carrito y en la lista de compras.
+  // Los botones −, + y quitar de cada fila describen el producto y su tamaño.
   function configurarControles(fila, item, descripcion) {
     const menos = fila.querySelector("[data-disminuir]");
     menos.setAttribute("aria-label", `Disminuir un paquete de ${descripcion}`);
@@ -865,83 +924,27 @@ function iniciar() {
     fila.querySelector("[data-quitar]").setAttribute("aria-label", `Quitar ${descripcion}`);
   }
 
-  function dibujarCarrito() {
-    const resumen = resumirCarrito(lineas, catalogo);
-    lista.replaceChildren(...resumen.items.map(crearFila));
-    textoVacio.hidden = resumen.items.length > 0;
-    totalSalida.textContent = formatearMoneda(resumen.totalCentimos);
-    contador.textContent = resumen.cantidadPacks;
-    ocultarMensajePedido();
-  }
-
-  // El carrito y la lista se dibujan siempre juntos, desde las mismas líneas.
-  function dibujarTodo(claveNueva) {
-    dibujarCarrito();
-    dibujarLista(claveNueva);
-  }
-
   // Tras redibujar se pierde el foco; este método lo devuelve al botón que se usó.
-  function restaurarFoco(contenedor, clave, accion, alternativa) {
-    const fila = contenedor.querySelector(`[data-clave="${CSS.escape(clave)}"]`);
+  function restaurarFoco(clave, accion) {
+    const fila = listaItems.querySelector(`[data-clave="${CSS.escape(clave)}"]`);
     if (!fila) {
-      const primera = contenedor.querySelector("button:not([disabled])");
-      (primera || alternativa()).focus();
+      const primera = listaItems.querySelector("button:not([disabled])");
+      (primera || (listaRaiz.hidden ? botonLista : listaSeguir)).focus();
       return;
     }
     const boton = fila.querySelector(`[${accion}]:not([disabled])`) || fila.querySelector("[data-aumentar]:not([disabled])");
     (boton || fila.querySelector("[data-quitar]")).focus();
   }
 
-  function manejarAccionFila(boton, contenedor, alternativa) {
+  function manejarAccionFila(boton) {
     const clave = boton.closest("li").dataset.clave;
     if (boton.hasAttribute("data-quitar")) lineas = quitarLinea(lineas, clave);
     else if (boton.hasAttribute("data-aumentar")) lineas = cambiarPacks(lineas, clave, 1);
     else lineas = cambiarPacks(lineas, clave, -1);
     guardarLineas();
-    dibujarTodo();
+    dibujarLista();
     const accion = ["data-quitar", "data-aumentar", "data-disminuir"].find((nombre) => boton.hasAttribute(nombre));
-    restaurarFoco(contenedor, clave, accion, alternativa);
-  }
-
-  /* --- Carrito: panel --- */
-
-  function carritoAbierto() {
-    return panel.classList.contains("abierto");
-  }
-
-  function abrirCarrito() {
-    const resumen = resumirCarrito(lineas, catalogo);
-    registrar("abrir_carrito", { articulos: resumen.cantidadPacks, valor: aSoles(resumen.totalCentimos) });
-    actualizarMinimoFecha();
-    panel.classList.add("abierto");
-    fondo.classList.add("abierto");
-    botonCarrito.setAttribute("aria-expanded", "true");
-    raiz.classList.add("sin-scroll");
-    botonCerrar.focus();
-  }
-
-  function cerrarCarrito() {
-    panel.classList.remove("abierto");
-    fondo.classList.remove("abierto");
-    botonCarrito.setAttribute("aria-expanded", "false");
-    raiz.classList.remove("sin-scroll");
-    botonCarrito.focus();
-  }
-
-  // Mantiene el tabulador dentro del panel mientras está abierto.
-  function atraparTabulador(evento) {
-    const enfocables = [...panel.querySelectorAll("button:not([disabled]), input, a[href]")]
-      .filter((elemento) => !elemento.hidden && elemento.offsetParent !== null);
-    if (enfocables.length === 0) return;
-    const primero = enfocables[0];
-    const ultimo = enfocables[enfocables.length - 1];
-    if (evento.shiftKey && document.activeElement === primero) {
-      evento.preventDefault();
-      ultimo.focus();
-    } else if (!evento.shiftKey && document.activeElement === ultimo) {
-      evento.preventDefault();
-      primero.focus();
-    }
+    restaurarFoco(clave, accion);
   }
 
   /* --- Lista de compras --- */
@@ -984,9 +987,13 @@ function iniciar() {
   function dibujarLista(claveNueva) {
     const resumen = resumirCarrito(lineas, catalogo);
     const modelo = describirLista(resumen, plan);
-    const visible = resumen.items.length > 0 || Boolean(plan.camino);
+    const hayLineas = resumen.items.length > 0;
+    // En escritorio el panel siempre existe (cerrado o abierto). En móvil, la barra aparece con productos,
+    // con un camino elegido o cuando el visitante pidió la lista con "Mi lista".
+    const visible = consultaEscritorio.matches || hayLineas || Boolean(plan.camino) || listaPedida;
 
     listaRaiz.hidden = !visible;
+    listaRaiz.classList.toggle("lista--vacia", !hayLineas);
     saltarLista.hidden = !visible;
     raiz.classList.toggle("lista-visible", visible);
 
@@ -995,18 +1002,22 @@ function iniciar() {
     listaAvance.hidden = modelo.categorias.length === 0;
     ponerTexto(listaEstado, modelo.estado.texto);
     listaEstado.className = `lista__estado lista__estado--${modelo.estado.tipo}`;
-    ponerTexto(listaBocaditos, modelo.textoBocaditos);
+    // Con un camino, las barras ya dicen cuánto llevas; el conteo solo aporta sin plan.
+    ponerTexto(listaBocaditos, modelo.categorias.length > 0 ? "" : modelo.textoBocaditos);
     ponerTexto(listaPorInvitado, modelo.textoPorInvitado);
     listaItems.replaceChildren(...resumen.items.map(crearFilaLista));
-    listaItems.hidden = resumen.items.length === 0;
+    listaItems.hidden = !hayLineas;
     listaEnlacePlanificador.hidden = Boolean(plan.camino);
     listaTotal.textContent = formatearMoneda(resumen.totalCentimos);
-    listaContinuar.disabled = resumen.items.length === 0;
+    // El último paso solo tiene sentido con algo en la lista; el aviso del pedido anterior ya no vale.
+    formPedido.hidden = !hayLineas;
+    ocultarMensajePedido();
 
     const bocaditos = modelo.unidadesTotales;
     listaCifra.textContent = String(bocaditos);
     listaPestana.querySelector(".lista__pestana-unidad").textContent = bocaditos === 1 ? " bocadito" : " bocaditos";
     listaPestanaTotal.textContent = formatearMoneda(resumen.totalCentimos);
+    contador.textContent = resumen.cantidadPacks;
 
     if (claveNueva) resaltarFila(claveNueva);
     aplicarEstadoLista();
@@ -1020,31 +1031,52 @@ function iniciar() {
     if (listaAbierta) fila.scrollIntoView({ block: "nearest" });
   }
 
+  function listaEstaAbierta() {
+    return listaAbierta && !listaRaiz.hidden;
+  }
+
   function aplicarEstadoLista() {
-    const abierta = listaAbierta && !listaRaiz.hidden;
+    const abierta = listaEstaAbierta();
     listaRaiz.classList.toggle("abierta", listaAbierta);
     raiz.classList.toggle("lista-abierta", abierta);
     listaPestana.setAttribute("aria-expanded", String(listaAbierta));
+    botonLista.setAttribute("aria-expanded", String(abierta));
     listaPestanaAccion.textContent = listaAbierta ? "Ocultar" : "Ver lista";
   }
 
-  function abrirLista() {
+  // "origen" es el botón que la abre; al cerrar, el foco vuelve a él.
+  function abrirLista(origen = listaPestana) {
+    const resumen = resumirCarrito(lineas, catalogo);
+    registrar("abrir_lista", { articulos: resumen.cantidadPacks, valor: aSoles(resumen.totalCentimos) });
+    origenLista = origen;
+    listaPedida = true;
     listaAbierta = true;
-    aplicarEstadoLista();
+    actualizarMinimoFecha();
+    dibujarLista();
     listaTitulo.focus({ preventScroll: true });
   }
 
   function cerrarLista() {
     const teniaFoco = listaRaiz.contains(document.activeElement);
     listaAbierta = false;
-    aplicarEstadoLista();
-    if (teniaFoco) listaPestana.focus();
+    listaPedida = false;
+    dibujarLista(); // Vacía y sin camino, la lista desaparece del todo.
+    if (teniaFoco) {
+      // En escritorio no hay pestaña: el foco vuelve siempre a "Mi lista".
+      const destino = consultaEscritorio.matches || origenLista === botonLista || listaRaiz.hidden ? botonLista : listaPestana;
+      destino.focus();
+    }
+    origenLista = null;
   }
 
-  function continuarAlCarrito() {
-    const resumen = resumirCarrito(lineas, catalogo);
-    registrar("continuar_carrito", { articulos: resumen.cantidadPacks, valor: aSoles(resumen.totalCentimos) });
-    abrirCarrito();
+  // Botón "Mi lista" del encabezado: abre o cierra el panel, aunque esté vacío.
+  function alternarLista() {
+    if (listaEstaAbierta()) {
+      origenLista = botonLista;
+      cerrarLista();
+    } else {
+      abrirLista(botonLista);
+    }
   }
 
   /* --- Pedido --- */
@@ -1091,7 +1123,7 @@ function iniciar() {
     else mostrarErrorFecha(fecha.mensaje);
 
     if (resumen.items.length === 0) {
-      mostrarMensajePedido("Aún no eliges nada. Vuelve al planificador y agrega tus favoritos.", true);
+      mostrarMensajePedido("Aún no eliges nada. Pulsa «Agregar» y empieza tu lista.", true);
       return;
     }
     if (!fecha.valida) {
@@ -1107,7 +1139,7 @@ function iniciar() {
     });
     const seAbrioEnPestana = abrirWhatsApp(construirEnlaceWhatsApp(mensaje));
     if (seAbrioEnPestana) {
-      mostrarMensajePedido("Abrimos WhatsApp con tu pedido. Tu carrito sigue guardado por si quieres cambiar algo.", false);
+      mostrarMensajePedido("Abrimos WhatsApp con tu pedido. Tu lista sigue guardada por si quieres cambiar algo.", false);
     }
   }
 
@@ -1132,35 +1164,47 @@ function iniciar() {
     return bloque;
   }
 
-  function crearTarjetaOpcion(opcion) {
-    const tarjeta = crear("article", `opcion opcion--${opcion.clave}`);
-    tarjeta.append(crear("h4", "opcion__titulo", opcion.titulo), crear("p", "opcion__unidades", opcion.unidades));
-    if (opcion.reparto) tarjeta.append(crear("p", "opcion__reparto", opcion.reparto));
-    opcion.grupos.forEach((grupo) => tarjeta.append(crearGrupoSugerencia(grupo)));
-    if (opcion.precio) tarjeta.append(crear("p", "opcion__precio", opcion.precio));
+  // Cada camino es una fila con dos partes: resumen (título, unidades, reparto y sobrantes) y detalle (sugerencia y botón).
+  function crearFilaOpcion(opcion) {
+    const fila = crear("article", `opcion opcion--${opcion.clave}`);
+    const resumen = crear("div", "opcion__resumen");
+    resumen.append(crear("h4", "opcion__titulo", opcion.titulo), crear("p", "opcion__unidades", opcion.unidades));
+    if (opcion.reparto) resumen.append(crear("p", "opcion__reparto", opcion.reparto));
+    resumen.append(crear("p", "opcion__sobrantes", opcion.sobrantes));
 
+    const detalle = crear("div", "opcion__detalle");
+    opcion.grupos.forEach((grupo) => detalle.append(crearGrupoSugerencia(grupo)));
     const elegir = crear("button", "boton boton--principal boton--bloque opcion__elegir", opcion.boton);
     elegir.type = "button";
     elegir.dataset.camino = opcion.clave;
     elegir.setAttribute("aria-pressed", String(plan.camino === opcion.clave));
-    tarjeta.append(elegir);
-    return tarjeta;
+    detalle.append(elegir);
+
+    fila.append(resumen, detalle);
+    return fila;
   }
 
+  // Muestra la frase, el reparto y los tres caminos.
   function mostrarResultado(invitados, porInvitado) {
     const modelo = describirResultado(invitados, catalogo, porInvitado);
-    const opciones = crear("div", "calculadora__opciones");
-    modelo.opciones.forEach((opcion) => opciones.append(crearTarjetaOpcion(opcion)));
-    resultadoCalculadora.replaceChildren(
-      crear("p", "calculadora__frase", modelo.frase),
-      crear("p", "calculadora__regla", modelo.regla),
-      crear("h3", "calculadora__camino-titulo", modelo.tituloCaminos),
-      opciones
-    );
+    resultadoCalculadora.classList.remove("calculadora__frase--error");
+    resultadoCalculadora.textContent = modelo.frase;
+    ponerTexto(sobrantesCalculadora, modelo.sobrantes);
+    opcionesCalculadora.replaceChildren(...modelo.opciones.map(crearFilaOpcion));
+    caminosCalculadora.hidden = false;
+  }
+
+  // Un dato inválido reemplaza el resultado anterior por el aviso.
+  function mostrarErrorCalculadora(mensaje) {
+    resultadoCalculadora.classList.add("calculadora__frase--error");
+    resultadoCalculadora.textContent = mensaje;
+    ponerTexto(sobrantesCalculadora, "");
+    opcionesCalculadora.replaceChildren();
+    caminosCalculadora.hidden = true;
   }
 
   function marcarCaminoElegido() {
-    resultadoCalculadora.querySelectorAll("[data-camino]").forEach((boton) => {
+    opcionesCalculadora.querySelectorAll("[data-camino]").forEach((boton) => {
       boton.setAttribute("aria-pressed", String(boton.dataset.camino === plan.camino));
     });
   }
@@ -1171,20 +1215,18 @@ function iniciar() {
 
   function calcularInvitados(evento) {
     evento.preventDefault();
-    // Un número escrito a medias (por ejemplo "6e") llega vacío; se trata como inválido, no como el valor por defecto.
+    // Un número escrito a medias (por ejemplo "6e") llega vacío; se trata como inválido, no como dato que falta.
     const textoBocaditosCampo = campoBocaditos.validity.badInput ? "!" : campoBocaditos.value;
     const validacion = validarEntradaCalculadora(campoInvitados.value, textoBocaditosCampo);
-    resultadoCalculadora.classList.toggle("calculadora__resultado--error", !validacion.valido);
     campoInvitados.removeAttribute("aria-invalid");
     campoBocaditos.removeAttribute("aria-invalid");
     if (!validacion.valido) {
       if (validacion.campos.includes("invitados")) campoInvitados.setAttribute("aria-invalid", "true");
       if (validacion.campos.includes("porInvitado")) campoBocaditos.setAttribute("aria-invalid", "true");
-      resultadoCalculadora.textContent = validacion.mensaje;
+      mostrarErrorCalculadora(validacion.mensaje);
+      (validacion.campos.includes("invitados") ? campoInvitados : campoBocaditos).focus();
       return;
     }
-    // Campo vacío = valor por defecto: se deja escrito para que se vea qué se usó.
-    campoBocaditos.value = String(validacion.porInvitado);
     plan = { invitados: validacion.invitados, porInvitado: validacion.porInvitado, camino: plan.camino };
     guardarPlan();
     mostrarResultado(plan.invitados, plan.porInvitado);
@@ -1204,7 +1246,7 @@ function iniciar() {
   }
 
   function elegirCamino(clave) {
-    if (!plan.invitados || !esCaminoValido(clave)) return;
+    if (!plan.invitados || !plan.porInvitado || !esCaminoValido(clave)) return;
     plan = { invitados: plan.invitados, porInvitado: plan.porInvitado, camino: clave };
     guardarPlan();
     marcarCaminoElegido();
@@ -1216,9 +1258,11 @@ function iniciar() {
   }
 
   // Restaura el plan guardado: el resultado, el camino elegido y el filtro del catálogo.
+  // Si falta alguno de los dos datos, se rellena el que hay y no se calcula nada.
   function restaurarPlan() {
     if (!plan.invitados) return;
     campoInvitados.value = String(plan.invitados);
+    if (!plan.porInvitado) return;
     campoBocaditos.value = String(plan.porInvitado);
     mostrarResultado(plan.invitados, plan.porInvitado);
     if (plan.camino) aplicarFiltro(CAMINOS[plan.camino].filtro, false);
@@ -1232,7 +1276,10 @@ function iniciar() {
   });
 
   rejilla.addEventListener("change", (evento) => {
-    if (evento.target.matches("input[type=radio]")) actualizarPrecioTarjeta(evento.target.closest(".tarjeta"));
+    if (!evento.target.matches("input[type=radio]")) return;
+    const tarjeta = evento.target.closest(".tarjeta");
+    actualizarPrecioTarjeta(tarjeta);
+    actualizarCotizacion(tarjeta);
   });
 
   rejilla.addEventListener("click", (evento) => {
@@ -1240,14 +1287,9 @@ function iniciar() {
     if (boton) agregarDesdeTarjeta(boton);
   });
 
-  lista.addEventListener("click", (evento) => {
-    const boton = evento.target.closest("button");
-    if (boton) manejarAccionFila(boton, lista, () => botonCerrar);
-  });
-
   listaItems.addEventListener("click", (evento) => {
     const boton = evento.target.closest("button");
-    if (boton) manejarAccionFila(boton, listaItems, () => (listaRaiz.hidden ? botonCarrito : listaSeguir));
+    if (boton) manejarAccionFila(boton);
   });
 
   document.addEventListener("click", (evento) => {
@@ -1255,31 +1297,25 @@ function iniciar() {
     if (enlace && esEnlaceWhatsApp(enlace)) registrar("clic_whatsapp", { ubicacion: ubicacionWhatsApp(enlace) });
   });
 
-  botonCarrito.addEventListener("click", () => (carritoAbierto() ? cerrarCarrito() : abrirCarrito()));
-  botonCerrar.addEventListener("click", cerrarCarrito);
-  fondo.addEventListener("click", cerrarCarrito);
-
+  botonLista.addEventListener("click", alternarLista);
   listaPestana.addEventListener("click", () => (listaAbierta ? cerrarLista() : abrirLista()));
   listaCerrar.addEventListener("click", cerrarLista);
   listaSeguir.addEventListener("click", cerrarLista);
-  listaContinuar.addEventListener("click", continuarAlCarrito);
   saltarLista.addEventListener("click", (evento) => {
     evento.preventDefault();
     abrirLista();
   });
-  consultaAncha.addEventListener("change", () => {
-    listaAbierta = consultaAncha.matches;
-    aplicarEstadoLista();
+  // Al pasar de móvil a escritorio (o al revés) la lista vuelve a nacer cerrada.
+  consultaEscritorio.addEventListener("change", () => {
+    listaAbierta = false;
+    listaPedida = false;
+    origenLista = null;
+    dibujarLista();
   });
 
+  // Escape cierra la lista; hacer clic en la página no la cierra.
   document.addEventListener("keydown", (evento) => {
-    if (carritoAbierto()) {
-      if (evento.key === "Escape") cerrarCarrito();
-      else if (evento.key === "Tab") atraparTabulador(evento);
-      return;
-    }
-    // Fuera de la pantalla ancha la lista es un cajón o una barra: Escape la colapsa.
-    if (evento.key === "Escape" && listaAbierta && !listaRaiz.hidden && !consultaAncha.matches) cerrarLista();
+    if (evento.key === "Escape" && listaEstaAbierta()) cerrarLista();
   });
 
   campoFecha.addEventListener("input", ocultarErrorFecha);
@@ -1289,17 +1325,20 @@ function iniciar() {
     campo.addEventListener("input", () => campo.removeAttribute("aria-invalid"));
   });
 
-  resultadoCalculadora.addEventListener("click", (evento) => {
+  opcionesCalculadora.addEventListener("click", (evento) => {
     const boton = evento.target.closest("[data-camino]");
     if (boton) elegirCamino(boton.dataset.camino);
   });
 
   /* --- Arranque --- */
 
-  rejilla.querySelectorAll(".tarjeta").forEach(actualizarPrecioTarjeta);
+  rejilla.querySelectorAll(".tarjeta").forEach((tarjeta) => {
+    actualizarPrecioTarjeta(tarjeta);
+    actualizarCotizacion(tarjeta);
+  });
   actualizarMinimoFecha();
   restaurarPlan();
-  dibujarTodo();
+  dibujarLista();
 }
 
 if (typeof document !== "undefined") iniciar();
@@ -1312,9 +1351,9 @@ if (typeof module !== "undefined" && module.exports) {
     describirCombinacion, textoResultadoCalculadora, calcularOpciones, describirResultado,
     sugerirProductos, describirSugerencia, productosDeCategoria, validarFechaEvento, fechaMinimaEvento,
     formatearFechaLarga, agregarLinea, cambiarPacks, quitarLinea, normalizarLineas,
-    resumirCarrito, construirMensajePedido, construirEnlaceWhatsApp, aCentimos,
+    resumirCarrito, construirMensajePedido, construirMensajeCotizacion, construirEnlaceWhatsApp, aCentimos, tienePrecios,
     registrar, aSoles, codificarSugerencia,
     CAMINOS, calcularMetas, evaluarAvance, describirEstadoLista, describirLista, normalizarPlan,
-    textoContextoCamino, textoEventoPedido
+    textoContextoCamino, textoEventoPedido, textoSobrantesEquidad, textoSobrantesOpcion, planCompleto
   };
 }

@@ -20,7 +20,7 @@
     "@context": "https://schema.org",
     "@type": "Bakery",
     "name": "El Delicioso",
-    "description": "El placer de pecar. Bocaditos caseros dulces y salados para eventos en Lima. Pide 25, 50 o 100 por WhatsApp con 2 días de anticipación.",
+    "description": "El placer de pecar. Bocaditos de casa dulces y salados para todo tipo de evento. por WhatsApp con 2 días de anticipación.",
     "slogan": "El placer de pecar.",
     "telephone": "+51980592747",
     "areaServed": { "@type": "City", "name": "Lima" },
@@ -54,10 +54,10 @@
         <a href="#nosotros">Nosotros</a>
         <a href="#contacto">Contacto</a>
       </nav>
-      <button type="button" class="boton-carrito" id="boton-carrito" aria-controls="carrito" aria-expanded="false">
+      <button type="button" class="boton-lista" id="boton-lista" aria-controls="lista-panel" aria-expanded="false">
         <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-bolsa"/></svg>
-        <span class="boton-carrito__texto">Carrito</span>
-        <span class="contador-carrito" id="contador-carrito" aria-live="polite" aria-atomic="true">0</span>
+        <span class="boton-lista__texto">Mi lista</span>
+        <span class="contador-lista" id="contador-lista" aria-live="polite" aria-atomic="true">0</span>
         <span class="solo-lectores">artículos</span>
       </button>
     </div>
@@ -87,28 +87,49 @@
     <section id="planificador" class="planificador" aria-labelledby="titulo-planificador">
       <div class="contenedor">
         <div class="calculadora" id="calculadora">
-          <div class="calculadora__texto">
-            <span class="filete" aria-hidden="true"></span>
-            <h2 id="titulo-planificador" class="seccion__titulo">Planifica tu evento en un minuto</h2>
-            <p class="seccion__intro">Dinos cuántos invitados son y calculamos las unidades por ti.</p>
-          </div>
-          <form class="calculadora__formulario" id="form-calculadora" novalidate>
-            <div class="calculadora__campos">
-              <div class="campo">
-                <label for="invitados">Número de invitados</label>
-                <input type="number" id="invitados" name="invitados" min="1" step="1" inputmode="numeric" placeholder="Por ejemplo, 20" aria-describedby="ayuda-invitados">
-                <p class="campo__ayuda" id="ayuda-invitados">Ajustamos el resultado a paquetes de 25, 50 o 100.</p>
+          <div class="calculadora__cabecera">
+            <div class="calculadora__texto">
+              <span class="filete" aria-hidden="true"></span>
+              <h2 id="titulo-planificador" class="seccion__titulo">Planifica tu evento en un minuto</h2>
+              <p class="seccion__intro">Calcula cuántos bocaditos necesitas.</p>
+            </div>
+            <form class="calculadora__formulario" id="form-calculadora" novalidate>
+              <div class="calculadora__campos">
+                <div class="campo">
+                  <label for="invitados">Número de invitados</label>
+                  <input type="number" id="invitados" name="invitados" min="1" step="1" inputmode="numeric" aria-describedby="ayuda-invitados">
+                  <p class="campo__ayuda" id="ayuda-invitados">De 1 a 1000.</p>
+                </div>
+                <div class="campo">
+                  <label for="bocaditos-por-invitado">Bocaditos por invitado</label>
+                  <input type="number" id="bocaditos-por-invitado" name="bocaditos-por-invitado" min="3" max="10" step="1" required inputmode="numeric" aria-describedby="ayuda-bocaditos">
+                  <p class="campo__ayuda" id="ayuda-bocaditos">De 3 a 10.</p>
+                </div>
               </div>
-              <div class="campo">
-                <label for="bocaditos-por-invitado">Bocaditos por invitado</label>
-                <input type="number" id="bocaditos-por-invitado" name="bocaditos-por-invitado" min="1" max="30" step="1" value="6" inputmode="numeric" aria-describedby="ayuda-bocaditos">
-                <p class="campo__ayuda" id="ayuda-bocaditos">Por defecto 6; cámbialo si quieres.</p>
+              <button type="submit" class="boton boton--principal">Calcular</button>
+            </form>
+          </div>
+          <!-- Barra ancha de resultado: el script escribe aquí la frase (o el aviso de error) -->
+          <p class="calculadora__frase" id="resultado-calculadora" role="status" aria-live="polite"></p>
+          <div class="calculadora__cuerpo" aria-live="polite">
+            <div class="calculadora__datos">
+              <p class="calculadora__sobrantes" id="calculadora-sobrantes" hidden></p>
+              <!-- Leyenda: cada dato va separado, no como un párrafo corrido -->
+              <div class="considerar">
+                <h3 class="considerar__titulo" id="titulo-considerar">Datos a considerar</h3>
+                <ul class="considerar__lista" aria-labelledby="titulo-considerar">
+                  <li class="considerar__item"><span class="considerar__etiqueta">3 a 4 por invitado</span><span class="considerar__texto">Hay almuerzo o cena.</span></li>
+                  <li class="considerar__item"><span class="considerar__etiqueta">5 a 7 por invitado</span><span class="considerar__texto">Picoteo o cumpleaños con torta.</span></li>
+                  <li class="considerar__item"><span class="considerar__etiqueta">8 a 10 por invitado</span><span class="considerar__texto">Los bocaditos son la comida.</span></li>
+                  <li class="considerar__item"><span class="considerar__etiqueta">Paquetes de 25, 50, 100 y más</span><span class="considerar__texto">Se combinan para cubrir tu cantidad; si no encaja exacto, te decimos cuántas sobran.</span></li>
+                </ul>
               </div>
             </div>
-            <button type="submit" class="boton boton--principal">Calcular</button>
-          </form>
-          <!-- Ocupa todo el ancho; el script dibuja aquí la frase y los tres caminos -->
-          <div class="calculadora__resultado" id="resultado-calculadora" role="status" aria-live="polite"></div>
+            <div class="calculadora__caminos" id="calculadora-caminos" hidden>
+              <h3 class="calculadora__camino-titulo">Elige tu camino</h3>
+              <div class="calculadora__opciones" id="calculadora-opciones"></div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -158,7 +179,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 35,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo a la lista">Agregar</button>
           </div>
         </article>
 
@@ -190,7 +211,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 35,50</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo y apio al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo y apio a la lista">Agregar</button>
           </div>
         </article>
 
@@ -222,7 +243,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 38,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo y durazno al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo y durazno a la lista">Agregar</button>
           </div>
         </article>
 
@@ -254,7 +275,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 30,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini empanaditas de pollo al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini empanaditas de pollo a la lista">Agregar</button>
           </div>
         </article>
 
@@ -286,7 +307,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 35,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini empanaditas mixtas al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini empanaditas mixtas a la lista">Agregar</button>
           </div>
         </article>
 
@@ -318,7 +339,43 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 33,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini empanaditas de carne al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini empanaditas de carne a la lista">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta tarjeta--especial" data-id="empanadas-amazonicas" data-categoria="salado" data-especial>
+          <div class="tarjeta__foto">
+            <img src="img/selva.png" width="1024" height="979" alt="Empanadas amazónicas abiertas sobre una hoja verde, con el relleno a la vista" style="object-position: 60% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <div class="tarjeta__insignias">
+              <p class="insignia">Salado</p>
+              <p class="insignia insignia--especial">Especial</p>
+            </div>
+            <h3 class="tarjeta__nombre">Empanadas amazónicas</h3>
+            <p class="tarjeta__frase">Un sabor de la selva en cada empanada.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad que quieres cotizar</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-empanadas-amazonicas" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-empanadas-amazonicas" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-empanadas-amazonicas" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <!-- El script actualiza el enlace según la cantidad elegida; este es el de 25 por si no hay JavaScript -->
+            <a class="boton boton--whatsapp boton--bloque" data-solicitar data-ubicacion="cotizacion_empanadas-amazonicas" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Quisiera%20cotizar%2025%20unidades%20de%20empanadas%20amaz%C3%B3nicas.%20%C2%BFMe%20indican%20el%20precio%20y%20la%20disponibilidad%3F" target="_blank" rel="noopener noreferrer">
+              <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-whatsapp"/></svg>
+              Solicitar por WhatsApp
+            </a>
           </div>
         </article>
 
@@ -350,7 +407,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 30,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini causitas al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini causitas a la lista">Agregar</button>
           </div>
         </article>
 
@@ -382,7 +439,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 35,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini causitas de pollo al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini causitas de pollo a la lista">Agregar</button>
           </div>
         </article>
 
@@ -414,7 +471,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 33,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini causitas de atún al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini causitas de atún a la lista">Agregar</button>
           </div>
         </article>
 
@@ -446,7 +503,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 28,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfajores con coco al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfajores con coco a la lista">Agregar</button>
           </div>
         </article>
 
@@ -478,7 +535,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 30,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfachips al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfachips a la lista">Agregar</button>
           </div>
         </article>
 
@@ -510,7 +567,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 32,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfajores con chocolate al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfajores con chocolate a la lista">Agregar</button>
           </div>
         </article>
 
@@ -542,7 +599,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 32,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini tartaleta de fresa al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini tartaleta de fresa a la lista">Agregar</button>
           </div>
         </article>
 
@@ -574,7 +631,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 32,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini tartaleta de durazno al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini tartaleta de durazno a la lista">Agregar</button>
           </div>
         </article>
 
@@ -606,7 +663,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 35,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini tartaleta de maracuyá al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini tartaleta de maracuyá a la lista">Agregar</button>
           </div>
         </article>
 
@@ -638,7 +695,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 32,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini pay de limón al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini pay de limón a la lista">Agregar</button>
           </div>
         </article>
 
@@ -670,7 +727,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 33,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini pay de manzana al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini pay de manzana a la lista">Agregar</button>
           </div>
         </article>
 
@@ -702,7 +759,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 62,50</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Vasitos de maracuyá al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Vasitos de maracuyá a la lista">Agregar</button>
           </div>
         </article>
 
@@ -734,7 +791,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 63,50</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Vasitos de durazno al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Vasitos de durazno a la lista">Agregar</button>
           </div>
         </article>
 
@@ -766,7 +823,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 64,50</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Vasitos de fresa al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Vasitos de fresa a la lista">Agregar</button>
           </div>
         </article>
 
@@ -798,7 +855,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 30,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Brownies de chocolate al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Brownies de chocolate a la lista">Agregar</button>
           </div>
         </article>
 
@@ -830,7 +887,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 33,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini trufas de chocolate al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini trufas de chocolate a la lista">Agregar</button>
           </div>
         </article>
 
@@ -862,7 +919,7 @@
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 32,00</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Niditos de amor al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Niditos de amor a la lista">Agregar</button>
           </div>
         </article>
         </div>
@@ -881,7 +938,7 @@
           <li class="ventaja">
             <span class="ventaja__numero" aria-hidden="true">02</span>
             <h3 class="ventaja__titulo">Variedad para elegir</h3>
-            <p>23 sabores, dulces y salados, para armar tu mesa.</p>
+            <p>24 sabores, dulces y salados, para armar tu mesa.</p>
           </li>
           <li class="ventaja">
             <span class="ventaja__numero" aria-hidden="true">03</span>
@@ -1008,8 +1065,10 @@
     </div>
   </footer>
 
-  <!-- Tu lista de compras: resumen vivo del carrito (mismos datos, una sola fuente de verdad).
-       Escritorio ancho: columna fija a la derecha. Escritorio medio: cajón con pestaña. Móvil: barra inferior que se expande. -->
+  <!-- Tu lista de compras: única zona de compra (lista, total y último paso del pedido).
+       Escritorio y tablet (desde 62,5em): panel horizontal que se desliza hacia abajo desde el botón "Mi lista", en tres columnas
+       (resumen, líneas y cierre). Móvil: barra inferior que se expande como panel.
+       El botón "Mi lista" del encabezado la abre o la cierra, aunque esté vacía. -->
   <aside class="lista" id="lista-compras" aria-labelledby="lista-titulo" hidden>
     <button type="button" class="lista__pestana" id="lista-pestana" aria-expanded="false" aria-controls="lista-panel">
       <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-bolsa"/></svg>
@@ -1021,71 +1080,46 @@
     <div class="lista__panel" id="lista-panel">
       <div class="lista__cabecera">
         <h2 class="lista__titulo" id="lista-titulo" tabindex="-1">Tu lista de compras</h2>
-        <button type="button" class="carrito__cerrar" id="lista-cerrar" aria-label="Ocultar tu lista de compras">
+        <button type="button" class="lista__cerrar" id="lista-cerrar" aria-label="Cerrar tu lista de compras">
           <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-cerrar"/></svg>
         </button>
       </div>
+      <!-- El cuerpo se desplaza en móvil; en escritorio cada columna se desplaza por su cuenta -->
       <div class="lista__cuerpo">
-        <p class="lista__camino" id="lista-camino" hidden></p>
-        <div class="lista__avance" id="lista-avance" hidden></div>
-        <p class="lista__estado" id="lista-estado" aria-live="polite"></p>
-        <p class="lista__dato" id="lista-bocaditos" hidden></p>
-        <p class="lista__dato" id="lista-por-invitado" hidden></p>
-        <ul class="lista__items" id="lista-items" aria-label="Productos de tu lista"></ul>
-        <p class="lista__enlace" id="lista-enlace-planificador" hidden><a href="#planificador">Usa el planificador para calcular tu cantidad</a></p>
-      </div>
-      <div class="lista__pie">
-        <p class="lista__total"><span>Total:</span> <output id="lista-total" for="lista-items">S/ 0,00</output></p>
-        <button type="button" class="boton boton--principal boton--bloque" id="lista-continuar">Ver carrito y continuar</button>
-        <button type="button" class="boton boton--secundario boton--bloque" id="lista-seguir">Seguir eligiendo</button>
+        <div class="lista__resumen">
+          <p class="lista__camino" id="lista-camino" hidden></p>
+          <div class="lista__avance" id="lista-avance" hidden></div>
+          <p class="lista__estado" id="lista-estado" aria-live="polite"></p>
+          <p class="lista__dato" id="lista-bocaditos" hidden></p>
+          <p class="lista__dato" id="lista-por-invitado" hidden></p>
+          <p class="lista__enlace" id="lista-enlace-planificador" hidden><a href="#planificador">Usa el planificador para calcular tu cantidad</a></p>
+        </div>
+        <div class="lista__detalle">
+          <ul class="lista__items" id="lista-items" aria-label="Productos de tu lista"></ul>
+        </div>
+        <div class="lista__cierre">
+          <p class="lista__total"><span>Total:</span> <output id="lista-total" for="lista-items">S/ 0,00</output></p>
+
+          <form class="pedido" id="form-pedido" aria-labelledby="pedido-titulo" novalidate hidden>
+            <h3 class="pedido__titulo" id="pedido-titulo">Último paso: tu pedido</h3>
+            <p class="pedido__intro">Indica la fecha del evento y envíalo por WhatsApp.</p>
+            <div class="campo">
+              <label for="fecha-evento">Fecha del evento <span class="campo__obligatorio">(obligatoria)</span></label>
+              <input type="date" id="fecha-evento" name="fecha" required aria-describedby="ayuda-fecha error-fecha">
+              <p class="campo__ayuda" id="ayuda-fecha">Pide con 2 días de anticipación.</p>
+              <p class="campo__error" id="error-fecha" role="alert" hidden>Elige la fecha del evento para enviar tu pedido.</p>
+            </div>
+            <p id="mensaje-pedido" role="alert" hidden></p>
+            <button type="submit" class="boton boton--whatsapp boton--bloque" id="enviar-pedido">
+              <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-whatsapp"/></svg>
+              Enviar pedido por WhatsApp
+            </button>
+          </form>
+          <button type="button" class="boton boton--secundario boton--bloque" id="lista-seguir">Seguir eligiendo</button>
+        </div>
       </div>
     </div>
   </aside>
-
-  <div class="carrito-fondo" id="carrito-fondo"></div>
-  <aside class="carrito" id="carrito" role="dialog" aria-modal="true" aria-labelledby="carrito-titulo">
-    <div class="carrito__cabecera">
-      <h2 class="carrito__titulo" id="carrito-titulo">Último paso: tu pedido</h2>
-      <button type="button" class="carrito__cerrar" id="cerrar-carrito" aria-label="Cerrar carrito">
-        <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-cerrar"/></svg>
-      </button>
-    </div>
-    <div class="carrito__cuerpo">
-      <p class="carrito__contexto">Revisa tu lista, indica la fecha del evento y envíala por WhatsApp.</p>
-      <p class="carrito__vacio" id="carrito-vacio">Aún no eliges nada. Vuelve al planificador y agrega tus favoritos.</p>
-      <ul class="carrito__lista" id="carrito-lista"></ul>
-    </div>
-    <form class="carrito__pie" id="form-pedido" novalidate>
-      <p class="carrito__total"><span>Total</span> <output id="carrito-total" for="carrito-lista">S/ 0,00</output></p>
-      <div class="campo">
-        <label for="fecha-evento">Fecha del evento <span class="campo__obligatorio">(obligatoria)</span></label>
-        <input type="date" id="fecha-evento" name="fecha" required aria-describedby="ayuda-fecha error-fecha">
-        <p class="campo__ayuda" id="ayuda-fecha">Pide con 2 días de anticipación, según la cantidad.</p>
-        <p class="campo__error" id="error-fecha" role="alert" hidden>Elige la fecha del evento para enviar tu pedido.</p>
-      </div>
-      <p id="mensaje-pedido" role="alert" hidden></p>
-      <button type="submit" class="boton boton--whatsapp boton--bloque" id="enviar-pedido">
-        <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-whatsapp"/></svg>
-        Enviar pedido por WhatsApp
-      </button>
-    </form>
-  </aside>
-
-  <template id="plantilla-item-carrito">
-    <li class="carrito__item">
-      <div>
-        <p class="carrito__item-nombre"></p>
-        <p class="carrito__item-detalle"></p>
-      </div>
-      <p class="carrito__item-precio"></p>
-      <div class="carrito__packs" role="group">
-        <button type="button" class="carrito__paso" data-disminuir>&minus;</button>
-        <span class="carrito__packs-numero"></span>
-        <button type="button" class="carrito__paso" data-aumentar>+</button>
-      </div>
-      <button type="button" class="carrito__quitar" data-quitar>Quitar</button>
-    </li>
-  </template>
 
   <template id="plantilla-item-lista">
     <li class="lista__item">
@@ -1097,7 +1131,7 @@
         <span class="lista__packs-numero"></span>
         <button type="button" class="lista__paso" data-aumentar>+</button>
       </div>
-      <button type="button" class="carrito__quitar lista__quitar" data-quitar>Quitar</button>
+      <button type="button" class="lista__quitar" data-quitar>Quitar</button>
     </li>
   </template>
 
