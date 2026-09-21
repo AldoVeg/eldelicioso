@@ -28,7 +28,7 @@
     "servesCuisine": ["Bocaditos", "Postres", "Repostería casera"],
     "paymentAccepted": "Efectivo, Yape, Plin, transferencia",
     "currenciesAccepted": "PEN",
-    "priceRange": "S/ 26 - S/ 150"
+    "priceRange": "S/ 28 - S/ 255"
   }
   </script>
   <script src="index.js" defer></script>
@@ -41,11 +41,13 @@
   </svg>
 
   <a class="saltar-contenido" href="#contenido">Saltar al contenido</a>
+  <a class="saltar-contenido" href="#lista-compras" id="saltar-lista" hidden>Ir a tu lista de compras</a>
 
   <header id="inicio" class="encabezado">
     <div class="contenedor encabezado__interior">
       <a class="logo" href="#inicio">El Delicioso</a>
       <nav class="menu" aria-label="Principal">
+        <a href="#planificador">Planifica</a>
         <a href="#catalogo">Catálogo</a>
         <a href="#ocasiones">Ocasiones</a>
         <a href="#como-pedir">Cómo pedir</a>
@@ -82,26 +84,32 @@
       </div>
     </section>
 
-    <section id="ventajas" class="seccion ventajas" aria-labelledby="titulo-ventajas">
+    <section id="planificador" class="planificador" aria-labelledby="titulo-planificador">
       <div class="contenedor">
-        <h2 id="titulo-ventajas" class="solo-lectores">Por qué El Delicioso</h2>
-        <ul class="ventajas__lista">
-          <li class="ventaja">
-            <span class="ventaja__numero" aria-hidden="true">01</span>
-            <h3 class="ventaja__titulo">Sabor casero</h3>
-            <p>Hechos en casa, con un sabor que se recuerda.</p>
-          </li>
-          <li class="ventaja">
-            <span class="ventaja__numero" aria-hidden="true">02</span>
-            <h3 class="ventaja__titulo">Precios claros</h3>
-            <p>Elige 25, 50 o 100 unidades y mira el precio al instante.</p>
-          </li>
-          <li class="ventaja">
-            <span class="ventaja__numero" aria-hidden="true">03</span>
-            <h3 class="ventaja__titulo">Un solo mensaje</h3>
-            <p>Elige, indica la fecha y envía tu pedido por WhatsApp.</p>
-          </li>
-        </ul>
+        <div class="calculadora" id="calculadora">
+          <div class="calculadora__texto">
+            <span class="filete" aria-hidden="true"></span>
+            <h2 id="titulo-planificador" class="seccion__titulo">Planifica tu evento en un minuto</h2>
+            <p class="seccion__intro">Dinos cuántos invitados son y calculamos las unidades por ti.</p>
+          </div>
+          <form class="calculadora__formulario" id="form-calculadora" novalidate>
+            <div class="calculadora__campos">
+              <div class="campo">
+                <label for="invitados">Número de invitados</label>
+                <input type="number" id="invitados" name="invitados" min="1" step="1" inputmode="numeric" placeholder="Por ejemplo, 20" aria-describedby="ayuda-invitados">
+                <p class="campo__ayuda" id="ayuda-invitados">Ajustamos el resultado a paquetes de 25, 50 o 100.</p>
+              </div>
+              <div class="campo">
+                <label for="bocaditos-por-invitado">Bocaditos por invitado</label>
+                <input type="number" id="bocaditos-por-invitado" name="bocaditos-por-invitado" min="1" max="30" step="1" value="6" inputmode="numeric" aria-describedby="ayuda-bocaditos">
+                <p class="campo__ayuda" id="ayuda-bocaditos">Por defecto 6; cámbialo si quieres.</p>
+              </div>
+            </div>
+            <button type="submit" class="boton boton--principal">Calcular</button>
+          </form>
+          <!-- Ocupa todo el ancho; el script dibuja aquí la frase y los tres caminos -->
+          <div class="calculadora__resultado" id="resultado-calculadora" role="status" aria-live="polite"></div>
+        </div>
       </div>
     </section>
 
@@ -109,8 +117,9 @@
       <div class="contenedor">
         <header class="seccion__cabecera">
           <span class="filete" aria-hidden="true"></span>
-          <h2 id="titulo-catalogo" class="seccion__titulo">Nuestro catálogo</h2>
-          <p class="seccion__intro">Elige 25, 50 o 100 unidades de cada sabor. El precio por unidad ya está calculado y puedes mezclar sabores en un mismo pedido.</p>
+          <h2 id="titulo-catalogo" class="seccion__titulo" tabindex="-1">Nuestro catálogo</h2>
+          <p class="seccion__intro">Elige 25, 50 o 100 unidades de cada sabor y puedes mezclar sabores en un mismo pedido.</p>
+          <p class="catalogo__contexto" id="catalogo-contexto" hidden></p>
           <noscript><p class="aviso">Para pedir sin activar JavaScript, escríbenos por WhatsApp al 980 592 747.</p></noscript>
         </header>
 
@@ -121,9 +130,9 @@
         </div>
 
         <div class="catalogo__rejilla" id="rejilla-catalogo">
-        <article class="tarjeta tarjeta--destacada" data-id="pettit-pollo" data-categoria="salado" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="135.00">
+        <article class="tarjeta" data-id="pettit-pollo" data-categoria="salado" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="135.00">
           <div class="tarjeta__foto">
-            <img src="img/pettit-pollo.jpg" width="594" height="594" alt="Pettit pan con pollo cremoso entre pan dorado y brillante, sobre una tabla de madera" loading="lazy" decoding="async">
+            <img src="img/pettit-pollo.jpg" width="594" height="594" alt="Pan pequeño relleno de ensalada de pollo sobre tabla de madera" style="object-position: 45% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -134,21 +143,20 @@
               <div class="selector__opciones">
               <label class="segmento">
                 <input type="radio" name="cantidad-pettit-pollo" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 35</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
               </label>
               <label class="segmento">
                 <input type="radio" name="cantidad-pettit-pollo" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 68</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
               </label>
               <label class="segmento">
                 <input type="radio" name="cantidad-pettit-pollo" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 135</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
               </label>
               </div>
             </fieldset>
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 35,00</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,40 c/u</span>
             </p>
             <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo al carrito">Agregar</button>
           </div>
@@ -156,7 +164,7 @@
 
         <article class="tarjeta" data-id="pettit-pollo-apio" data-categoria="salado" data-precio-25="35.50" data-precio-50="70.00" data-precio-100="136.00">
           <div class="tarjeta__foto">
-            <img src="img/pettit-pollo-apio.jpg" width="407" height="450" alt="Pettit pan con relleno de pollo y hojas verdes, con ajonjolí en la corteza, sobre un mantel a cuadros" loading="lazy" decoding="async">
+            <img src="img/pettit-pollo-apio-nueva.jpg" width="1024" height="892" alt="Panecillos con sésamo rellenos de pollo con apio sobre tabla redonda" style="object-position: 15% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -167,21 +175,20 @@
               <div class="selector__opciones">
               <label class="segmento">
                 <input type="radio" name="cantidad-pettit-pollo-apio" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 35,50</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
               </label>
               <label class="segmento">
                 <input type="radio" name="cantidad-pettit-pollo-apio" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 70</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
               </label>
               <label class="segmento">
                 <input type="radio" name="cantidad-pettit-pollo-apio" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 136</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
               </label>
               </div>
             </fieldset>
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 35,50</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,42 c/u</span>
             </p>
             <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo y apio al carrito">Agregar</button>
           </div>
@@ -189,7 +196,7 @@
 
         <article class="tarjeta" data-id="pettit-pollo-durazno" data-categoria="salado" data-precio-25="38.00" data-precio-50="75.00" data-precio-100="150.00">
           <div class="tarjeta__foto">
-            <img src="img/pettit-pollo-durazno.jpg" width="648" height="810" alt="Pettit panes con ajonjolí y relleno cremoso, amontonados en una bandeja" loading="lazy" decoding="async">
+            <img src="img/pettit-pollo-durazno-nueva.jpg" width="1024" height="1024" alt="Panecillos pequeños rellenos de pollo con trozos amarillos sobre tapete" style="object-position: 0% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -200,227 +207,28 @@
               <div class="selector__opciones">
               <label class="segmento">
                 <input type="radio" name="cantidad-pettit-pollo-durazno" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 38</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
               </label>
               <label class="segmento">
                 <input type="radio" name="cantidad-pettit-pollo-durazno" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 75</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
               </label>
               <label class="segmento">
                 <input type="radio" name="cantidad-pettit-pollo-durazno" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 150</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
               </label>
               </div>
             </fieldset>
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 38,00</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,52 c/u</span>
             </p>
             <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Pettit pan con pollo y durazno al carrito">Agregar</button>
           </div>
         </article>
 
-        <article class="tarjeta" data-id="mini-alfajores-coco" data-categoria="dulce" data-precio-25="26.00" data-precio-50="50.00" data-precio-100="98.00">
-          <div class="tarjeta__foto">
-            <img src="img/mini-alfajores-coco.jpg" width="600" height="900" alt="Torre de alfajores con coco rallado en el relleno y azúcar impalpable, sobre un plato de cerámica" loading="lazy" decoding="async">
-          </div>
-          <div class="tarjeta__cuerpo">
-            <p class="insignia">Dulce</p>
-            <h3 class="tarjeta__nombre">Mini alfajores con coco</h3>
-            <p class="tarjeta__frase">Alfajor en miniatura, con coco y tentación asegurada.</p>
-            <fieldset class="selector">
-              <legend class="selector__leyenda">Cantidad en unidades</legend>
-              <div class="selector__opciones">
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-alfajores-coco" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 26</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-alfajores-coco" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 50</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-alfajores-coco" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 98</span></span>
-              </label>
-              </div>
-            </fieldset>
-            <p class="tarjeta__precio" aria-live="polite">
-              <span class="precio__total" data-precio-total>S/ 26,00</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,04 c/u</span>
-            </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfajores con coco al carrito">Agregar</button>
-          </div>
-        </article>
-
-        <article class="tarjeta" data-id="mini-alfachips" data-categoria="dulce" data-precio-25="27.00" data-precio-50="52.00" data-precio-100="100.00">
-          <div class="tarjeta__foto">
-            <img src="img/mini-alfachips.jpg" width="475" height="593" alt="Alfachips: galletas con chispas de chocolate y relleno, apiladas sobre una bandeja blanca" loading="lazy" decoding="async">
-          </div>
-          <div class="tarjeta__cuerpo">
-            <p class="insignia">Dulce</p>
-            <h3 class="tarjeta__nombre">Mini alfachips</h3>
-            <p class="tarjeta__frase">Pequeño, dulce y difícil de resistir.</p>
-            <fieldset class="selector">
-              <legend class="selector__leyenda">Cantidad en unidades</legend>
-              <div class="selector__opciones">
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-alfachips" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 27</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-alfachips" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 52</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-alfachips" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 100</span></span>
-              </label>
-              </div>
-            </fieldset>
-            <p class="tarjeta__precio" aria-live="polite">
-              <span class="precio__total" data-precio-total>S/ 27,00</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,08 c/u</span>
-            </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfachips al carrito">Agregar</button>
-          </div>
-        </article>
-
-        <article class="tarjeta" data-id="mini-alfajores-chocolate" data-categoria="dulce" data-precio-25="28.00" data-precio-50="55.00" data-precio-100="105.00">
-          <div class="tarjeta__foto">
-            <img src="img/mini-alfajores-chocolate.jpg" width="768" height="768" alt="Alfajor bañado en chocolate cortado por la mitad, con el relleno a la vista, sobre fondo claro" loading="lazy" decoding="async">
-          </div>
-          <div class="tarjeta__cuerpo">
-            <p class="insignia">Dulce</p>
-            <h3 class="tarjeta__nombre">Mini alfajores con chocolate</h3>
-            <p class="tarjeta__frase">Chocolate en formato mini, para los golosos.</p>
-            <fieldset class="selector">
-              <legend class="selector__leyenda">Cantidad en unidades</legend>
-              <div class="selector__opciones">
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-alfajores-chocolate" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 28</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-alfajores-chocolate" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 55</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-alfajores-chocolate" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 105</span></span>
-              </label>
-              </div>
-            </fieldset>
-            <p class="tarjeta__precio" aria-live="polite">
-              <span class="precio__total" data-precio-total>S/ 28,00</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,12 c/u</span>
-            </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfajores con chocolate al carrito">Agregar</button>
-          </div>
-        </article>
-
-        <article class="tarjeta tarjeta--destacada" data-id="mini-tartaleta-fresa-durazno" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
-          <div class="tarjeta__foto">
-            <img src="img/mini-tartaleta-fresa-durazno.jpg" width="1573" height="1178" alt="Mini tartaletas con crema batida y frutas frescas, sobre una tabla blanca" loading="lazy" decoding="async">
-          </div>
-          <div class="tarjeta__cuerpo">
-            <p class="insignia">Dulce</p>
-            <h3 class="tarjeta__nombre">Mini tartaleta de fresa/durazno</h3>
-            <p class="tarjeta__frase">Fresa o durazno en una tartaleta de un bocado.</p>
-            <fieldset class="selector">
-              <legend class="selector__leyenda">Cantidad en unidades</legend>
-              <div class="selector__opciones">
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-tartaleta-fresa-durazno" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 32</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-tartaleta-fresa-durazno" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 60</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-tartaleta-fresa-durazno" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 116</span></span>
-              </label>
-              </div>
-            </fieldset>
-            <p class="tarjeta__precio" aria-live="polite">
-              <span class="precio__total" data-precio-total>S/ 32,00</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,28 c/u</span>
-            </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini tartaleta de fresa/durazno al carrito">Agregar</button>
-          </div>
-        </article>
-
-        <article class="tarjeta" data-id="mini-pay-limon" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
-          <div class="tarjeta__foto">
-            <img src="img/mini-pay-limon.jpg" width="540" height="686" alt="Mini pay de limón con crema batida y ralladura verde, sobre una mesa de mármol" loading="lazy" decoding="async">
-          </div>
-          <div class="tarjeta__cuerpo">
-            <p class="insignia">Dulce</p>
-            <h3 class="tarjeta__nombre">Mini pay de limón</h3>
-            <p class="tarjeta__frase">Limón suave y fresco, con final dulce.</p>
-            <fieldset class="selector">
-              <legend class="selector__leyenda">Cantidad en unidades</legend>
-              <div class="selector__opciones">
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-pay-limon" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 32</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-pay-limon" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 60</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-pay-limon" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 116</span></span>
-              </label>
-              </div>
-            </fieldset>
-            <p class="tarjeta__precio" aria-live="polite">
-              <span class="precio__total" data-precio-total>S/ 32,00</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,28 c/u</span>
-            </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini pay de limón al carrito">Agregar</button>
-          </div>
-        </article>
-
-        <article class="tarjeta" data-id="mini-pay-manzana" data-categoria="dulce" data-precio-25="33.00" data-precio-50="66.00" data-precio-100="130.00">
-          <div class="tarjeta__foto">
-            <img src="img/mini-pay-manzana.jpg" width="403" height="403" alt="Mini pays de manzana con masa dorada y brillante, en moldes de papel sobre una bandeja" loading="lazy" decoding="async">
-          </div>
-          <div class="tarjeta__cuerpo">
-            <p class="insignia">Dulce</p>
-            <h3 class="tarjeta__nombre">Mini pay de manzana</h3>
-            <p class="tarjeta__frase">Manzana en mini pay, con sabor a postre de casa.</p>
-            <fieldset class="selector">
-              <legend class="selector__leyenda">Cantidad en unidades</legend>
-              <div class="selector__opciones">
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-pay-manzana" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 33</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-pay-manzana" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 66</span></span>
-              </label>
-              <label class="segmento">
-                <input type="radio" name="cantidad-mini-pay-manzana" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 130</span></span>
-              </label>
-              </div>
-            </fieldset>
-            <p class="tarjeta__precio" aria-live="polite">
-              <span class="precio__total" data-precio-total>S/ 33,00</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,32 c/u</span>
-            </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini pay de manzana al carrito">Agregar</button>
-          </div>
-        </article>
-
         <article class="tarjeta" data-id="mini-empanaditas-pollo" data-categoria="salado" data-precio-25="30.00" data-precio-50="60.00" data-precio-100="120.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-empanaditas-pollo.jpg" width="810" height="540" alt="Mini empanaditas doradas y brillantes, recién horneadas, sobre una tabla de madera" loading="lazy" decoding="async">
+            <img src="img/mini-empanaditas-pollo-nueva.jpg" width="717" height="702" alt="Empanaditas doradas sobre papel de encaje, una abierta con relleno" style="object-position: 85% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -431,21 +239,20 @@
               <div class="selector__opciones">
               <label class="segmento">
                 <input type="radio" name="cantidad-mini-empanaditas-pollo" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 30</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
               </label>
               <label class="segmento">
                 <input type="radio" name="cantidad-mini-empanaditas-pollo" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 60</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
               </label>
               <label class="segmento">
                 <input type="radio" name="cantidad-mini-empanaditas-pollo" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 120</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
               </label>
               </div>
             </fieldset>
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 30,00</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,20 c/u</span>
             </p>
             <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini empanaditas de pollo al carrito">Agregar</button>
           </div>
@@ -453,7 +260,7 @@
 
         <article class="tarjeta" data-id="mini-empanaditas-mixtas" data-categoria="salado" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="135.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-empanaditas-mixtas.jpg" width="864" height="576" alt="Mini empanaditas doradas en filas ordenadas, sobre un mantelito de papel calado" loading="lazy" decoding="async">
+            <img src="img/mini-empanaditas-mixtas-nueva.jpg" width="717" height="702" alt="Empanaditas doradas en bandeja, una abierta con queso y jamón" style="object-position: 50% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -464,59 +271,624 @@
               <div class="selector__opciones">
               <label class="segmento">
                 <input type="radio" name="cantidad-mini-empanaditas-mixtas" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 35</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
               </label>
               <label class="segmento">
                 <input type="radio" name="cantidad-mini-empanaditas-mixtas" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 68</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
               </label>
               <label class="segmento">
                 <input type="radio" name="cantidad-mini-empanaditas-mixtas" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 135</span></span>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
               </label>
               </div>
             </fieldset>
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 35,00</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,40 c/u</span>
             </p>
             <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini empanaditas mixtas al carrito">Agregar</button>
           </div>
         </article>
 
-        <article class="tarjeta tarjeta--destacada" data-id="trufas-chocolate" data-categoria="dulce" data-precio-25="33.00" data-precio-50="65.00" data-precio-100="125.00">
+        <article class="tarjeta" data-id="mini-empanaditas-carne" data-categoria="salado" data-precio-25="33.00" data-precio-50="65.00" data-precio-100="125.00">
           <div class="tarjeta__foto">
-            <img src="img/trufas-chocolate.jpg" width="840" height="630" alt="Trufas de chocolate cubiertas de cacao, en cápsulas de papel color cobre" loading="lazy" decoding="async">
+            <img src="img/mini-empanaditas-carne.jpg" width="717" height="702" alt="Empanaditas doradas sobre tabla, una abierta con carne picada" style="object-position: 0% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
-            <p class="insignia">Dulce</p>
-            <h3 class="tarjeta__nombre">Trufas de chocolate</h3>
-            <p class="tarjeta__frase">Chocolate en su forma más tentadora.</p>
+            <p class="insignia">Salado</p>
+            <h3 class="tarjeta__nombre">Mini empanaditas de carne</h3>
+            <p class="tarjeta__frase">Carne en empanadita mini, salada y hecha para picar.</p>
             <fieldset class="selector">
               <legend class="selector__leyenda">Cantidad en unidades</legend>
               <div class="selector__opciones">
               <label class="segmento">
-                <input type="radio" name="cantidad-trufas-chocolate" value="25" checked>
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span><span class="segmento__precio">S/ 33</span></span>
+                <input type="radio" name="cantidad-mini-empanaditas-carne" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
               </label>
               <label class="segmento">
-                <input type="radio" name="cantidad-trufas-chocolate" value="50">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span><span class="segmento__precio">S/ 65</span></span>
+                <input type="radio" name="cantidad-mini-empanaditas-carne" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
               </label>
               <label class="segmento">
-                <input type="radio" name="cantidad-trufas-chocolate" value="100">
-                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span><span class="segmento__precio">S/ 125</span></span>
+                <input type="radio" name="cantidad-mini-empanaditas-carne" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
               </label>
               </div>
             </fieldset>
             <p class="tarjeta__precio" aria-live="polite">
               <span class="precio__total" data-precio-total>S/ 33,00</span>
-              <span class="precio__unidad" data-precio-unidad>S/ 1,32 c/u</span>
             </p>
-            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Trufas de chocolate al carrito">Agregar</button>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini empanaditas de carne al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-causitas" data-categoria="salado" data-precio-25="30.00" data-precio-50="59.00" data-precio-100="118.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-causitas.jpg" width="922" height="615" alt="Causitas amarillas con perejil y ají en pirotines blancos" style="object-position: 45% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Salado</p>
+            <h3 class="tarjeta__nombre">Mini causitas</h3>
+            <p class="tarjeta__frase">Causitas mini, saladas y hechas para compartir.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-causitas" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-causitas" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-causitas" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 30,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini causitas al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-causitas-pollo" data-categoria="salado" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="134.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-causitas-pollo.jpg" width="768" height="1024" alt="Caja de causitas coronadas con pollo deshilachado y cebollín" style="object-position: 50% 100%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Salado</p>
+            <h3 class="tarjeta__nombre">Mini causitas de pollo</h3>
+            <p class="tarjeta__frase">Causita mini con pollo: un salado de un bocado.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-causitas-pollo" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-causitas-pollo" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-causitas-pollo" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 35,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini causitas de pollo al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-causitas-atun" data-categoria="salado" data-precio-25="33.00" data-precio-50="65.00" data-precio-100="125.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-causitas-atun.jpg" width="1024" height="574" alt="Caja de causitas coronadas con atún y perejil" style="object-position: 20% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Salado</p>
+            <h3 class="tarjeta__nombre">Mini causitas de atún</h3>
+            <p class="tarjeta__frase">Causita mini con atún, un salado que se acaba rápido.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-causitas-atun" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-causitas-atun" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-causitas-atun" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 33,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini causitas de atún al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-alfajores-coco" data-categoria="dulce" data-precio-25="28.00" data-precio-50="55.00" data-precio-100="105.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-alfajores-coco.jpg" width="600" height="900" alt="Tres alfajores apilados con coco rallado y azúcar impalpable" style="object-position: 50% 60%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini alfajores con coco</h3>
+            <p class="tarjeta__frase">Alfajor en miniatura, con coco y tentación asegurada.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-coco" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-coco" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-coco" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 28,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfajores con coco al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-alfachips" data-categoria="dulce" data-precio-25="30.00" data-precio-50="59.00" data-precio-100="115.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-alfachips.jpg" width="475" height="593" alt="Alfajores con chispas de chocolate rellenos de manjar" style="object-position: 50% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini alfachips</h3>
+            <p class="tarjeta__frase">Pequeño, dulce y difícil de resistir.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfachips" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfachips" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfachips" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 30,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfachips al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta tarjeta--destacada" data-id="mini-alfajores-chocolate" data-categoria="dulce" data-precio-25="32.00" data-precio-50="63.00" data-precio-100="125.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-alfajores-chocolate.jpg" width="768" height="768" alt="Alfajor bañado en chocolate cortado, con manjar visible" style="object-position: 50% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini alfajores con chocolate</h3>
+            <p class="tarjeta__frase">Chocolate en formato mini, para los golosos.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-chocolate" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-chocolate" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-alfajores-chocolate" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 32,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini alfajores con chocolate al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-tartaleta-fresa" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-tartaleta-fresa.jpg" width="820" height="802" alt="Tartaleta con crema y laminilla de fresa sobre plato" style="object-position: 45% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini tartaleta de fresa</h3>
+            <p class="tarjeta__frase">Tartaleta mini de fresa, un pecadito de un bocado.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-fresa" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-fresa" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-fresa" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 32,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini tartaleta de fresa al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-tartaleta-durazno" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-tartaleta-durazno.jpg" width="820" height="802" alt="Tartaleta con crema y gajos de durazno sobre plato" style="object-position: 45% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini tartaleta de durazno</h3>
+            <p class="tarjeta__frase">Durazno en tartaleta mini, dulce y difícil de dejar.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-durazno" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-durazno" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-durazno" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 32,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini tartaleta de durazno al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta tarjeta--destacada" data-id="mini-tartaleta-maracuya" data-categoria="dulce" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="132.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-tartaleta-maracuya.jpg" width="820" height="802" alt="Tartaleta con crema y pulpa de maracuyá con semillas" style="object-position: 45% 50%; --posicion-horizontal: 50% 55%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini tartaleta de maracuyá</h3>
+            <p class="tarjeta__frase">Maracuyá en tartaleta mini, intenso y tentador.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-maracuya" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-maracuya" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-tartaleta-maracuya" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 35,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini tartaleta de maracuyá al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-pay-limon" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-pay-limon.jpg" width="540" height="686" alt="Tartaleta con crema batida y ralladura de limón" style="object-position: 50% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini pay de limón</h3>
+            <p class="tarjeta__frase">Limón suave y fresco, con final dulce.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-limon" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-limon" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-limon" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 32,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini pay de limón al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-pay-manzana" data-categoria="dulce" data-precio-25="33.00" data-precio-50="66.00" data-precio-100="130.00">
+          <div class="tarjeta__foto">
+            <img src="img/mini-pay-manzana.jpg" width="403" height="403" alt="Pasteles pequeños dorados con enrejado en pirotines blancos" style="object-position: 50% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini pay de manzana</h3>
+            <p class="tarjeta__frase">Manzana en mini pay, con sabor a postre de casa.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-manzana" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-manzana" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-pay-manzana" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 33,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini pay de manzana al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="vasitos-maracuya" data-categoria="dulce" data-precio-25="62.50" data-precio-50="124.00" data-precio-100="245.00">
+          <div class="tarjeta__foto">
+            <img src="img/vasitos-maracuya.jpg" width="717" height="717" alt="Vasitos con base de galleta, crema y maracuyá encima" style="object-position: 50% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Vasitos de maracuyá</h3>
+            <p class="tarjeta__frase">Maracuyá en vasito, para darse un gusto con cuchara.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-vasitos-maracuya" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-vasitos-maracuya" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-vasitos-maracuya" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 62,50</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Vasitos de maracuyá al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="vasitos-durazno" data-categoria="dulce" data-precio-25="63.50" data-precio-50="126.00" data-precio-100="250.00">
+          <div class="tarjeta__foto">
+            <img src="img/vasitos-durazno.jpg" width="717" height="717" alt="Vasitos con base de galleta, crema y durazno picado" style="object-position: 50% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Vasitos de durazno</h3>
+            <p class="tarjeta__frase">Durazno en vasito: postre pequeño, placer grande.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-vasitos-durazno" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-vasitos-durazno" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-vasitos-durazno" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 63,50</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Vasitos de durazno al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="vasitos-fresa" data-categoria="dulce" data-precio-25="64.50" data-precio-50="128.00" data-precio-100="255.00">
+          <div class="tarjeta__foto">
+            <img src="img/vasitos-fresa.jpg" width="717" height="717" alt="Vasitos con base de galleta, crema rosada y salsa de fresa" style="object-position: 50% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Vasitos de fresa</h3>
+            <p class="tarjeta__frase">Fresa en vasito, cremoso y muy tentador.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-vasitos-fresa" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-vasitos-fresa" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-vasitos-fresa" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 64,50</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Vasitos de fresa al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta tarjeta--destacada" data-id="brownies-chocolate" data-categoria="dulce" data-precio-25="30.00" data-precio-50="59.00" data-precio-100="115.00">
+          <div class="tarjeta__foto">
+            <img src="img/brownies-chocolate.jpg" width="1024" height="1002" alt="Tres brownies con sal en grano sobre plato moteado" style="object-position: 10% 50%; --posicion-horizontal: 50% 60%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Brownies de chocolate</h3>
+            <p class="tarjeta__frase">Chocolate en brownie, para pecar sin pedir permiso.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-brownies-chocolate" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-brownies-chocolate" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-brownies-chocolate" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 30,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Brownies de chocolate al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="mini-trufas-chocolate" data-categoria="dulce" data-precio-25="33.00" data-precio-50="65.00" data-precio-100="125.00">
+          <div class="tarjeta__foto">
+            <img src="img/trufas-chocolate-nueva.jpg" width="659" height="820" alt="Trufas de chocolate con hilos de chocolate en pirotines rojos" style="object-position: 50% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Mini trufas de chocolate</h3>
+            <p class="tarjeta__frase">Chocolate en su forma más tentadora.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-trufas-chocolate" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-trufas-chocolate" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-mini-trufas-chocolate" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 33,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Mini trufas de chocolate al carrito">Agregar</button>
+          </div>
+        </article>
+
+        <article class="tarjeta" data-id="niditos-de-amor" data-categoria="dulce" data-precio-25="32.00" data-precio-50="62.00" data-precio-100="120.00">
+          <div class="tarjeta__foto">
+            <img src="img/niditos-de-amor.jpg" width="1064" height="1064" alt="Dos galletas redondas con azúcar glas y relleno rojo" style="object-position: 50% 50%" loading="lazy" decoding="async">
+          </div>
+          <div class="tarjeta__cuerpo">
+            <p class="insignia">Dulce</p>
+            <h3 class="tarjeta__nombre">Niditos de amor</h3>
+            <p class="tarjeta__frase">Un nombre tierno y un bocado para enamorar la mesa.</p>
+            <fieldset class="selector">
+              <legend class="selector__leyenda">Cantidad en unidades</legend>
+              <div class="selector__opciones">
+              <label class="segmento">
+                <input type="radio" name="cantidad-niditos-de-amor" value="25" checked>
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">25</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-niditos-de-amor" value="50">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">50</span></span>
+              </label>
+              <label class="segmento">
+                <input type="radio" name="cantidad-niditos-de-amor" value="100">
+                <span class="segmento__cuerpo"><span class="segmento__cantidad">100</span></span>
+              </label>
+              </div>
+            </fieldset>
+            <p class="tarjeta__precio" aria-live="polite">
+              <span class="precio__total" data-precio-total>S/ 32,00</span>
+            </p>
+            <button type="button" class="boton boton--principal boton--bloque" data-agregar aria-label="Agregar Niditos de amor al carrito">Agregar</button>
           </div>
         </article>
         </div>
+      </div>
+    </section>
+
+    <section id="ventajas" class="seccion ventajas" aria-labelledby="titulo-ventajas">
+      <div class="contenedor">
+        <h2 id="titulo-ventajas" class="solo-lectores">Por qué El Delicioso</h2>
+        <ul class="ventajas__lista">
+          <li class="ventaja">
+            <span class="ventaja__numero" aria-hidden="true">01</span>
+            <h3 class="ventaja__titulo">Sabor a casa</h3>
+            <p>Hechos en casa, con el sabor de siempre.</p>
+          </li>
+          <li class="ventaja">
+            <span class="ventaja__numero" aria-hidden="true">02</span>
+            <h3 class="ventaja__titulo">Variedad para elegir</h3>
+            <p>23 sabores, dulces y salados, para armar tu mesa.</p>
+          </li>
+          <li class="ventaja">
+            <span class="ventaja__numero" aria-hidden="true">03</span>
+            <h3 class="ventaja__titulo">Pídelo a un solo clic</h3>
+            <p>Elige, pon la fecha y envíalo por WhatsApp.</p>
+          </li>
+        </ul>
       </div>
     </section>
 
@@ -554,22 +926,6 @@
             <p>¿Otro plan? Escríbenos y lo armamos contigo.</p>
             <a class="ocasion__enlace" data-ubicacion="ocasion_otro" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Tengo%20otro%20plan%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
           </article>
-
-          <div class="calculadora" id="calculadora" role="group" aria-labelledby="titulo-calculadora">
-            <div class="calculadora__texto">
-              <h3 id="titulo-calculadora" class="calculadora__titulo">¿Cuántos bocaditos necesito?</h3>
-              <p>Calculamos 6 por invitado y ajustamos a 25, 50 o 100.</p>
-              <p class="calculadora__nota">Puedes mezclar sabores al armar tu pedido.</p>
-            </div>
-            <form class="calculadora__formulario" id="form-calculadora" novalidate>
-              <div class="campo">
-                <label for="invitados">Número de invitados</label>
-                <input type="number" id="invitados" name="invitados" min="1" step="1" inputmode="numeric" placeholder="Por ejemplo, 20">
-              </div>
-              <button type="submit" class="boton boton--principal">Calcular</button>
-              <p class="calculadora__resultado" id="resultado-calculadora" role="status" aria-live="polite"></p>
-            </form>
-          </div>
         </div>
       </div>
     </section>
@@ -652,16 +1008,51 @@
     </div>
   </footer>
 
+  <!-- Tu lista de compras: resumen vivo del carrito (mismos datos, una sola fuente de verdad).
+       Escritorio ancho: columna fija a la derecha. Escritorio medio: cajón con pestaña. Móvil: barra inferior que se expande. -->
+  <aside class="lista" id="lista-compras" aria-labelledby="lista-titulo" hidden>
+    <button type="button" class="lista__pestana" id="lista-pestana" aria-expanded="false" aria-controls="lista-panel">
+      <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-bolsa"/></svg>
+      <span class="lista__pestana-titulo">Tu lista</span>
+      <span class="lista__pestana-bocaditos"><span id="lista-pestana-cifra">0</span><span class="lista__pestana-unidad"> bocaditos</span></span>
+      <span class="lista__pestana-total" id="lista-pestana-total">S/ 0,00</span>
+      <span class="lista__pestana-accion" id="lista-pestana-accion">Ver lista</span>
+    </button>
+    <div class="lista__panel" id="lista-panel">
+      <div class="lista__cabecera">
+        <h2 class="lista__titulo" id="lista-titulo" tabindex="-1">Tu lista de compras</h2>
+        <button type="button" class="carrito__cerrar" id="lista-cerrar" aria-label="Ocultar tu lista de compras">
+          <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-cerrar"/></svg>
+        </button>
+      </div>
+      <div class="lista__cuerpo">
+        <p class="lista__camino" id="lista-camino" hidden></p>
+        <div class="lista__avance" id="lista-avance" hidden></div>
+        <p class="lista__estado" id="lista-estado" aria-live="polite"></p>
+        <p class="lista__dato" id="lista-bocaditos" hidden></p>
+        <p class="lista__dato" id="lista-por-invitado" hidden></p>
+        <ul class="lista__items" id="lista-items" aria-label="Productos de tu lista"></ul>
+        <p class="lista__enlace" id="lista-enlace-planificador" hidden><a href="#planificador">Usa el planificador para calcular tu cantidad</a></p>
+      </div>
+      <div class="lista__pie">
+        <p class="lista__total"><span>Total:</span> <output id="lista-total" for="lista-items">S/ 0,00</output></p>
+        <button type="button" class="boton boton--principal boton--bloque" id="lista-continuar">Ver carrito y continuar</button>
+        <button type="button" class="boton boton--secundario boton--bloque" id="lista-seguir">Seguir eligiendo</button>
+      </div>
+    </div>
+  </aside>
+
   <div class="carrito-fondo" id="carrito-fondo"></div>
   <aside class="carrito" id="carrito" role="dialog" aria-modal="true" aria-labelledby="carrito-titulo">
     <div class="carrito__cabecera">
-      <h2 class="carrito__titulo" id="carrito-titulo">Tu pedido</h2>
+      <h2 class="carrito__titulo" id="carrito-titulo">Último paso: tu pedido</h2>
       <button type="button" class="carrito__cerrar" id="cerrar-carrito" aria-label="Cerrar carrito">
         <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-cerrar"/></svg>
       </button>
     </div>
     <div class="carrito__cuerpo">
-      <p class="carrito__vacio" id="carrito-vacio">Tu carrito está vacío. Agrega tus bocaditos favoritos desde el catálogo.</p>
+      <p class="carrito__contexto">Revisa tu lista, indica la fecha del evento y envíala por WhatsApp.</p>
+      <p class="carrito__vacio" id="carrito-vacio">Aún no eliges nada. Vuelve al planificador y agrega tus favoritos.</p>
       <ul class="carrito__lista" id="carrito-lista"></ul>
     </div>
     <form class="carrito__pie" id="form-pedido" novalidate>
@@ -693,6 +1084,20 @@
         <button type="button" class="carrito__paso" data-aumentar>+</button>
       </div>
       <button type="button" class="carrito__quitar" data-quitar>Quitar</button>
+    </li>
+  </template>
+
+  <template id="plantilla-item-lista">
+    <li class="lista__item">
+      <p class="lista__item-nombre"></p>
+      <p class="lista__item-precio"></p>
+      <p class="lista__item-detalle"></p>
+      <div class="lista__packs" role="group">
+        <button type="button" class="lista__paso" data-disminuir>&minus;</button>
+        <span class="lista__packs-numero"></span>
+        <button type="button" class="lista__paso" data-aumentar>+</button>
+      </div>
+      <button type="button" class="carrito__quitar lista__quitar" data-quitar>Quitar</button>
     </li>
   </template>
 

@@ -60,7 +60,7 @@ Carpeta `C:\Users\User\.claude\agents\`: arquitecto-web, marketing-web, disenado
 - **Tono:** cálido, cercano, goloso, confiable, festivo. Evitar lenguaje corporativo y promesas no verificables ("los mejores del Perú", "100% naturales").
 - **Palabras clave SEO** (añadir "en [ciudad]" cuando se confirme; validar volumen en Google Keyword Planner): bocaditos para cumpleaños, bocaditos para baby shower, pettit pan de pollo, pettit pan por mayor, mini alfajores por mayor, bocaditos salados y dulces para eventos, mini empanaditas para fiestas, trufas de chocolate para eventos, tartaletas de fresa por encargo.
 - **Conversión:** que el visitante envíe un pedido o consulta por WhatsApp. Métricas: clics en "Pedir por WhatsApp", pedidos enviados desde el carrito, productos y tamaños más elegidos.
-- **Ideas diferenciadoras:** mensaje de WhatsApp prellenado por producto y cantidad; sección "Para tu ocasión"; precio por unidad calculado; fecha del evento en el pedido. Para más adelante y por validar: calculadora de invitados y cajas surtidas.
+- **Ideas diferenciadoras:** mensaje de WhatsApp prellenado por producto y cantidad; sección "Para tu ocasión"; fecha del evento en el pedido. Para más adelante y por validar: calculadora de invitados y cajas surtidas.
 
 > Nota: la paleta y las tipografías de las secciones "Grupo 2" (burdeos, Fraunces) quedaron reemplazadas por el rediseño descrito en "Rediseño según el ejemplo de diseño".
 
@@ -73,7 +73,7 @@ Una sola página larga (`index.html`) con estas secciones en orden:
 | 1 | Encabezado | Logo, menú y contador del carrito | disenador-web, programador-web |
 | 2 | Portada | Propuesta de valor en 5 segundos, botones "Ver catálogo" y "Pedir por WhatsApp" | redactor-comercial, director-arte-visual |
 | 3 | Ventajas | Los 3 pilares | redactor-comercial, disenador-web |
-| 4 | Catálogo | Filtros Todos/Dulces/Salados, 12 tarjetas con selector 25/50/100, precio y precio por unidad | programador-web, disenador-web |
+| 4 | Catálogo | Filtros Todos/Dulces/Salados, 12 tarjetas con selector 25/50/100 y precio del paquete | programador-web, disenador-web |
 | 5 | Para tu ocasión | Tamaño sugerido según el evento (cantidades por validar) | redactor-comercial |
 | 6 | Cómo pedir | 4 pasos: elige, indica fecha del evento, envía por WhatsApp, confirma | redactor-comercial |
 | 7 | Nosotros | Historia breve y sencilla (la completa el dueño) | redactor-comercial |
@@ -83,8 +83,7 @@ Una sola página larga (`index.html`) con estas secciones en orden:
 
 **Recorrido del cliente:** llega y entiende la propuesta, filtra el catálogo y compara tamaños, agrega productos, revisa el carrito e indica la fecha del evento, y envía el pedido por WhatsApp con el mensaje ya redactado.
 
-**Datos del catálogo para `index.js`:** cada producto tendrá `id`, `nombre`, `categoria` ("dulce" o "salado"), `precios` (por 25, 50 y 100), `foto`, `fotoAlt`, `descripcion` y `porConfirmar`. El precio por unidad se calcula y no se guarda.
-
+**Datos del catálogo para `index.js`:** cada producto tendrá `id`, `nombre`, `categoria` ("dulce" o "salado"), `precios` (por 25, 50 y 100), `foto`, `fotoAlt`, `descripcion` y `porConfirmar`.
 **Marcadores visibles hasta tener el dato real:** código de país del WhatsApp, precio del pettit pan con pollo y apio, nombre del pay de manzana, ciudad o distrito, delivery, anticipación mínima, formas de pago, horario, historia del negocio, descripciones y fotos pendientes.
 
 ## Decisiones del usuario
@@ -131,7 +130,7 @@ Paleta lista para `:root` (contrastes AA verificados por el diseñador):
 
 - **Tipografías:** Fraunces 600 para títulos (alternativa Georgia) y DM Sans 400/500/700 para texto (alternativa system-ui), con `display=swap`. Escala fluida con `clamp` desde `--t-xs` (.8125rem) hasta `--t-hero` (hasta 5rem).
 - **Espaciado** (base 4 px): 4, 8, 12, 16, 24, 32, 48, 72, 112. **Radios:** 10, 16, 28 px y píldora. **Sombras:** rosadas y difusas.
-- **Componentes:** botón principal (píldora, 48 px de alto), botón WhatsApp con icono (el flotante, circular de 60 px), tarjeta de producto (foto 4:5, insignia Dulce/Salado, precio grande y "S/ x,xx c/u"), selector 25/50/100 (radios reales tipo segmento), panel lateral del carrito (400 px máx., campo de fecha obligatorio, botón fijo al pie) y calculadora de invitados (bloque rosado).
+- **Componentes:** botón principal (píldora, 48 px de alto), botón WhatsApp con icono (el flotante, circular de 60 px), tarjeta de producto (foto 4:5, insignia Dulce/Salado, precio grande del paquete), selector 25/50/100 (radios reales tipo segmento), panel lateral del carrito (400 px máx., campo de fecha obligatorio, botón fijo al pie) y calculadora de invitados (bloque rosado).
 - **Microinteracciones** (solo con `prefers-reduced-motion: no-preference`): rebote del contador del carrito al agregar, zoom suave de la foto al pasar el cursor, aparición suave de secciones al desplazar.
 - **Indicaciones para el programador:** móvil primero (probar a 400 px), `aria-live` en el contador, foco visible, fotos con `width`/`height` y `loading="lazy"`.
 
@@ -237,7 +236,7 @@ Dirección visual: tarjetas en 4:5 con `object-fit: cover`, producto centrado, m
 
 `index.js` completo, en JavaScript puro y sin librerías (sintaxis verificada).
 
-- **Catálogo:** filtros Todos/Dulces/Salados; selector 25/50/100 que actualiza precio total y precio por unidad ("S/ 35,00" y "S/ 1,40 c/u"). Los precios se leen de los `data-precio-*` del HTML, sin tabla duplicada.
+- **Catálogo:** filtros Todos/Dulces/Salados; selector 25/50/100 que actualiza el precio del paquete ("S/ 35,00"). Los precios se leen de los `data-precio-*` del HTML, sin tabla duplicada.
 - **Carrito:** cada combinación producto + tamaño es una línea; botones para aumentar, disminuir y quitar; contador con rebote de 300 ms y botón "Agregado" 1,2 s; total; se guarda en `localStorage` (con respaldo si falla); panel con Escape, clic en el fondo, foco atrapado y sin scroll del fondo.
 - **Fecha del evento:** obligatoria y con mínimo de hoy + 2 días; mensajes de error claros.
 - **Pedido:** abre `https://wa.me/51980592747` con el mensaje prellenado (saludo, líneas con unidades y subtotal, total, fecha y pregunta por delivery y forma de pago). El carrito no se vacía al enviar.
@@ -312,7 +311,7 @@ No instala herramientas ni envía datos personales (ni la fecha ni el texto del 
 
 **Comprobaciones técnicas** (script de Node y capturas en Edge): sin ids duplicados ni anclas rotas; las 13 imágenes existen, todas se usan y pesan 1,40 MB en total; todas con `alt`, `width` y `height`; un solo `h1`; enlaces externos con `noopener`; JSON-LD válido; 12 tarjetas; `index.html` 43 KB, `index.css` 22 KB e `index.js` 24 KB; sin librerías (solo Google Fonts y wa.me como hosts externos); `node --check` correcto.
 
-**Auditoría de coherencia (arquitecto-web):** las decisiones del usuario, los 12 productos, sus 36 precios y los 12 precios por unidad coinciden con el catálogo; ninguna caja surtida implementada, como se decidió.
+**Auditoría de coherencia (arquitecto-web):** las decisiones del usuario, los 12 productos, y sus 36 precios coinciden con el catálogo; ninguna caja surtida implementada, como se decidió.
 
 **Correcciones aplicadas tras la auditoría:**
 - Se quitó "Atendemos [horario]" y se dejó "Te respondemos por WhatsApp para confirmar tu pedido."
@@ -358,6 +357,76 @@ Contrastes calculados a mano por el diseñador (conviene una segunda comprobaci�
 
 **Nota:** la carpeta `ejemplo de diseño` incluye `.github/workflows/static.yml`, un flujo que publica el sitio en GitHub Pages; puede reutilizarse al publicar. La carpeta no debe subirse al repositorio de la página (contiene nombres y un correo de otro proyecto).
 
+## Correcciones posteriores (21/09/2026)
+
+1. **Subrayado de "pecar.":** el rectángulo desalineado bajo la palabra lo causaba un fondo degradado (`linear-gradient(transparent 68%, dorado 68%)`) que cubría toda la caja de la fuente Baloo 2, con un descendente muy alto, y caía por debajo de la línea base. Ahora es un subrayado real (`text-decoration`) dorado caramelo de unos 6 a 7 px, pegado a la base de las letras y del ancho exacto de la palabra.
+2. **Precios por unidad eliminados:** se quitaron todos los "S/ x,xx c/u" (tarjetas, código y textos). Solo se muestra el precio del paquete (25, 50 o 100). El subtítulo del catálogo ahora dice "Elige 25, 50 o 100 unidades de cada sabor y puedes mezclar sabores en un mismo pedido."
+3. **Calculadora ampliada:** además de la frase "Para N invitados necesitas unas X unidades. Te sugerimos ...", muestra cuántos bocaditos recibe cada invitado (6) y tres formas de armar el pedido con datos reales del catálogo:
+   - **Mixto (dulces y salados):** se reparte la necesidad en mitad dulces y mitad salados y cada mitad se cubre con la combinación de menor excedente; indica el total real y los bocaditos por invitado que resultan.
+   - **Solo dulces** y **Solo salados:** la misma combinación de la frase principal.
+   - Cada opción muestra unidades por categoría, paquetes por tamaño, bocaditos por invitado y un rango "Desde S/ X hasta S/ Y" (el producto más barato y el más caro de la categoría en cada tamaño), con el aviso "Depende de los sabores que elijas."; debajo, la lista de productos dulces y salados con los enlaces "Ver dulces" y "Ver salados", que aplican el filtro del catálogo.
+   - **Ejemplo para 20 invitados:** mixto = 60 dulces y 60 salados, cada mitad 1 paquete de 50 y 1 de 25 (75), total 150 unidades, desde S/ 166,00 hasta S/ 212,00; solo dulces = 125 unidades, desde S/ 124,00 hasta S/ 163,00; solo salados = 125 unidades, desde S/ 150,00 hasta S/ 188,00.
+   - Probado en Node (1, 4, 8, 16, 17, 20, 40 y 1000 invitados) y en Edge sin errores de script; capturas revisadas a 1280 px y a 400 px.
+   - **Por validar con el usuario:** con pocos invitados el mixto se pasa mucho de 6 por invitado (por ejemplo, 1 invitado = 50 unidades), y de 9 a 12 invitados "Solo dulces/salados" sugiere un paquete de 100 en lugar de 50 + 25 por la regla de un solo tamaño hasta 16 invitados.
+   - **Publicación:** estos tres cambios están solo en la carpeta local; falta subirlos al repositorio `AldoVeg/zegel`.
+
+## Actualización con `incluir.pdf` (21/09/2026)
+
+**Regla del usuario (para todo el proyecto):** lo que llega en "incluir" FORTALECE y ACTUALIZA; no reemplaza ni quita lo existente. Por eso se conservaron los pays. Única sustitución: la tartaleta "fresa/durazno" se separó en dos productos, como en el nuevo catálogo.
+
+### Catálogo vigente: 23 productos (precios del paquete de 25 / 50 / 100 unidades, en soles)
+
+| Producto | Tipo | 25 | 50 | 100 | Foto |
+|---|---|---|---|---|---|
+| Pettit pan con pollo | salado | 35,00 | 68,00 | 135,00 | pettit-pollo.jpg |
+| Pettit pan con pollo y apio | salado | 35,50 | 70,00 | 136,00 | pettit-pollo-apio-nueva.jpg |
+| Pettit pan con pollo y durazno | salado | 38,00 | 75,00 | 150,00 | pettit-pollo-durazno-nueva.jpg |
+| Mini empanaditas de pollo | salado | 30,00 | 60,00 | 120,00 | mini-empanaditas-pollo-nueva.jpg |
+| Mini empanaditas mixtas | salado | 35,00 | 68,00 | 135,00 | mini-empanaditas-mixtas-nueva.jpg |
+| Mini empanaditas de carne (nuevo) | salado | 33,00 | 65,00 | 125,00 | mini-empanaditas-carne.jpg |
+| Mini causitas (nuevo) | salado | 30,00 | 59,00 | 118,00 | mini-causitas.jpg |
+| Mini causitas de pollo (nuevo) | salado | 35,00 | 68,00 | 134,00 | mini-causitas-pollo.jpg |
+| Mini causitas de atún (nuevo) | salado | 33,00 | 65,00 | 125,00 | mini-causitas-atun.jpg |
+| Mini alfajores con coco (precio actualizado) | dulce | 28,00 | 55,00 | 105,00 | mini-alfajores-coco.jpg |
+| Mini alfachips (precio actualizado) | dulce | 30,00 | 59,00 | 115,00 | mini-alfachips.jpg |
+| Mini alfajores con chocolate (precio actualizado) | dulce | 32,00 | 63,00 | 125,00 | mini-alfajores-chocolate.jpg |
+| Mini tartaleta de fresa (nuevo) | dulce | 32,00 | 60,00 | 116,00 | mini-tartaleta-fresa.jpg |
+| Mini tartaleta de durazno (nuevo) | dulce | 32,00 | 60,00 | 116,00 | mini-tartaleta-durazno.jpg |
+| Mini tartaleta de maracuyá (nuevo) | dulce | 35,00 | 68,00 | 132,00 | mini-tartaleta-maracuya.jpg |
+| Mini pay de limón (se conserva, precio anterior) | dulce | 32,00 | 60,00 | 116,00 | mini-pay-limon.jpg |
+| Mini pay de manzana (se conserva, precio anterior) | dulce | 33,00 | 66,00 | 130,00 | mini-pay-manzana.jpg |
+| Vasitos de maracuyá (nuevo) | dulce | 62,50 | 124,00 | 245,00 | vasitos-maracuya.jpg |
+| Vasitos de durazno (nuevo) | dulce | 63,50 | 126,00 | 250,00 | vasitos-durazno.jpg |
+| Vasitos de fresa (nuevo) | dulce | 64,50 | 128,00 | 255,00 | vasitos-fresa.jpg |
+| Brownies de chocolate (nuevo) | dulce | 30,00 | 59,00 | 115,00 | brownies-chocolate.jpg |
+| Mini trufas de chocolate (precio igual) | dulce | 33,00 | 65,00 | 125,00 | trufas-chocolate-nueva.jpg |
+| Niditos de amor (nuevo) | dulce | 32,00 | 62,00 | 120,00 | niditos-de-amor.jpg |
+
+Notas: en la p. 6 del PDF el tercer producto decía "Mini tartaleta de maracuyá" pero la foto y los precios corresponden a un vasito de fresa; el usuario confirmó **Vasitos de fresa**. El PDF traía "245.0" para el vasito de maracuyá (100 unidades); se tomó como 245,00. "Mini causitas" (sin relleno en el nombre) se conserva tal cual. `priceRange` del JSON-LD: "S/ 28 - S/ 255". Destacadas (2 columnas): alfajores con chocolate, tartaleta de maracuyá y brownies.
+
+### Fotos (director-arte-visual)
+
+- Se copiaron 17 fotos nuevas a `img/` sin borrar ni sobrescribir nada. Para 5 productos se usa la versión "-nueva" (pettit con apio y con durazno, empanaditas de pollo y mixtas, trufas), por mostrar el relleno o ser más nítidas; los originales quedan sin uso en `img/` junto con `mini-tartaleta-fresa-durazno.jpg`.
+- Cada tarjeta lleva un `object-position` propio para ocultar placas o la estrella de Gemini; las dos destacadas horizontales usan `--posicion-horizontal`.
+- **Avisos:** muchas fotos nuevas son generadas por IA (llevan la estrella de Gemini o el sello "El Delicioso") y no son el producto real; las de alfajor de coco, pays y tartaletas parecen de banco de imágenes. La foto de los niditos lleva una marca ajena ("Epa") y el usuario decidió usarla igualmente. Conviene sustituirlas poco a poco por fotos propias.
+- **Débiles:** mini-alfachips (475 px, captura de Instagram), mini-pay-manzana (403 px), mini-pay-limon (540 px), niditos de amor y pettit con durazno (texto propio en la imagen).
+
+### Nuevo orden y flujo de compra (programador-web)
+
+- **Orden:** encabezado, portada, **planificador** (la calculadora sube aquí, con "Planifica" en el menú), catálogo pegado justo debajo, ventajas, ocasiones (solo tarjetas), cómo pedir, nosotros y contacto.
+- **Planificador:** título "Planifica tu evento en un minuto". Tras calcular, muestra la frase de siempre, "Cada invitado recibe 6 bocaditos" y "Elige tu camino" con tres opciones (Mixto, Solo dulces, Solo salados), cada una con unidades, paquetes, rango de precio calculado con los 23 productos y su botón "Elegir ...".
+- **Al elegir un camino:** se guarda (localStorage), el catálogo se filtra (mixto = 23 productos, dulces = 14, salados = 9), aparece la línea "Camino: Mixto · 20 invitados · meta: 60 dulces y 60 salados", se desplaza suave al catálogo y el foco pasa a su título. Evento `elegir_camino`.
+- **Columna flotante "Tu lista de compras"** (derecha en escritorio desde 75 em, cajón lateral entre 62,5 y 75 em, barra inferior en móvil): se llena al pulsar "Agregar", con el objetivo, el avance por categoría con barra ("Dulces: llevas 75 de 120"), los estados (vacío, incompleto, completo, excedido), los bocaditos por invitado, la lista con − / + y quitar, el total y los botones "Ver carrito y continuar" y "Seguir eligiendo". Usa las mismas líneas del carrito.
+- **Metas:** mixto = mitad dulces y mitad salados (redondeo hacia arriba de invitados × 6 / 2); solo dulces o solo salados = invitados × 6. Regla de estado por categoría: llevas < meta = incompleto; llevas ≥ meta y sobran < 25 = completo; sobran ≥ 25 = excedido.
+- **Carrito = paso final:** título "Último paso: tu pedido", con fecha obligatoria (2 días de anticipación) y envío por WhatsApp; el mensaje añade la línea "Evento: N invitados, camino ...". Evento `continuar_carrito`.
+- **Pruebas:** `node --check`; 188 comprobaciones en Node (metas, excedentes 24/25/49/50, rangos, 1 a 1000 invitados); 110 en Edge sin ventana a 1280, 1100 y 400 px, sin errores de script ni desbordamiento; capturas revisadas. No verificado: lectores de pantalla, Safari/iOS y el envío real a WhatsApp.
+- **Ajustes pedidos después:** (1) en los cuadros de cantidad 25/50/100 se quitó el precio pequeño bajo cada número, porque repetía el precio grande de la tarjeta (que se actualiza al elegir); (2) los cuadros de "Elige tu camino" quedaron concretos: título, unidades (en mixto, el reparto "75 dulces + 75 salados"), rango "Desde S/ X hasta S/ Y" y botón; se quitaron descripciones, listas de paquetes, "por invitado", avisos y textos de ayuda.
+- **Más ajustes pedidos (21/09/2026):**
+  1. **Bocaditos por invitado como dato de cálculo:** el planificador tiene un segundo campo `#bocaditos-por-invitado` (por defecto 6, entero de 1 a 30; vacío = 6). Recorre todo el cálculo: unidades necesarias, combinación de paquetes, tres caminos, metas y textos de la lista flotante, plan guardado en localStorage (los planes viejos sin el campo se leen como 6), contexto del catálogo y mensaje de WhatsApp ("Evento: N invitados, X bocaditos por invitado, camino ..."). Regla del tamaño único generalizada: si las unidades necesarias son ≤ 100 se sugiere el menor paquete que las cubra; si son más, la combinación de menor excedente (con 6 por invitado el resultado es idéntico al anterior: verificado de 1 a 1000 invitados). Tope de 10 000 unidades en línea; más se atiende por WhatsApp.
+  2. **Cuadros de "Elige tu camino" con datos específicos:** en lugar del rango de precio, cada cuadro muestra una **sugerencia concreta con nombres de productos** y total exacto. Regla: por categoría se ordenan los paquetes de mayor a menor y se asignan productos distintos en el orden del catálogo (dando la vuelta si hace falta), agrupando repetidos y mostrando como máximo 6 líneas por categoría y "y n sabores más". Ejemplo con 20 invitados y 6 por invitado: Mixto = 150 unidades (75 dulces + 75 salados), 50 Mini alfajores con coco + 25 Mini alfachips + 50 Pettit pan con pollo + 25 Pettit pan con pollo y apio, total sugerido S/ 188,50; Solo dulces = 125 unidades, 100 Mini alfajores con coco + 25 Mini alfachips, S/ 135,00; Solo salados = 125 unidades, 100 Pettit pan con pollo + 25 Pettit pan con pollo y apio, S/ 170,50. Con 8 por invitado (160 unidades): mixto 200 unidades, S/ 240,00.
+  3. **Textos de "ventajas" (abajo del catálogo):** 01 "Sabor a casa" ("Hechos en casa, con el sabor de siempre."); 02 "Variedad para elegir" ("23 sabores, dulces y salados, para armar tu mesa."; se eligió la diversidad, que es verificable, en vez de "ingredientes de calidad", que no está confirmada); 03 "Pídelo a un solo clic" ("Elige, pon la fecha y envíalo por WhatsApp."). Si el catálogo cambia de tamaño, hay que actualizar el "23".
+- **Detalles a revisar:** en mixto con dos categorías incompletas el estado dice "Te faltan N unidades."; los rangos "Desde/hasta" son amplios porque los vasitos cuestan más del doble que el resto; el encabezado no cede ancho a la columna flotante en escritorio (solo el contenido).
+
 ## Plan por grupos (cada uno se valida antes de continuar)
 
 | Grupo | Estado |
@@ -390,4 +459,7 @@ Contrastes calculados a mano por el diseñador (conviene una segunda comprobaci�
 - 21/09/2026: grupo 3 validado por el usuario. Grupo 4 terminado: `index.js` con filtros, carrito, fecha obligatoria, calculadora y pedido por WhatsApp.
 - 21/09/2026: grupo 4 validado. Grupo 5 terminado: SEO con Lima, JSON-LD `Bakery`, medición neutral de 6 eventos y plan de redes de 4 semanas.
 - 21/09/2026: grupo 5 validado. Grupo 6 terminado: comprobaciones técnicas, auditoría de coherencia y correcciones mínimas aplicadas.
+- 21/09/2026: rediseño según el "ejemplo de diseño" aprobado por el usuario.
+- 21/09/2026: página subida al repositorio `AldoVeg/zegel` (rama `main`, commit `6ebf690`), reemplazando el sitio anterior de ese repositorio (que queda en el historial, commit `bc888c6`). Se subieron `index.html`, `index.css`, `index.js`, `avance.md` e `img/`; no se subieron el PDF ni la carpeta `ejemplo de diseño`. URL prevista: https://aldoveg.github.io/zegel/ (con `canonical`, `og:url` y `og:image` pendientes de agregar con esa dirección).
+- 21/09/2026: correcciones (subrayado de "pecar.", sin precios por unidad, calculadora ampliada) y luego actualización con `incluir.pdf`: 23 productos con precios nuevos, planificador arriba con tres caminos y columna flotante "Tu lista de compras". Todo está solo en la carpeta local; falta subirlo a `AldoVeg/zegel`.
 - 21/09/2026: el archivo de avance cambia de `.txt` a `.md` por pedido del usuario.
