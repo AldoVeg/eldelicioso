@@ -34,6 +34,11 @@ const DURACION_CONTEO_MS = 500;
 // Zona superior activa del subrayado del menú: el encabezado y estos píxeles debajo.
 const MARGEN_ZONA_MENU_PX = 48;
 
+// GitHub Pages cachea toda la página (HTML incluido) 10 minutos sin que se pueda cambiar desde el hosting; una
+// pestaña que quedó abierta antes de publicar una actualización no la vería sola. Cada tanto se revisa
+// version.json (pedido siempre sin caché) y, si cambió frente a data-version del <html>, se avisa para recargar.
+const INTERVALO_VERSION_MS = 5 * 60 * 1000;
+
 const DIAS_SEMANA = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
   "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
@@ -803,6 +808,8 @@ function iniciar() {
   const campoFecha = $("fecha-evento");
   const errorFecha = $("error-fecha");
   const mensajePedido = $("mensaje-pedido");
+  const avisoVersion = $("aviso-version");
+  const botonActualizarVersion = $("boton-actualizar-version");
 
   const catalogo = leerCatalogo(rejilla);
   let lineas = normalizarLineas(leerAlmacenamiento(CLAVE_ALMACENAMIENTO), catalogo);
@@ -1171,6 +1178,29 @@ function iniciar() {
 
   function ocultarMensajePedido() {
     mensajePedido.hidden = true;
+  }
+
+  /* --- Aviso de versión nueva --- */
+
+  // Pide version.json sin caché (con un parámetro que cambia siempre) y compara con data-version del <html>.
+  // Si difieren, muestra el aviso; los errores de red o sin conexión no interrumpen la página.
+  function comprobarVersionNueva() {
+    if (!avisoVersion || avisoVersion.hidden === false) return; // ya se avisó: no hace falta seguir revisando
+    const versionActual = document.documentElement.dataset.version;
+    if (!versionActual) return;
+    fetch(`version.json?t=${Date.now()}`, { cache: "no-store" })
+      .then((respuesta) => (respuesta.ok ? respuesta.json() : null))
+      .then((datos) => {
+        if (datos && datos.v && datos.v !== versionActual) avisoVersion.hidden = false;
+      })
+      .catch(() => {});
+  }
+
+  // Recarga con una URL que nunca estuvo en caché (ni la del navegador ni la de GitHub Pages), así trae de una
+  // vez la versión nueva en lugar de esperar a que venza el cacheo de 10 minutos.
+  function recargarConVersionNueva() {
+    const separador = window.location.search ? "&" : "?";
+    window.location.href = `${window.location.pathname}${window.location.search}${separador}_=${Date.now()}`;
   }
 
   function abrirWhatsApp(enlace) {
@@ -1863,6 +1893,14 @@ function iniciar() {
   consultaPunteroFino.addEventListener("change", sincronizarSubrayadoMenu);
   window.addEventListener("scroll", pedirProgreso, { passive: true });
   window.addEventListener("resize", pedirProgreso);
+
+  // Aviso de versión nueva: al volver a la pestaña (no solo por temporizador, para no esperar hasta 5 minutos
+  // si el visitante recién regresa) y cada INTERVALO_VERSION_MS mientras la deja abierta.
+  if (botonActualizarVersion) botonActualizarVersion.addEventListener("click", recargarConVersionNueva);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") comprobarVersionNueva();
+  });
+  window.setInterval(comprobarVersionNueva, INTERVALO_VERSION_MS);
 
   /* --- Nosotros --- */
 

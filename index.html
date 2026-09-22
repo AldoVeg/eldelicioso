@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-version="202609212159">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -28,10 +28,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600&display=swap">
-  <!-- El ?v= evita que el navegador (y la caché de GitHub Pages) sirvan una versión vieja de estos dos archivos
-       después de publicar un cambio: sin él, "actualizar la página" no bastaba y quedaba pegado con datos
-       anteriores hasta borrar caché a mano. Cambia este número (por ejemplo a la fecha y hora, AAAAMMDDHHmm)
-       cada vez que subas una actualización de index.css o index.js. -->
+  <!-- GitHub Pages cachea TODO (HTML incluido) por 10 minutos sin que podamos cambiarlo desde el hosting, así que
+       ni el ?v= de abajo evita que una pestaña ya abierta quede pegada con la versión vieja: el script de
+       version.json (más abajo, cerca del final del body) revisa cada pocos minutos si hay una versión nueva y,
+       si la hay, avisa y se recarga solo. Por eso, cada vez que publiques un cambio en index.html, index.css o
+       index.js, hay que actualizar ESTOS TRES LUGARES A LA VEZ con la misma fecha y hora (AAAAMMDDHHmm):
+       1) el ?v= de index.css y de index.js aquí abajo, 2) data-version en la etiqueta <html> de arriba,
+       3) el valor "v" de version.json en la raíz del repositorio. -->
   <link rel="stylesheet" href="index.css?v=202609212159">
   <script type="application/ld+json">
   {
@@ -1131,5 +1134,12 @@
       <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-whatsapp"/></svg>
     </a>
   </aside>
+
+  <!-- Aviso de versión nueva: lo muestra index.js cuando version.json cambia (ver comentario junto al <head>).
+       Empieza oculto y solo aparece si hay una versión distinta a la de esta pestaña. -->
+  <div class="aviso-version" id="aviso-version" role="status" hidden>
+    <p>Hay una versión nueva de la página.</p>
+    <button type="button" id="boton-actualizar-version">Actualizar ahora</button>
+  </div>
 </body>
 </html>
