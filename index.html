@@ -6,6 +6,9 @@
   <title>Bocaditos para eventos en Lima | El Delicioso</title>
   <meta name="description" content="El placer de pecar. Bocaditos caseros dulces y salados para eventos en Lima. Pide 25, 50 o 100 por WhatsApp con 2 días de anticipación.">
   <meta name="theme-color" content="#FFFBF6">
+  <link rel="icon" href="img/favicon.ico" sizes="32x32 48x48">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+  <link rel="apple-touch-icon" href="img/favicon-180.png">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="es_PE">
   <link rel="canonical" href="https://aldoveg.github.io/zegel/">
@@ -32,6 +35,7 @@
     "@type": "Bakery",
     "url": "https://aldoveg.github.io/zegel/",
     "image": "https://aldoveg.github.io/zegel/img/og-portada.jpg",
+    "logo": "https://aldoveg.github.io/zegel/img/marca-eldelicioso.png",
     "name": "El Delicioso",
     "description": "El placer de pecar. Bocaditos de casa dulces y salados para todo tipo de evento. por WhatsApp con 2 días de anticipación.",
     "slogan": "El placer de pecar.",
@@ -46,10 +50,11 @@
   </script>
   <script src="index.js" defer></script>
 </head>
-<body>
+<body id="arriba">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
     <symbol id="icono-whatsapp" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></symbol>
     <symbol id="icono-bolsa" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></symbol>
+    <symbol id="icono-flecha" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></symbol>
     <symbol id="icono-cerrar" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
   </svg>
 
@@ -58,14 +63,14 @@
 
   <header id="inicio" class="encabezado">
     <div class="contenedor encabezado__interior">
-      <a class="logo" href="#inicio">El Delicioso</a>
+      <a class="logo" href="#arriba" aria-label="El Delicioso, ir al inicio"><img src="img/marca-eldelicioso.png" width="1200" height="217" alt="El Delicioso"></a>
       <nav class="menu" aria-label="Principal">
         <a href="#planificador">Planifica</a>
         <a href="#catalogo">Catálogo</a>
         <a href="#ocasiones">Ocasiones</a>
-        <a href="#como-pedir">Cómo pedir</a>
         <a href="#nosotros">Nosotros</a>
-        <a href="#contacto">Contacto</a>
+        <!-- Subrayado decorativo que sigue al cursor cerca de la zona superior (solo escritorio con puntero fino) -->
+        <span class="menu__indicador" aria-hidden="true"></span>
       </nav>
       <button type="button" class="boton-lista" id="boton-lista" aria-controls="lista-panel" aria-expanded="false">
         <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-bolsa"/></svg>
@@ -74,15 +79,24 @@
         <span class="solo-lectores">artículos</span>
       </button>
     </div>
+    <!-- Barra de progreso de lectura: decorativa, crece con el desplazamiento -->
+    <div class="progreso" aria-hidden="true"><span class="progreso__barra" id="progreso-lectura"></span></div>
   </header>
 
   <main id="contenido">
     <section id="portada" class="portada" aria-labelledby="titulo-portada">
       <div class="contenedor portada__interior">
         <div class="portada__texto">
-          <p class="sobretitulo">El Delicioso</p>
+          <!-- Selector electivo por grupo: cambia la foto de la portada, el filtro del catálogo y la galería.
+               En Dulces y Salados la foto sale al azar de las tarjetas del catálogo marcadas con data-portada
+               (su valor es el encuadre, object-position); solo van las fotos aptas para una portada. -->
+          <div class="selector-grupo" id="selector-grupo" role="radiogroup" aria-label="Explora por grupo">
+            <button type="button" class="selector-grupo__opcion" role="radio" aria-checked="true" tabindex="0" data-grupo="todos">Todo</button>
+            <button type="button" class="selector-grupo__opcion" role="radio" aria-checked="false" tabindex="-1" data-grupo="dulce">Dulces</button>
+            <button type="button" class="selector-grupo__opcion" role="radio" aria-checked="false" tabindex="-1" data-grupo="salado">Salados</button>
+          </div>
           <h1 id="titulo-portada" class="portada__titulo">El placer de <em>pecar.</em></h1>
-          <p class="portada__subtitulo">Bocaditos caseros, dulces y salados, para mesas que se recuerdan. Por 25, 50 o 100.</p>
+          <p class="portada__subtitulo">Bocaditos caseros, dulces y salados, para mesas que se recuerdan.</p>
           <div class="portada__acciones">
             <a class="boton boton--principal" href="#catalogo">Descubrir el catálogo</a>
             <a class="boton boton--whatsapp" data-ubicacion="portada" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Quisiera%20hacer%20un%20pedido%20de%20bocaditos." target="_blank" rel="noopener noreferrer">
@@ -92,7 +106,9 @@
           </div>
         </div>
         <figure class="portada__foto">
-          <img src="img/portada.jpg" width="1365" height="1706" alt="Mini tartaleta con crema batida y media fresa, con un mordisco que muestra el relleno, sobre una mesa blanca con más tartaletas al fondo" fetchpriority="high" decoding="async">
+          <img id="foto-portada" src="img/portada.jpg" width="1365" height="1706" alt="Mini tartaleta con crema batida y media fresa, con un mordisco que muestra el relleno, sobre una mesa blanca con más tartaletas al fondo" fetchpriority="high" decoding="async">
+          <!-- Sello decorativo: los labios de la marca sobre la esquina inferior izquierda de la foto -->
+          <img class="portada__sello" src="img/marca-simbolo.png" width="512" height="449" alt="" aria-hidden="true">
         </figure>
       </div>
     </section>
@@ -105,6 +121,17 @@
               <span class="filete" aria-hidden="true"></span>
               <h2 id="titulo-planificador" class="seccion__titulo">Planifica tu evento en un minuto</h2>
               <p class="seccion__intro">Calcula cuántos bocaditos necesitas.</p>
+              <!-- Datos a considerar: líneas compactas en la columna izquierda. El script resalta el tramo (data-desde y
+                   data-hasta) que contiene lo escrito en "Bocaditos por invitado"; "Paquetes" no lleva tramo. -->
+              <div class="considerar">
+                <h3 class="considerar__titulo" id="titulo-considerar">Datos a considerar</h3>
+                <ul class="considerar__lista" aria-labelledby="titulo-considerar">
+                  <li class="considerar__item" data-desde="3" data-hasta="4"><span class="considerar__etiqueta">3 a 4 por invitado</span> <span class="considerar__texto">Acompañan un almuerzo o cena.</span></li>
+                  <li class="considerar__item" data-desde="5" data-hasta="7"><span class="considerar__etiqueta">5 a 7 por invitado</span> <span class="considerar__texto">Picoteo, brindis o cumpleaños con torta.</span></li>
+                  <li class="considerar__item" data-desde="8" data-hasta="10"><span class="considerar__etiqueta">8 a 10 por invitado</span> <span class="considerar__texto">Serán la comida principal.</span></li>
+                  <li class="considerar__item"><span class="considerar__etiqueta">Paquetes de 25, 50, 100 y más</span> <span class="considerar__texto">Se combinan para llegar a tu cantidad; lo que sobre queda de reserva y te avisamos.</span></li>
+                </ul>
+              </div>
             </div>
             <form class="calculadora__formulario" id="form-calculadora" novalidate>
               <div class="calculadora__campos">
@@ -124,26 +151,29 @@
           </div>
           <!-- Barra ancha de resultado: el script escribe aquí la frase (o el aviso de error) -->
           <p class="calculadora__frase" id="resultado-calculadora" role="status" aria-live="polite"></p>
+          <!-- Cuerpo en una sola columna: reparto y "Elige tu camino" (3 tarjetas) -->
           <div class="calculadora__cuerpo" aria-live="polite">
-            <div class="calculadora__datos">
-              <p class="calculadora__sobrantes" id="calculadora-sobrantes" hidden></p>
-              <!-- Leyenda: cada dato va separado, no como un párrafo corrido -->
-              <div class="considerar">
-                <h3 class="considerar__titulo" id="titulo-considerar">Datos a considerar</h3>
-                <ul class="considerar__lista" aria-labelledby="titulo-considerar">
-                  <li class="considerar__item"><span class="considerar__etiqueta">3 a 4 por invitado</span><span class="considerar__texto">Hay almuerzo o cena.</span></li>
-                  <li class="considerar__item"><span class="considerar__etiqueta">5 a 7 por invitado</span><span class="considerar__texto">Picoteo o cumpleaños con torta.</span></li>
-                  <li class="considerar__item"><span class="considerar__etiqueta">8 a 10 por invitado</span><span class="considerar__texto">Los bocaditos son la comida.</span></li>
-                  <li class="considerar__item"><span class="considerar__etiqueta">Paquetes de 25, 50, 100 y más</span><span class="considerar__texto">Se combinan para cubrir tu cantidad; si no encaja exacto, te decimos cuántas sobran.</span></li>
-                </ul>
-              </div>
-            </div>
+            <p class="calculadora__sobrantes" id="calculadora-sobrantes" hidden></p>
             <div class="calculadora__caminos" id="calculadora-caminos" hidden>
               <h3 class="calculadora__camino-titulo">Elige tu camino</h3>
               <div class="calculadora__opciones" id="calculadora-opciones"></div>
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Galería: solo imágenes grandes de todos los bocaditos, en orden aleatorio. El script la arma a partir de las
+         tarjetas del catálogo (no hay lista duplicada) y la muestra; sin JavaScript queda oculta. -->
+    <section id="galeria" class="galeria" aria-label="Galería de bocaditos" aria-roledescription="carrusel" hidden>
+      <div class="contenedor galeria__marco">
+        <button type="button" class="galeria__boton galeria__boton--anterior" id="galeria-anterior" aria-label="Bocadito anterior" aria-controls="galeria-pista">
+          <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-flecha"/></svg>
+        </button>
+        <div class="galeria__pista" id="galeria-pista"></div>
+        <button type="button" class="galeria__boton galeria__boton--siguiente" id="galeria-siguiente" aria-label="Bocadito siguiente" aria-controls="galeria-pista">
+          <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-flecha"/></svg>
+        </button>
       </div>
     </section>
 
@@ -166,7 +196,7 @@
         <div class="catalogo__rejilla" id="rejilla-catalogo">
         <article class="tarjeta" data-id="pettit-pollo" data-categoria="salado" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="135.00">
           <div class="tarjeta__foto">
-            <img src="img/pettit-pollo.jpg" width="594" height="594" alt="Pan pequeño relleno de ensalada de pollo sobre tabla de madera" style="object-position: 45% 50%" loading="lazy" decoding="async">
+            <img src="img/SALADO/pettit-pollo.jpg" width="594" height="594" alt="Pan pequeño relleno de ensalada de pollo sobre tabla de madera" style="object-position: 45% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -198,7 +228,7 @@
 
         <article class="tarjeta" data-id="pettit-pollo-apio" data-categoria="salado" data-precio-25="35.50" data-precio-50="70.00" data-precio-100="136.00">
           <div class="tarjeta__foto">
-            <img src="img/pettit-pollo-apio-nueva.jpg" width="1024" height="892" alt="Panecillos con sésamo rellenos de pollo con apio sobre tabla redonda" style="object-position: 15% 50%" loading="lazy" decoding="async">
+            <img src="img/SALADO/pettit-pollo-apio-nueva.jpg" width="1024" height="892" alt="Panecillos con sésamo rellenos de pollo con apio sobre tabla redonda" style="object-position: 15% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -228,9 +258,9 @@
           </div>
         </article>
 
-        <article class="tarjeta" data-id="pettit-pollo-durazno" data-categoria="salado" data-precio-25="38.00" data-precio-50="75.00" data-precio-100="150.00">
+        <article class="tarjeta" data-id="pettit-pollo-durazno" data-portada="50% 35%" data-categoria="salado" data-precio-25="38.00" data-precio-50="75.00" data-precio-100="150.00">
           <div class="tarjeta__foto">
-            <img src="img/pettit-pollo-durazno-nueva.jpg" width="1024" height="1024" alt="Panecillos pequeños rellenos de pollo con trozos amarillos sobre tapete" style="object-position: 0% 50%" loading="lazy" decoding="async">
+            <img src="img/SALADO/pettit-pollo-durazno-nueva.jpg" width="926" height="1024" alt="Panecillos pequeños rellenos de pollo con trozos amarillos sobre tapete" style="object-position: 0% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -262,7 +292,7 @@
 
         <article class="tarjeta" data-id="mini-empanaditas-pollo" data-categoria="salado" data-precio-25="30.00" data-precio-50="60.00" data-precio-100="120.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-empanaditas-pollo-nueva.jpg" width="717" height="702" alt="Empanaditas doradas sobre papel de encaje, una abierta con relleno" style="object-position: 85% 50%" loading="lazy" decoding="async">
+            <img src="img/SALADO/mini-empanaditas-pollo-nueva.jpg" width="717" height="702" alt="Empanaditas doradas sobre papel de encaje, una abierta con relleno" style="object-position: 85% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -292,9 +322,9 @@
           </div>
         </article>
 
-        <article class="tarjeta" data-id="mini-empanaditas-mixtas" data-categoria="salado" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="135.00">
+        <article class="tarjeta" data-id="mini-empanaditas-mixtas" data-portada="50% 55%" data-categoria="salado" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="135.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-empanaditas-mixtas-nueva.jpg" width="717" height="702" alt="Empanaditas doradas en bandeja, una abierta con queso y jamón" style="object-position: 50% 50%" loading="lazy" decoding="async">
+            <img src="img/SALADO/mini-empanaditas-mixtas-nueva.jpg" width="717" height="702" alt="Empanaditas doradas en bandeja, una abierta con queso y jamón" style="object-position: 50% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -324,9 +354,9 @@
           </div>
         </article>
 
-        <article class="tarjeta" data-id="mini-empanaditas-carne" data-categoria="salado" data-precio-25="33.00" data-precio-50="65.00" data-precio-100="125.00">
+        <article class="tarjeta" data-id="mini-empanaditas-carne" data-portada="35% 45%" data-categoria="salado" data-precio-25="33.00" data-precio-50="65.00" data-precio-100="125.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-empanaditas-carne.jpg" width="717" height="702" alt="Empanaditas doradas sobre tabla, una abierta con carne picada" style="object-position: 0% 50%" loading="lazy" decoding="async">
+            <img src="img/SALADO/mini-empanaditas-carne.jpg" width="717" height="702" alt="Empanaditas doradas sobre tabla, una abierta con carne picada" style="object-position: 0% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -356,9 +386,9 @@
           </div>
         </article>
 
-        <article class="tarjeta tarjeta--especial" data-id="empanadas-amazonicas" data-categoria="salado" data-especial>
+        <article class="tarjeta tarjeta--especial" data-id="empanadas-amazonicas" data-portada="60% 55%" data-categoria="salado" data-especial>
           <div class="tarjeta__foto">
-            <img src="img/selva.png" width="1024" height="979" alt="Empanadas amazónicas abiertas sobre una hoja verde, con el relleno a la vista" style="object-position: 60% 50%" loading="lazy" decoding="async">
+            <img src="img/SALADO/selva.png" width="1024" height="979" alt="Empanadas amazónicas abiertas sobre una hoja verde, con el relleno a la vista" style="object-position: 60% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <div class="tarjeta__insignias">
@@ -392,9 +422,9 @@
           </div>
         </article>
 
-        <article class="tarjeta" data-id="mini-causitas" data-categoria="salado" data-precio-25="30.00" data-precio-50="59.00" data-precio-100="118.00">
+        <article class="tarjeta" data-id="mini-causitas" data-portada="45% 50%" data-categoria="salado" data-precio-25="30.00" data-precio-50="59.00" data-precio-100="118.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-causitas.jpg" width="922" height="615" alt="Causitas amarillas con perejil y ají en pirotines blancos" style="object-position: 45% 50%" loading="lazy" decoding="async">
+            <img src="img/SALADO/mini-causitas.jpg" width="922" height="615" alt="Causitas amarillas con perejil y ají en pirotines blancos" style="object-position: 45% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -426,7 +456,7 @@
 
         <article class="tarjeta" data-id="mini-causitas-pollo" data-categoria="salado" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="134.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-causitas-pollo.jpg" width="768" height="1024" alt="Caja de causitas coronadas con pollo deshilachado y cebollín" style="object-position: 50% 100%" loading="lazy" decoding="async">
+            <img src="img/SALADO/mini-causitas-pollo.jpg" width="768" height="1024" alt="Caja de causitas coronadas con pollo deshilachado y cebollín" style="object-position: 50% 100%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -458,7 +488,7 @@
 
         <article class="tarjeta" data-id="mini-causitas-atun" data-categoria="salado" data-precio-25="33.00" data-precio-50="65.00" data-precio-100="125.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-causitas-atun.jpg" width="1024" height="574" alt="Caja de causitas coronadas con atún y perejil" style="object-position: 20% 50%" loading="lazy" decoding="async">
+            <img src="img/SALADO/mini-causitas-atun.jpg" width="1024" height="574" alt="Caja de causitas coronadas con atún y perejil" style="object-position: 20% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Salado</p>
@@ -490,7 +520,7 @@
 
         <article class="tarjeta" data-id="mini-alfajores-coco" data-categoria="dulce" data-precio-25="28.00" data-precio-50="55.00" data-precio-100="105.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-alfajores-coco.jpg" width="600" height="900" alt="Tres alfajores apilados con coco rallado y azúcar impalpable" style="object-position: 50% 60%" loading="lazy" decoding="async">
+            <img src="img/DULCE/mini-alfajores-coco.jpg" width="600" height="900" alt="Tres alfajores apilados con coco rallado y azúcar impalpable" style="object-position: 50% 60%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -522,7 +552,7 @@
 
         <article class="tarjeta" data-id="mini-alfachips" data-categoria="dulce" data-precio-25="30.00" data-precio-50="59.00" data-precio-100="115.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-alfachips.jpg" width="475" height="593" alt="Alfajores con chispas de chocolate rellenos de manjar" style="object-position: 50% 50%" loading="lazy" decoding="async">
+            <img src="img/DULCE/mini-alfachips.jpg" width="475" height="593" alt="Alfajores con chispas de chocolate rellenos de manjar" style="object-position: 50% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -552,9 +582,9 @@
           </div>
         </article>
 
-        <article class="tarjeta tarjeta--destacada" data-id="mini-alfajores-chocolate" data-categoria="dulce" data-precio-25="32.00" data-precio-50="63.00" data-precio-100="125.00">
+        <article class="tarjeta tarjeta--destacada" data-id="mini-alfajores-chocolate" data-portada="50% 50%" data-categoria="dulce" data-precio-25="32.00" data-precio-50="63.00" data-precio-100="125.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-alfajores-chocolate.jpg" width="768" height="768" alt="Alfajor bañado en chocolate cortado, con manjar visible" style="object-position: 50% 50%" loading="lazy" decoding="async">
+            <img src="img/DULCE/mini-alfajores-chocolate.jpg" width="768" height="768" alt="Alfajor bañado en chocolate cortado, con manjar visible" style="object-position: 50% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -584,9 +614,9 @@
           </div>
         </article>
 
-        <article class="tarjeta" data-id="mini-tartaleta-fresa" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
+        <article class="tarjeta" data-id="mini-tartaleta-fresa" data-portada="45% 62%" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-tartaleta-fresa.jpg" width="820" height="802" alt="Tartaleta con crema y laminilla de fresa sobre plato" style="object-position: 45% 50%" loading="lazy" decoding="async">
+            <img src="img/DULCE/mini-tartaleta-fresa.jpg" width="820" height="802" alt="Tartaleta con crema y laminilla de fresa sobre plato" style="object-position: 45% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -616,9 +646,9 @@
           </div>
         </article>
 
-        <article class="tarjeta" data-id="mini-tartaleta-durazno" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
+        <article class="tarjeta" data-id="mini-tartaleta-durazno" data-portada="45% 62%" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-tartaleta-durazno.jpg" width="820" height="802" alt="Tartaleta con crema y gajos de durazno sobre plato" style="object-position: 45% 50%" loading="lazy" decoding="async">
+            <img src="img/DULCE/mini-tartaleta-durazno.jpg" width="820" height="802" alt="Tartaleta con crema y gajos de durazno sobre plato" style="object-position: 45% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -648,9 +678,9 @@
           </div>
         </article>
 
-        <article class="tarjeta tarjeta--destacada" data-id="mini-tartaleta-maracuya" data-categoria="dulce" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="132.00">
+        <article class="tarjeta tarjeta--destacada" data-id="mini-tartaleta-maracuya" data-portada="45% 62%" data-categoria="dulce" data-precio-25="35.00" data-precio-50="68.00" data-precio-100="132.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-tartaleta-maracuya.jpg" width="820" height="802" alt="Tartaleta con crema y pulpa de maracuyá con semillas" style="object-position: 45% 50%; --posicion-horizontal: 50% 55%" loading="lazy" decoding="async">
+            <img src="img/DULCE/mini-tartaleta-maracuya.jpg" width="820" height="802" alt="Tartaleta con crema y pulpa de maracuyá con semillas" style="object-position: 45% 50%; --posicion-horizontal: 50% 55%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -682,7 +712,7 @@
 
         <article class="tarjeta" data-id="mini-pay-limon" data-categoria="dulce" data-precio-25="32.00" data-precio-50="60.00" data-precio-100="116.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-pay-limon.jpg" width="540" height="686" alt="Tartaleta con crema batida y ralladura de limón" style="object-position: 50% 50%" loading="lazy" decoding="async">
+            <img src="img/DULCE/mini-pay-limon.jpg" width="540" height="686" alt="Tartaleta con crema batida y ralladura de limón" style="object-position: 50% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -712,9 +742,9 @@
           </div>
         </article>
 
-        <article class="tarjeta" data-id="mini-pay-manzana" data-categoria="dulce" data-precio-25="33.00" data-precio-50="66.00" data-precio-100="130.00">
+        <article class="tarjeta" data-id="mini-pay-manzana" data-portada="50% 55%" data-categoria="dulce" data-precio-25="33.00" data-precio-50="66.00" data-precio-100="130.00">
           <div class="tarjeta__foto">
-            <img src="img/mini-pay-manzana.jpg" width="403" height="403" alt="Pasteles pequeños dorados con enrejado en pirotines blancos" style="object-position: 50% 50%" loading="lazy" decoding="async">
+            <img src="img/DULCE/mini-pay-manzana.jpg" width="1024" height="1024" alt="Pasteles pequeños dorados con enrejado en pirotines blancos" style="object-position: 50% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -744,9 +774,9 @@
           </div>
         </article>
 
-        <article class="tarjeta" data-id="vasitos-maracuya" data-categoria="dulce" data-precio-25="62.50" data-precio-50="124.00" data-precio-100="245.00">
+        <article class="tarjeta" data-id="vasitos-maracuya" data-portada="50% 55%" data-categoria="dulce" data-precio-25="62.50" data-precio-50="124.00" data-precio-100="245.00">
           <div class="tarjeta__foto">
-            <img src="img/vasitos-maracuya.jpg" width="717" height="717" alt="Vasitos con base de galleta, crema y maracuyá encima" style="object-position: 50% 50%" loading="lazy" decoding="async">
+            <img src="img/DULCE/vasitos-maracuya.jpg" width="717" height="717" alt="Vasitos con base de galleta, crema y maracuyá encima" style="object-position: 50% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -778,7 +808,7 @@
 
         <article class="tarjeta" data-id="vasitos-durazno" data-categoria="dulce" data-precio-25="63.50" data-precio-50="126.00" data-precio-100="250.00">
           <div class="tarjeta__foto">
-            <img src="img/vasitos-durazno.jpg" width="717" height="717" alt="Vasitos con base de galleta, crema y durazno picado" style="object-position: 50% 50%" loading="lazy" decoding="async">
+            <img src="img/DULCE/vasitos-durazno.jpg" width="717" height="717" alt="Vasitos con base de galleta, crema y durazno picado" style="object-position: 50% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -808,9 +838,9 @@
           </div>
         </article>
 
-        <article class="tarjeta" data-id="vasitos-fresa" data-categoria="dulce" data-precio-25="64.50" data-precio-50="128.00" data-precio-100="255.00">
+        <article class="tarjeta" data-id="vasitos-fresa" data-portada="50% 55%" data-categoria="dulce" data-precio-25="64.50" data-precio-50="128.00" data-precio-100="255.00">
           <div class="tarjeta__foto">
-            <img src="img/vasitos-fresa.jpg" width="717" height="717" alt="Vasitos con base de galleta, crema rosada y salsa de fresa" style="object-position: 50% 50%" loading="lazy" decoding="async">
+            <img src="img/DULCE/vasitos-fresa.jpg" width="717" height="717" alt="Vasitos con base de galleta, crema rosada y salsa de fresa" style="object-position: 50% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -840,9 +870,9 @@
           </div>
         </article>
 
-        <article class="tarjeta tarjeta--destacada" data-id="brownies-chocolate" data-categoria="dulce" data-precio-25="30.00" data-precio-50="59.00" data-precio-100="115.00">
+        <article class="tarjeta tarjeta--destacada" data-id="brownies-chocolate" data-portada="50% 62%" data-categoria="dulce" data-precio-25="30.00" data-precio-50="59.00" data-precio-100="115.00">
           <div class="tarjeta__foto">
-            <img src="img/brownies-chocolate.jpg" width="1024" height="1002" alt="Tres brownies con sal en grano sobre plato moteado" style="object-position: 10% 50%; --posicion-horizontal: 50% 60%" loading="lazy" decoding="async">
+            <img src="img/DULCE/brownies-chocolate.jpg" width="1024" height="1002" alt="Tres brownies con sal en grano sobre plato moteado" style="object-position: 10% 50%; --posicion-horizontal: 50% 60%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -874,7 +904,7 @@
 
         <article class="tarjeta" data-id="mini-trufas-chocolate" data-categoria="dulce" data-precio-25="33.00" data-precio-50="65.00" data-precio-100="125.00">
           <div class="tarjeta__foto">
-            <img src="img/trufas-chocolate-nueva.jpg" width="659" height="820" alt="Trufas de chocolate con hilos de chocolate en pirotines rojos" style="object-position: 50% 50%" loading="lazy" decoding="async">
+            <img src="img/DULCE/trufas-chocolate-nueva.jpg" width="659" height="820" alt="Trufas de chocolate con hilos de chocolate en pirotines rojos" style="object-position: 50% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -904,9 +934,9 @@
           </div>
         </article>
 
-        <article class="tarjeta" data-id="niditos-de-amor" data-categoria="dulce" data-precio-25="32.00" data-precio-50="62.00" data-precio-100="120.00">
+        <article class="tarjeta" data-id="niditos-de-amor" data-portada="50% 62%" data-categoria="dulce" data-precio-25="32.00" data-precio-50="62.00" data-precio-100="120.00">
           <div class="tarjeta__foto">
-            <img src="img/niditos-de-amor.jpg" width="1064" height="1064" alt="Dos galletas redondas con azúcar glas y relleno rojo" style="object-position: 50% 50%" loading="lazy" decoding="async">
+            <img src="img/DULCE/niditos-de-amor.jpg" width="1008" height="1041" alt="Dos galletas redondas con azúcar glas y relleno rojo" style="object-position: 50% 50%" loading="lazy" decoding="async">
           </div>
           <div class="tarjeta__cuerpo">
             <p class="insignia">Dulce</p>
@@ -939,29 +969,6 @@
       </div>
     </section>
 
-    <section id="ventajas" class="seccion ventajas" aria-labelledby="titulo-ventajas">
-      <div class="contenedor">
-        <h2 id="titulo-ventajas" class="solo-lectores">Por qué El Delicioso</h2>
-        <ul class="ventajas__lista">
-          <li class="ventaja">
-            <span class="ventaja__numero" aria-hidden="true">01</span>
-            <h3 class="ventaja__titulo">Sabor a casa</h3>
-            <p>Hechos en casa, con el sabor de siempre.</p>
-          </li>
-          <li class="ventaja">
-            <span class="ventaja__numero" aria-hidden="true">02</span>
-            <h3 class="ventaja__titulo">Variedad para elegir</h3>
-            <p>24 sabores, dulces y salados, para armar tu mesa.</p>
-          </li>
-          <li class="ventaja">
-            <span class="ventaja__numero" aria-hidden="true">03</span>
-            <h3 class="ventaja__titulo">Pídelo a un solo clic</h3>
-            <p>Elige, pon la fecha y envíalo por WhatsApp.</p>
-          </li>
-        </ul>
-      </div>
-    </section>
-
     <section id="ocasiones" class="seccion ocasiones" aria-labelledby="titulo-ocasiones">
       <div class="contenedor">
         <header class="seccion__cabecera">
@@ -970,61 +977,51 @@
           <p class="seccion__intro">Dinos qué celebras y elegimos contigo.</p>
         </header>
 
+        <!-- Cada tarjeta lleva su foto de ocasión (img/OCASIONES/) oculta de fondo; aparece solo al acercar el
+             cursor (o con foco de teclado dentro, o al tocar en pantallas táctiles), y el texto pasa a un recuadro
+             semitransparente para seguir siendo legible. La foto es decorativa: el texto ya dice de qué ocasión se trata. -->
         <div class="ocasiones__rejilla">
           <article class="ocasion ocasion--cumpleanos">
-            <h3 class="ocasion__titulo">Cumpleaños</h3>
-            <p>Que los invitados vuelvan por más.</p>
-            <a class="ocasion__enlace" data-ubicacion="ocasion_cumpleanos" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Celebro%20un%20cumplea%C3%B1os%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+            <img class="ocasion__foto" src="img/OCASIONES/cumpleanos.jpg" width="549" height="213" alt="" aria-hidden="true" loading="lazy" decoding="async">
+            <div class="ocasion__cuerpo">
+              <h3 class="ocasion__titulo">Cumpleaños</h3>
+              <p>Que los invitados vuelvan por más.</p>
+              <a class="ocasion__enlace" data-ubicacion="ocasion_cumpleanos" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Celebro%20un%20cumplea%C3%B1os%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+            </div>
           </article>
           <article class="ocasion ocasion--baby">
-            <h3 class="ocasion__titulo">Baby shower</h3>
-            <p>Una bienvenida dulce (y salada) para el bebé.</p>
-            <a class="ocasion__enlace" data-ubicacion="ocasion_baby" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Organizo%20un%20baby%20shower%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+            <img class="ocasion__foto" src="img/OCASIONES/baby-shower.jpg" width="530" height="208" alt="" aria-hidden="true" loading="lazy" decoding="async">
+            <div class="ocasion__cuerpo">
+              <h3 class="ocasion__titulo">Baby shower</h3>
+              <p>Una bienvenida dulce (y salada) para el bebé.</p>
+              <a class="ocasion__enlace" data-ubicacion="ocasion_baby" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Organizo%20un%20baby%20shower%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+            </div>
           </article>
-          <article class="ocasion">
-            <h3 class="ocasion__titulo">Reunión de trabajo</h3>
-            <p>Un detalle para que la pausa sepa mejor.</p>
-            <a class="ocasion__enlace" data-ubicacion="ocasion_trabajo" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Tengo%20una%20reuni%C3%B3n%20de%20trabajo%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+          <article class="ocasion ocasion--trabajo">
+            <img class="ocasion__foto" src="img/OCASIONES/reunion-trabajo.jpg" width="474" height="217" alt="" aria-hidden="true" loading="lazy" decoding="async">
+            <div class="ocasion__cuerpo">
+              <h3 class="ocasion__titulo">Reunión de trabajo</h3>
+              <p>Un detalle para que la pausa sepa mejor.</p>
+              <a class="ocasion__enlace" data-ubicacion="ocasion_trabajo" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Tengo%20una%20reuni%C3%B3n%20de%20trabajo%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+            </div>
           </article>
-          <article class="ocasion">
-            <h3 class="ocasion__titulo">Colegio o iglesia</h3>
-            <p>Para compartir con todos, en cantidad.</p>
-            <a class="ocasion__enlace" data-ubicacion="ocasion_colegio" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Organizo%20un%20evento%20en%20un%20colegio%20o%20iglesia%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+          <article class="ocasion ocasion--colegio">
+            <img class="ocasion__foto" src="img/OCASIONES/colegio-iglesia.jpg" width="631" height="245" alt="" aria-hidden="true" loading="lazy" decoding="async">
+            <div class="ocasion__cuerpo">
+              <h3 class="ocasion__titulo">Colegio o iglesia</h3>
+              <p>Para compartir con todos, en cantidad.</p>
+              <a class="ocasion__enlace" data-ubicacion="ocasion_colegio" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Organizo%20un%20evento%20en%20un%20colegio%20o%20iglesia%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+            </div>
           </article>
-          <article class="ocasion">
-            <h3 class="ocasion__titulo">Otro evento</h3>
-            <p>¿Otro plan? Escríbenos y lo armamos contigo.</p>
-            <a class="ocasion__enlace" data-ubicacion="ocasion_otro" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Tengo%20otro%20plan%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+          <article class="ocasion ocasion--otro">
+            <img class="ocasion__foto" src="img/OCASIONES/otro-evento.jpg" width="584" height="226" alt="" aria-hidden="true" loading="lazy" decoding="async">
+            <div class="ocasion__cuerpo">
+              <h3 class="ocasion__titulo">Otro evento</h3>
+              <p>¿Otro plan? Escríbenos y lo armamos contigo.</p>
+              <a class="ocasion__enlace" data-ubicacion="ocasion_otro" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Tengo%20otro%20plan%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
+            </div>
           </article>
         </div>
-      </div>
-    </section>
-
-    <section id="como-pedir" class="seccion como-pedir" aria-labelledby="titulo-como-pedir">
-      <div class="contenedor">
-        <header class="seccion__cabecera">
-          <span class="filete" aria-hidden="true"></span>
-          <h2 id="titulo-como-pedir" class="seccion__titulo">Cómo pedir</h2>
-        </header>
-        <ol class="pasos">
-          <li class="paso">
-            <h3 class="paso__titulo">Elige</h3>
-            <p>Elige tus favoritos y la cantidad.</p>
-          </li>
-          <li class="paso">
-            <h3 class="paso__titulo">Indica la fecha</h3>
-            <p>Dinos la fecha del evento. Pide con 2 días de anticipación, según la cantidad.</p>
-          </li>
-          <li class="paso">
-            <h3 class="paso__titulo">Envía por WhatsApp</h3>
-            <p>En un solo mensaje, ya redactado.</p>
-          </li>
-          <li class="paso">
-            <h3 class="paso__titulo">Confirma y paga</h3>
-            <p>Paga con efectivo, Yape, Plin o transferencia.</p>
-          </li>
-        </ol>
-        <p class="nota-entrega">Hay delivery en Lima. El costo te lo confirmamos por WhatsApp antes de pagar. Te respondemos por WhatsApp para confirmar tu pedido.</p>
       </div>
     </section>
 
@@ -1040,41 +1037,18 @@
         </div>
         <ul class="datos">
           <li class="datos__item"><strong>Hechos en casa</strong><span>Con el sabor de siempre.</span></li>
-          <li class="datos__item"><strong>25, 50 o 100 unidades</strong><span>Puedes mezclar sabores.</span></li>
+          <!-- El 23 es respaldo (buscadores y sin JavaScript): el script lo reemplaza con las tarjetas del catálogo que tienen precio -->
+          <li class="datos__item"><strong id="nosotros-sabores">23 sabores para mezclar</strong><span>Arma tu mesa combinando dulces y salados.</span></li>
           <li class="datos__item"><strong>Pedidos con 2 días de anticipación</strong><span>Según la cantidad.</span></li>
         </ul>
-      </div>
-    </section>
-
-    <section id="contacto" class="seccion contacto" aria-labelledby="titulo-contacto">
-      <div class="contenedor contacto__interior">
-        <div>
-          <header class="seccion__cabecera">
-            <span class="filete" aria-hidden="true"></span>
-            <h2 id="titulo-contacto" class="seccion__titulo">Contacto</h2>
-            <p class="seccion__intro">Escríbenos y armamos tu pedido.</p>
-          </header>
-          <a class="boton boton--whatsapp" data-ubicacion="contacto_boton" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Quisiera%20hacer%20una%20consulta." target="_blank" rel="noopener noreferrer">
-            <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-whatsapp"/></svg>
-            Pedir por WhatsApp
-          </a>
-        </div>
-        <dl class="contacto__datos">
-          <div class="contacto__dato"><dt>WhatsApp</dt><dd><a data-ubicacion="contacto_dato" href="https://wa.me/51980592747" target="_blank" rel="noopener noreferrer">+51 980 592 747</a></dd></div>
-          <div class="contacto__dato" hidden><dt>Redes</dt><dd>@ELDELICIOSO</dd></div>
-          <div class="contacto__dato"><dt>Zona</dt><dd>Lima</dd></div>
-          <div class="contacto__dato"><dt>Delivery</dt><dd>Hay delivery en Lima. El costo te lo confirmamos por WhatsApp antes de pagar.</dd></div>
-          <div class="contacto__dato" hidden><dt>Horario</dt><dd><span class="pendiente">[horario]</span></dd></div>
-          <div class="contacto__dato"><dt>Formas de pago</dt><dd>Efectivo, Yape, Plin o transferencia</dd></div>
-        </dl>
       </div>
     </section>
   </main>
 
   <footer class="pie">
     <div class="contenedor pie__interior">
-      <p class="pie__marca">El Delicioso <span>El placer de pecar.</span></p>
-      <p><a href="#inicio">Volver al inicio</a></p>
+      <p class="pie__marca"><img class="pie__logo" src="img/marca-eldelicioso.png" width="1200" height="217" alt="El Delicioso"> <span>El placer de pecar.</span></p>
+      <p><a href="#arriba">Volver al inicio</a></p>
     </div>
   </footer>
 

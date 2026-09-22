@@ -27,6 +27,13 @@ const ALIAS_IDS = { "trufas-chocolate": "mini-trufas-chocolate" };
 const DURACION_REBOTE_MS = 300;
 const DURACION_AGREGADO_MS = 1200;
 
+// Galería: tiempos del carrusel (avance automático muy suave) y del conteo de las tarjetas de camino.
+const INTERVALO_GALERIA_MS = 4000;
+const PAUSA_TRAS_TOQUE_MS = 8000;
+const DURACION_CONTEO_MS = 500;
+// Zona superior activa del subrayado del menú: el encabezado y estos píxeles debajo.
+const MARGEN_ZONA_MENU_PX = 48;
+
 const DIAS_SEMANA = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
   "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
@@ -150,6 +157,26 @@ function calcularCombinacion(invitados, porInvitado) {
     return { necesarias, paquetes, total: totalPaquetes(paquetes) };
   }
   return combinarPaquetes(necesarias);
+}
+
+// Fisher-Yates: devuelve una copia en orden aleatorio; "aleatorio" devuelve un número en [0, 1).
+function mezclar(lista, aleatorio = Math.random) {
+  const copia = [...lista];
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(aleatorio() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
+
+// Baraja y reparte: cada elemento sale una vez antes de que se repita ninguno y, al rebarajar, el primero
+// nunca es el último que salió. "baraja" es la lista de pendientes (se modifica); devuelve el siguiente.
+function sacarDeBaraja(baraja, elementos, ultimo, aleatorio = Math.random) {
+  if (baraja.length === 0) {
+    baraja.push(...mezclar(elementos, aleatorio));
+    if (baraja.length > 1 && baraja[0] === ultimo) baraja.push(baraja.shift());
+  }
+  return baraja.shift();
 }
 
 // ["a", "b", "c"] -> "a, b y c"
@@ -781,6 +808,8 @@ function iniciar() {
   let lineas = normalizarLineas(leerAlmacenamiento(CLAVE_ALMACENAMIENTO), catalogo);
   let plan = normalizarPlan(leerAlmacenamiento(CLAVE_PLAN));
   let temporizadorRebote = 0;
+  // Falso hasta terminar el arranque: así lo restaurado (lista, filtro guardado) aparece sin animaciones.
+  let arrancado = false;
 
   // Escritorio y tablet (desde 62,5em): panel que se desliza desde "Mi lista". Móvil: barra inferior con panel.
   // En ambos casos la lista nace cerrada.
@@ -838,6 +867,8 @@ function iniciar() {
     rejilla.querySelectorAll(".tarjeta").forEach((tarjeta) => {
       tarjeta.hidden = categoria !== "todos" && tarjeta.dataset.categoria !== categoria;
     });
+    // El filtro, el selector de la portada, la foto y la galería son un solo estado: el grupo.
+    establecerGrupo(categoria);
   }
 
   function marcarAgregado(boton) {
@@ -875,6 +906,41 @@ function iniciar() {
     dibujarLista(claveLinea({ id: tarjeta.dataset.id, tamano }));
     rebotarContador();
     marcarAgregado(boton);
+  }
+
+  // Sello de la marca en la foto de cada producto que tenga al menos una línea en la lista (cualquier tamaño).
+  // Los productos que no se agregan (empanadas amazónicas) no llevan sello.
+  function prepararSellos() {
+    rejilla.querySelectorAll(".tarjeta").forEach((tarjeta) => {
+      if (!catalogo.has(tarjeta.dataset.id)) return;
+      const foto = tarjeta.querySelector(".tarjeta__foto");
+      const sello = crear("span", "tarjeta__sello");
+      sello.setAttribute("aria-hidden", "true");
+      sello.addEventListener("animationend", () => sello.classList.remove("tarjeta__sello--nuevo"));
+      // Aviso discreto para lectores de pantalla; solo tiene texto mientras el producto está en la lista.
+      const aviso = crear("span", "solo-lectores tarjeta__aviso");
+      aviso.setAttribute("role", "status");
+      foto.append(sello, aviso);
+    });
+  }
+
+  function sincronizarSellos(resumen) {
+    const enLista = new Set(resumen.items.map((item) => item.id));
+    rejilla.querySelectorAll(".tarjeta").forEach((tarjeta) => {
+      const sello = tarjeta.querySelector(".tarjeta__sello");
+      if (!sello) return;
+      const estaba = tarjeta.hasAttribute("data-en-lista");
+      const esta = enLista.has(tarjeta.dataset.id);
+      if (esta === estaba) return;
+      tarjeta.toggleAttribute("data-en-lista", esta);
+      tarjeta.querySelector(".tarjeta__aviso").textContent = esta ? "En tu lista" : "";
+      sello.classList.remove("tarjeta__sello--nuevo");
+      // Pop de aparición solo al agregar (no al restaurar la lista guardada) y con movimiento permitido.
+      if (esta && arrancado && !consultaMovimiento.matches) {
+        void sello.offsetWidth; // Reinicia la animación.
+        sello.classList.add("tarjeta__sello--nuevo");
+      }
+    });
   }
 
   /* --- Almacenamiento (con respaldo en memoria si el navegador lo bloquea) --- */
@@ -1019,6 +1085,7 @@ function iniciar() {
     listaPestanaTotal.textContent = formatearMoneda(resumen.totalCentimos);
     contador.textContent = resumen.cantidadPacks;
 
+    sincronizarSellos(resumen);
     if (claveNueva) resaltarFila(claveNueva);
     aplicarEstadoLista();
   }
@@ -1164,11 +1231,29 @@ function iniciar() {
     return bloque;
   }
 
-  // Cada camino es una fila con dos partes: resumen (título, unidades, reparto y sobrantes) y detalle (sugerencia y botón).
+  // "150 unidades": la cifra va en su propio tramo para poder contarla de 0 al valor. Lo animado queda oculto
+  // para lectores de pantalla, que leen el texto final una sola vez.
+  function crearUnidades(texto) {
+    const parte = /^(\d+)(.*)$/.exec(texto);
+    const p = crear("p", "opcion__unidades");
+    if (!parte) {
+      p.textContent = texto;
+      return p;
+    }
+    const visible = crear("span");
+    visible.setAttribute("aria-hidden", "true");
+    const cifra = crear("span", "opcion__cifra", parte[1]);
+    cifra.dataset.valor = parte[1];
+    visible.append(cifra, parte[2]);
+    p.append(visible, crear("span", "solo-lectores", texto));
+    return p;
+  }
+
+  // Cada camino es una tarjeta: resumen (título, unidades, reparto y sobrantes), sugerencia por grupo y botón al pie.
   function crearFilaOpcion(opcion) {
     const fila = crear("article", `opcion opcion--${opcion.clave}`);
     const resumen = crear("div", "opcion__resumen");
-    resumen.append(crear("h4", "opcion__titulo", opcion.titulo), crear("p", "opcion__unidades", opcion.unidades));
+    resumen.append(crear("h4", "opcion__titulo", opcion.titulo), crearUnidades(opcion.unidades));
     if (opcion.reparto) resumen.append(crear("p", "opcion__reparto", opcion.reparto));
     resumen.append(crear("p", "opcion__sobrantes", opcion.sobrantes));
 
@@ -1178,20 +1263,52 @@ function iniciar() {
     elegir.type = "button";
     elegir.dataset.camino = opcion.clave;
     elegir.setAttribute("aria-pressed", String(plan.camino === opcion.clave));
-    detalle.append(elegir);
 
-    fila.append(resumen, detalle);
+    fila.append(resumen, detalle, elegir);
     return fila;
   }
 
-  // Muestra la frase, el reparto y los tres caminos.
-  function mostrarResultado(invitados, porInvitado) {
+  // Cuenta de 0 al valor en ~500 ms (con movimiento reducido, el valor final directo). Antes de contar se reserva
+  // el ancho de la cifra final, así nada se mueve.
+  function contarCifras(raiz) {
+    if (consultaMovimiento.matches) return;
+    const cifras = [...raiz.querySelectorAll(".opcion__cifra")];
+    cifras.forEach((cifra) => { cifra.style.minWidth = `${cifra.getBoundingClientRect().width}px`; });
+    let inicio = null;
+    let terminado = false;
+    function poner(suavizado) {
+      cifras.forEach((cifra) => {
+        if (cifra.isConnected) cifra.textContent = String(Math.round(Number(cifra.dataset.valor) * suavizado));
+      });
+    }
+    // Siempre termina en el valor final, aunque el navegador pause los cuadros (pestaña en segundo plano).
+    function terminar() {
+      if (terminado) return;
+      terminado = true;
+      poner(1);
+    }
+    function cuadro(ahora) {
+      if (terminado) return;
+      if (inicio === null) inicio = ahora;
+      const avance = Math.max(0, Math.min(1, (ahora - inicio) / DURACION_CONTEO_MS));
+      poner(1 - Math.pow(1 - avance, 3));
+      if (avance < 1) requestAnimationFrame(cuadro);
+      else terminar();
+    }
+    cifras.forEach((cifra) => { cifra.textContent = "0"; });
+    requestAnimationFrame(cuadro);
+    setTimeout(terminar, DURACION_CONTEO_MS + 250);
+  }
+
+  // Muestra la frase, el reparto y los tres caminos; "contar" anima las cifras (no al restaurar el plan guardado).
+  function mostrarResultado(invitados, porInvitado, contar = false) {
     const modelo = describirResultado(invitados, catalogo, porInvitado);
     resultadoCalculadora.classList.remove("calculadora__frase--error");
     resultadoCalculadora.textContent = modelo.frase;
     ponerTexto(sobrantesCalculadora, modelo.sobrantes);
     opcionesCalculadora.replaceChildren(...modelo.opciones.map(crearFilaOpcion));
     caminosCalculadora.hidden = false;
+    if (contar) contarCifras(opcionesCalculadora);
   }
 
   // Un dato inválido reemplaza el resultado anterior por el aviso.
@@ -1213,6 +1330,19 @@ function iniciar() {
     ponerTexto(contextoCamino, textoContextoCamino(plan));
   }
 
+  // Datos a considerar: resalta el tramo (data-desde y data-hasta) que contiene lo escrito en "Bocaditos por invitado".
+  // Vacío, decimal o fuera de 3 a 10: ninguno. No cambia ni rellena el campo.
+  const itemsConsiderar = [...document.querySelectorAll(".considerar__item[data-desde]")];
+  function resaltarTramo() {
+    const texto = campoBocaditos.validity.badInput ? "" : campoBocaditos.value.trim();
+    const valor = texto === "" ? NaN : Number(texto);
+    itemsConsiderar.forEach((item) => {
+      const dentro = Number.isInteger(valor) && valor >= Number(item.dataset.desde) && valor <= Number(item.dataset.hasta);
+      if (dentro) item.setAttribute("aria-current", "true");
+      else item.removeAttribute("aria-current");
+    });
+  }
+
   function calcularInvitados(evento) {
     evento.preventDefault();
     // Un número escrito a medias (por ejemplo "6e") llega vacío; se trata como inválido, no como dato que falta.
@@ -1229,7 +1359,8 @@ function iniciar() {
     }
     plan = { invitados: validacion.invitados, porInvitado: validacion.porInvitado, camino: plan.camino };
     guardarPlan();
-    mostrarResultado(plan.invitados, plan.porInvitado);
+    resaltarTramo();
+    mostrarResultado(plan.invitados, plan.porInvitado, true);
     dibujarContextoCamino();
     dibujarLista();
     registrar("usar_calculadora", {
@@ -1264,9 +1395,359 @@ function iniciar() {
     campoInvitados.value = String(plan.invitados);
     if (!plan.porInvitado) return;
     campoBocaditos.value = String(plan.porInvitado);
+    resaltarTramo();
     mostrarResultado(plan.invitados, plan.porInvitado);
     if (plan.camino) aplicarFiltro(CAMINOS[plan.camino].filtro, false);
     dibujarContextoCamino();
+  }
+
+  /* --- Grupo: selector de la portada, foto, filtro del catálogo y galería (un solo estado) --- */
+
+  const selectorGrupo = $("selector-grupo");
+  const opcionesGrupo = [...selectorGrupo.querySelectorAll("[role=radio]")];
+  const figuraPortada = $("foto-portada").parentElement;
+  const selloPortada = figuraPortada.querySelector(".portada__sello");
+  // "Todo" usa la foto que ya trae el HTML; así las medidas y el texto alternativo no se duplican.
+  const fotoTodos = (() => {
+    const foto = $("foto-portada");
+    return {
+      src: foto.getAttribute("src"),
+      ancho: foto.getAttribute("width"),
+      alto: foto.getAttribute("height"),
+      posicion: "",
+      alt: foto.alt
+    };
+  })();
+  // Dulces y Salados: foto al azar entre las tarjetas de ese grupo marcadas con data-portada (su valor es el
+  // encuadre). Cada grupo tiene su baraja: no se repite ninguna hasta agotarlas ni salen dos iguales seguidas.
+  const barajasPortada = { dulce: { pendientes: [], ultima: null }, salado: { pendientes: [], ultima: null } };
+  function fotoAleatoriaPortada(grupo) {
+    const baraja = barajasPortada[grupo];
+    const aptas = fuentesGaleria.filter((fuente) => fuente.categoria === grupo && fuente.portada !== undefined);
+    if (!baraja || aptas.length === 0) return null;
+    const fuente = sacarDeBaraja(baraja.pendientes, aptas, baraja.ultima);
+    baraja.ultima = fuente;
+    return { src: fuente.src, ancho: fuente.ancho, alto: fuente.alto, posicion: fuente.portada, alt: fuente.alt };
+  }
+  let fotoPortada = $("foto-portada");
+  let grupoActual = "todos";
+  let versionFoto = 0;
+  let fundidoPendiente = null;
+
+  // Radiogroup: solo el elegido entra en el orden de tabulación.
+  function marcarSelectorGrupo(grupo) {
+    opcionesGrupo.forEach((opcion) => {
+      const activo = opcion.dataset.grupo === grupo;
+      opcion.setAttribute("aria-checked", String(activo));
+      opcion.tabIndex = activo ? 0 : -1;
+    });
+  }
+
+  // La foto nueva se superpone con opacidad 0, se funde y, al terminar, pasa a ser la foto principal.
+  function terminarFundido() {
+    if (!fundidoPendiente) return;
+    const { nueva } = fundidoPendiente;
+    fundidoPendiente = null;
+    nueva.classList.remove("portada__foto-nueva", "portada__foto-nueva--visible");
+    fotoPortada.remove();
+    nueva.id = "foto-portada";
+    fotoPortada = nueva;
+  }
+
+  function cambiarFotoPortada(grupo, animar) {
+    terminarFundido();
+    const version = ++versionFoto;
+    const dato = grupo === "todos" ? fotoTodos : fotoAleatoriaPortada(grupo);
+    if (!dato) return; // Sin fotos aptas en ese grupo se conserva la actual.
+    if (!animar) {
+      fotoPortada.src = dato.src;
+      fotoPortada.width = Number(dato.ancho);
+      fotoPortada.height = Number(dato.alto);
+      fotoPortada.alt = dato.alt;
+      fotoPortada.style.objectPosition = dato.posicion;
+      return;
+    }
+    const nueva = document.createElement("img");
+    nueva.className = "portada__foto-nueva";
+    nueva.width = Number(dato.ancho);
+    nueva.height = Number(dato.alto);
+    nueva.alt = dato.alt;
+    nueva.decoding = "async";
+    nueva.style.objectPosition = dato.posicion;
+    // El fundido empieza cuando la foto ya cargó; si el visitante cambia otra vez antes, esta se descarta.
+    nueva.addEventListener("load", () => {
+      if (version !== versionFoto) return;
+      figuraPortada.insertBefore(nueva, selloPortada);
+      void nueva.offsetWidth; // Fija la opacidad inicial antes de pedir la final.
+      fundidoPendiente = { nueva };
+      nueva.classList.add("portada__foto-nueva--visible");
+      const fin = () => { if (fundidoPendiente && fundidoPendiente.nueva === nueva) terminarFundido(); };
+      nueva.addEventListener("transitionend", fin, { once: true });
+      setTimeout(fin, 900); // Respaldo por si la transición no llega a dispararse.
+    }, { once: true });
+    nueva.src = dato.src;
+  }
+
+  // Cambia de grupo: selector, foto de la portada (con fundido si hay movimiento permitido) y galería.
+  // El filtro del catálogo lo aplica aplicarFiltro, que es quien llama a esta función.
+  function establecerGrupo(grupo) {
+    if (grupo === grupoActual || !opcionesGrupo.some((opcion) => opcion.dataset.grupo === grupo)) return;
+    grupoActual = grupo;
+    marcarSelectorGrupo(grupo);
+    cambiarFotoPortada(grupo, arrancado && !consultaMovimiento.matches);
+    dibujarGaleria(grupo);
+  }
+
+  function elegirGrupo(grupo) {
+    if (grupo === grupoActual) {
+      // Volver a pulsar Dulces o Salados trae otra foto de ese grupo; "Todo" conserva la portada.
+      if (grupo !== "todos") cambiarFotoPortada(grupo, !consultaMovimiento.matches);
+      return;
+    }
+    registrar("elegir_grupo", { grupo });
+    aplicarFiltro(grupo, false); // Sin scroll automático; la medición ya la hace "elegir_grupo".
+  }
+
+  /* --- Galería: carrusel de imágenes grandes, en orden aleatorio --- */
+
+  const seccionGaleria = $("galeria");
+  const pistaGaleria = $("galeria-pista");
+  const pausaGaleria = { cursor: false, foco: false, enPantalla: true, toqueHasta: 0 };
+  let animacionGaleria = 0;
+  let temporizadorGaleria = 0;
+  let temporizadorResalte = 0;
+  let tarjetaResaltada = null;
+
+  // Lee de las tarjetas del catálogo (id, foto y alt): no hay una lista de imágenes duplicada.
+  function leerFuentesGaleria() {
+    return [...rejilla.querySelectorAll(".tarjeta")].map((tarjeta) => {
+      const foto = tarjeta.querySelector(".tarjeta__foto img");
+      if (!foto) return null;
+      return {
+        id: tarjeta.dataset.id,
+        categoria: tarjeta.dataset.categoria,
+        nombre: tarjeta.querySelector(".tarjeta__nombre").textContent.trim(),
+        src: foto.getAttribute("src"),
+        alt: foto.alt,
+        ancho: foto.getAttribute("width"),
+        alto: foto.getAttribute("height"),
+        posicion: foto.style.objectPosition,
+        portada: tarjeta.dataset.portada // encuadre si la foto es apta para la portada; undefined si no
+      };
+    }).filter(Boolean);
+  }
+
+  const fuentesGaleria = leerFuentesGaleria();
+
+  // Cada diapositiva es un botón con su posición y nombre; las 3 primeras cargan normal y el resto de forma diferida.
+  function crearDiapositiva(fuente, indice, total) {
+    const boton = crear("button", "galeria__diapo");
+    boton.type = "button";
+    boton.dataset.id = fuente.id;
+    boton.setAttribute("aria-label", `${indice + 1} de ${total}: ${fuente.nombre}`);
+    const imagen = document.createElement("img");
+    imagen.src = fuente.src;
+    imagen.alt = fuente.alt;
+    imagen.width = Number(fuente.ancho);
+    imagen.height = Number(fuente.alto);
+    imagen.decoding = "async";
+    if (fuente.posicion) imagen.style.objectPosition = fuente.posicion;
+    if (indice >= 3) imagen.loading = "lazy";
+    boton.append(imagen);
+    return boton;
+  }
+
+  // Filtra por el grupo y reordena al azar (Fisher-Yates) cada vez que se dibuja.
+  function dibujarGaleria(grupo) {
+    cancelarAnimacionGaleria();
+    const fuentes = mezclar(fuentesGaleria.filter((fuente) => grupo === "todos" || fuente.categoria === grupo));
+    pistaGaleria.replaceChildren(...fuentes.map((fuente, indice) => crearDiapositiva(fuente, indice, fuentes.length)));
+    pistaGaleria.scrollLeft = 0;
+    seccionGaleria.hidden = fuentes.length === 0;
+  }
+
+  function cancelarAnimacionGaleria() {
+    animacionGaleria += 1;
+    pistaGaleria.style.scrollSnapType = "";
+  }
+
+  // Desplazamiento propio y pausado (más lento que el de "smooth"); sin movimiento permitido, salta directo.
+  function desplazarGaleria(destino, duracion) {
+    cancelarAnimacionGaleria();
+    const inicio = pistaGaleria.scrollLeft;
+    if (consultaMovimiento.matches || Math.abs(destino - inicio) < 1) {
+      pistaGaleria.scrollLeft = destino;
+      return;
+    }
+    const identificador = animacionGaleria;
+    const comienzo = performance.now();
+    pistaGaleria.style.scrollSnapType = "none"; // El ajuste al final se restablece al terminar.
+    function cuadro(ahora) {
+      if (identificador !== animacionGaleria) return;
+      const avance = Math.min(1, (ahora - comienzo) / duracion);
+      const suavizado = avance < .5 ? 4 * avance ** 3 : 1 - ((-2 * avance + 2) ** 3) / 2;
+      pistaGaleria.scrollLeft = inicio + (destino - inicio) * suavizado;
+      if (avance < 1) requestAnimationFrame(cuadro);
+      else pistaGaleria.style.scrollSnapType = "";
+    }
+    requestAnimationFrame(cuadro);
+  }
+
+  // Avanza (o retrocede) una diapositiva; al pasar el final vuelve al inicio (y al revés) con desplazamiento suave.
+  function avanzarGaleria(sentido, automatico = false) {
+    const diapositivas = pistaGaleria.children;
+    if (diapositivas.length < 2) return;
+    const paso = diapositivas[1].offsetLeft - diapositivas[0].offsetLeft;
+    const maximo = pistaGaleria.scrollWidth - pistaGaleria.clientWidth;
+    if (maximo <= 1 || paso <= 0) return;
+    const posicion = pistaGaleria.scrollLeft;
+    const indice = Math.round(posicion / paso);
+    let destino;
+    let duracion = automatico ? 1100 : 650;
+    if (sentido > 0) {
+      if (posicion >= maximo - 2) { destino = 0; duracion = 1300; }
+      else destino = Math.min((indice + 1) * paso, maximo);
+    } else if (posicion <= 2) {
+      destino = maximo;
+      duracion = 1300;
+    } else {
+      destino = Math.max((indice - 1) * paso, 0);
+    }
+    desplazarGaleria(destino, duracion);
+  }
+
+  // El avance automático se pausa con el cursor encima, con foco dentro, al tocar o arrastrar y con la pestaña oculta.
+  function avanceAutomaticoGaleria() {
+    if (consultaMovimiento.matches || document.hidden || seccionGaleria.hidden) return;
+    if (pausaGaleria.cursor || pausaGaleria.foco || !pausaGaleria.enPantalla) return;
+    if (Date.now() < pausaGaleria.toqueHasta) return;
+    avanzarGaleria(1, true);
+  }
+
+  // Con movimiento reducido no hay avance automático; si el ajuste cambia, se enciende o apaga.
+  function programarAvanceGaleria() {
+    clearInterval(temporizadorGaleria);
+    temporizadorGaleria = consultaMovimiento.matches ? 0 : setInterval(avanceAutomaticoGaleria, INTERVALO_GALERIA_MS);
+  }
+
+  function tocarGaleria() {
+    cancelarAnimacionGaleria();
+    pausaGaleria.toqueHasta = Date.now() + PAUSA_TRAS_TOQUE_MS;
+  }
+
+  // Lleva a la tarjeta del catálogo, con un resalte breve (solo con movimiento permitido). No cambia nada más.
+  function irATarjeta(id) {
+    const tarjeta = rejilla.querySelector(`.tarjeta[data-id="${CSS.escape(id)}"]`);
+    if (!tarjeta) return;
+    if (tarjeta.hidden) aplicarFiltro("todos", false); // Si el filtro la oculta, primero se muestra todo.
+    const conMovimiento = !consultaMovimiento.matches;
+    tarjeta.scrollIntoView({ behavior: conMovimiento ? "smooth" : "auto", block: "center" });
+    clearTimeout(temporizadorResalte);
+    if (tarjetaResaltada) tarjetaResaltada.classList.remove("tarjeta--resaltada");
+    if (!conMovimiento) return;
+    tarjetaResaltada = tarjeta;
+    tarjeta.classList.add("tarjeta--resaltada");
+    temporizadorResalte = setTimeout(() => tarjeta.classList.remove("tarjeta--resaltada"), 1900);
+  }
+
+  /* --- Subrayado del menú que sigue al cursor (escritorio con puntero fino) --- */
+
+  const encabezado = $("inicio");
+  const menu = encabezado.querySelector(".menu");
+  const indicadorMenu = menu.querySelector(".menu__indicador");
+  const consultaPunteroFino = window.matchMedia("(min-width: 48em) and (hover: hover) and (pointer: fine)");
+  let indicadorActivo = false;
+  let punteroMenu = null;
+  let cuadroMenu = 0;
+
+  function ocultarIndicadorMenu() {
+    cancelAnimationFrame(cuadroMenu);
+    cuadroMenu = 0;
+    punteroMenu = null;
+    if (!indicadorActivo) return;
+    indicadorActivo = false;
+    indicadorMenu.style.opacity = "0";
+  }
+
+  // Coloca el subrayado bajo el enlace más cercano en horizontal; su intensidad crece al acercarse a la barra.
+  function actualizarIndicadorMenu() {
+    cuadroMenu = 0;
+    if (!punteroMenu) return;
+    const { x, y } = punteroMenu;
+    const caja = menu.getBoundingClientRect();
+    let elegido = null;
+    let mejor = [Infinity, Infinity];
+    menu.querySelectorAll("a").forEach((enlace) => {
+      const r = enlace.getBoundingClientRect();
+      const distancia = x < r.left ? r.left - x : (x > r.right ? x - r.right : 0);
+      const alCentro = Math.abs(x - (r.left + r.right) / 2);
+      if (distancia < mejor[0] || (distancia === mejor[0] && alCentro < mejor[1])) {
+        mejor = [distancia, alCentro];
+        elegido = enlace;
+      }
+    });
+    if (!elegido) return;
+    const alcance = Math.max(1, encabezado.getBoundingClientRect().bottom + MARGEN_ZONA_MENU_PX - caja.bottom);
+    const distanciaVertical = y < caja.top ? caja.top - y : (y > caja.bottom ? y - caja.bottom : 0);
+    const cercania = Math.min(1, Math.max(0, 1 - distanciaVertical / alcance));
+    const relleno = parseFloat(getComputedStyle(elegido).paddingLeft) || 0;
+    const aplicar = () => {
+      indicadorMenu.style.width = `${elegido.offsetWidth - 2 * relleno}px`;
+      // De 2 a 4 px de grosor (escala vertical sobre 4 px) y de opacidad tenue a plena.
+      indicadorMenu.style.transform = `translateX(${elegido.offsetLeft + relleno}px) scaleY(${0.5 + 0.5 * cercania})`;
+      indicadorMenu.style.opacity = String(0.2 + 0.8 * cercania);
+    };
+    if (indicadorActivo) {
+      aplicar();
+    } else {
+      // Al aparecer se coloca directamente bajo el enlace, sin deslizar desde la última posición.
+      indicadorMenu.classList.add("menu__indicador--sin-deslizar");
+      aplicar();
+      void indicadorMenu.offsetWidth;
+      indicadorMenu.classList.remove("menu__indicador--sin-deslizar");
+      indicadorActivo = true;
+    }
+  }
+
+  // Fuera de la zona (encabezado y unos 48 px debajo) no se hace ningún trabajo.
+  function moverPunteroMenu(evento) {
+    if (evento.pointerType === "touch") return;
+    if (evento.clientY > encabezado.getBoundingClientRect().bottom + MARGEN_ZONA_MENU_PX) {
+      if (indicadorActivo) ocultarIndicadorMenu();
+      return;
+    }
+    punteroMenu = { x: evento.clientX, y: evento.clientY };
+    if (!cuadroMenu) cuadroMenu = requestAnimationFrame(actualizarIndicadorMenu);
+  }
+
+  function salirDeLaVentana(evento) {
+    if (!evento.relatedTarget) ocultarIndicadorMenu();
+  }
+
+  function sincronizarSubrayadoMenu() {
+    document.removeEventListener("pointermove", moverPunteroMenu);
+    document.removeEventListener("mouseout", salirDeLaVentana);
+    ocultarIndicadorMenu();
+    if (!consultaPunteroFino.matches) return;
+    document.addEventListener("pointermove", moverPunteroMenu, { passive: true });
+    document.addEventListener("mouseout", salirDeLaVentana);
+  }
+
+  /* --- Barra de progreso de lectura (transform: scaleX, sin recalcular el diseño) --- */
+
+  const barraProgreso = $("progreso-lectura");
+  let cuadroProgreso = 0;
+
+  function actualizarProgreso() {
+    cuadroProgreso = 0;
+    if (consultaMovimiento.matches) return; // Con movimiento reducido la barra no se muestra.
+    const recorrido = raiz.scrollHeight - window.innerHeight;
+    const avance = recorrido > 0 ? Math.min(1, Math.max(0, window.scrollY / recorrido)) : 0;
+    barraProgreso.style.transform = `scaleX(${avance})`;
+  }
+
+  function pedirProgreso() {
+    if (!cuadroProgreso && !consultaMovimiento.matches) cuadroProgreso = requestAnimationFrame(actualizarProgreso);
   }
 
   /* --- Eventos --- */
@@ -1324,11 +1805,74 @@ function iniciar() {
   [campoInvitados, campoBocaditos].forEach((campo) => {
     campo.addEventListener("input", () => campo.removeAttribute("aria-invalid"));
   });
+  campoBocaditos.addEventListener("input", resaltarTramo);
+  campoBocaditos.addEventListener("change", resaltarTramo);
 
   opcionesCalculadora.addEventListener("click", (evento) => {
     const boton = evento.target.closest("[data-camino]");
     if (boton) elegirCamino(boton.dataset.camino);
   });
+
+  // Selector de grupo: clic o flechas (Inicio y Fin también); las flechas mueven el foco y eligen.
+  selectorGrupo.addEventListener("click", (evento) => {
+    const opcion = evento.target.closest("[role=radio]");
+    if (opcion) elegirGrupo(opcion.dataset.grupo);
+  });
+  selectorGrupo.addEventListener("keydown", (evento) => {
+    const actual = opcionesGrupo.indexOf(document.activeElement);
+    if (actual < 0) return;
+    const cantidad = opcionesGrupo.length;
+    let siguiente;
+    if (evento.key === "ArrowRight" || evento.key === "ArrowDown") siguiente = (actual + 1) % cantidad;
+    else if (evento.key === "ArrowLeft" || evento.key === "ArrowUp") siguiente = (actual - 1 + cantidad) % cantidad;
+    else if (evento.key === "Home") siguiente = 0;
+    else if (evento.key === "End") siguiente = cantidad - 1;
+    else return;
+    evento.preventDefault();
+    opcionesGrupo[siguiente].focus();
+    elegirGrupo(opcionesGrupo[siguiente].dataset.grupo);
+  });
+
+  // Galería
+  pistaGaleria.addEventListener("click", (evento) => {
+    const diapositiva = evento.target.closest(".galeria__diapo");
+    if (diapositiva) irATarjeta(diapositiva.dataset.id);
+  });
+  $("galeria-anterior").addEventListener("click", () => avanzarGaleria(-1));
+  $("galeria-siguiente").addEventListener("click", () => avanzarGaleria(1));
+  seccionGaleria.addEventListener("pointerenter", (evento) => {
+    if (evento.pointerType !== "touch") pausaGaleria.cursor = true;
+  });
+  seccionGaleria.addEventListener("pointerleave", () => { pausaGaleria.cursor = false; });
+  ["pointerdown", "touchstart", "wheel"].forEach((tipo) => {
+    seccionGaleria.addEventListener(tipo, tocarGaleria, { passive: true });
+  });
+  ["pointerup", "pointercancel", "touchend"].forEach((tipo) => {
+    seccionGaleria.addEventListener(tipo, () => { pausaGaleria.toqueHasta = Date.now() + PAUSA_TRAS_TOQUE_MS; });
+  });
+  seccionGaleria.addEventListener("focusin", () => { pausaGaleria.foco = true; });
+  seccionGaleria.addEventListener("focusout", (evento) => {
+    if (!seccionGaleria.contains(evento.relatedTarget)) pausaGaleria.foco = false;
+  });
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(([entrada]) => { pausaGaleria.enPantalla = entrada.isIntersecting; }).observe(seccionGaleria);
+  }
+  consultaMovimiento.addEventListener("change", () => { programarAvanceGaleria(); actualizarProgreso(); });
+
+  // Subrayado del menú y barra de lectura
+  consultaPunteroFino.addEventListener("change", sincronizarSubrayadoMenu);
+  window.addEventListener("scroll", pedirProgreso, { passive: true });
+  window.addEventListener("resize", pedirProgreso);
+
+  /* --- Nosotros --- */
+
+  // "Nosotros": la cantidad de sabores sale del catálogo real (las tarjetas con precio; la especial por cotizar no cuenta).
+  function escribirCantidadSabores() {
+    const titulo = $("nosotros-sabores");
+    if (titulo && catalogo.size > 0) {
+      titulo.textContent = catalogo.size === 1 ? "1 sabor para mezclar" : `${catalogo.size} sabores para mezclar`;
+    }
+  }
 
   /* --- Arranque --- */
 
@@ -1336,9 +1880,16 @@ function iniciar() {
     actualizarPrecioTarjeta(tarjeta);
     actualizarCotizacion(tarjeta);
   });
+  prepararSellos();
+  escribirCantidadSabores();
+  dibujarGaleria(grupoActual);
   actualizarMinimoFecha();
   restaurarPlan();
   dibujarLista();
+  programarAvanceGaleria();
+  sincronizarSubrayadoMenu();
+  actualizarProgreso();
+  arrancado = true;
 }
 
 if (typeof document !== "undefined") iniciar();
@@ -1354,6 +1905,6 @@ if (typeof module !== "undefined" && module.exports) {
     resumirCarrito, construirMensajePedido, construirMensajeCotizacion, construirEnlaceWhatsApp, aCentimos, tienePrecios,
     registrar, aSoles, codificarSugerencia,
     CAMINOS, calcularMetas, evaluarAvance, describirEstadoLista, describirLista, normalizarPlan,
-    textoContextoCamino, textoEventoPedido, textoSobrantesEquidad, textoSobrantesOpcion, planCompleto
+    textoContextoCamino, textoEventoPedido, textoSobrantesEquidad, textoSobrantesOpcion, planCompleto, mezclar, sacarDeBaraja
   };
 }
