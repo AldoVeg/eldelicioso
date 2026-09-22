@@ -28,7 +28,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="index.css">
+  <!-- El ?v= evita que el navegador (y la caché de GitHub Pages) sirvan una versión vieja de estos dos archivos
+       después de publicar un cambio: sin él, "actualizar la página" no bastaba y quedaba pegado con datos
+       anteriores hasta borrar caché a mano. Cambia este número (por ejemplo a la fecha y hora, AAAAMMDDHHmm)
+       cada vez que subas una actualización de index.css o index.js. -->
+  <link rel="stylesheet" href="index.css?v=202609212159">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -48,7 +52,7 @@
     "priceRange": "S/ 28 - S/ 255"
   }
   </script>
-  <script src="index.js" defer></script>
+  <script src="index.js?v=202609212159" defer></script>
 </head>
 <body id="arriba">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -1122,8 +1126,10 @@
     </li>
   </template>
 
-  <a class="whatsapp-flotante" data-ubicacion="flotante" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Quisiera%20consultar%20por%20sus%20bocaditos." target="_blank" rel="noopener noreferrer" aria-label="Escribir por WhatsApp">
-    <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-whatsapp"/></svg>
-  </a>
+  <aside aria-label="Contacto directo por WhatsApp">
+    <a class="whatsapp-flotante" data-ubicacion="flotante" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Quisiera%20consultar%20por%20sus%20bocaditos." target="_blank" rel="noopener noreferrer" aria-label="Escribir por WhatsApp">
+      <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-whatsapp"/></svg>
+    </a>
+  </aside>
 </body>
 </html>
