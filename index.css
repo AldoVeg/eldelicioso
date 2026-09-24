@@ -1818,3 +1818,22 @@ button { cursor: pointer; }
 .cinta-aviso p { margin: 0; }
 .cinta-aviso a { color: #fff; font-weight: 700; text-decoration: underline; text-underline-offset: .2em; }
 .cinta-aviso a:hover { text-decoration-thickness: 2px; }
+
+/* ===== Franja de novedad con imagen (tablet y escritorio) ===== */
+/* En móvil la imagen sería ilegible, así que ahí queda la cinta de texto; desde 48em la cinta cede su lugar a la franja. */
+.franja-aviso { display: none; overflow: hidden; background-color: #F1EDE1; border-bottom: 1px solid var(--borde); }
+.franja-aviso__enlace { display: block; }
+.franja-aviso__enlace:focus-visible { outline-offset: -6px; }
+.franja-aviso__imagen { display: block; width: 100%; height: auto; }
+@media (min-width: 48em) {
+  .cinta-aviso { display: none; }
+  .franja-aviso:not([hidden]) { display: block; }
+}
+/* Movimiento sutil: la imagen "respira" con un acercamiento mínimo, centrado, para que ningún texto llegue a recortarse */
+@media (prefers-reduced-motion: no-preference) {
+  .franja-aviso__imagen { transform-origin: 50% 50%; animation: franja-respira 20s ease-in-out infinite alternate; }
+}
+@keyframes franja-respira {
+  from { transform: scale(1); }
+  to { transform: scale(1.035); }
+}

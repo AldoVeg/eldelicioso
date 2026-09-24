@@ -2213,11 +2213,13 @@ function iniciar() {
   }
 
   // Cinta de aviso: se oculta pasada su fecha (data-hasta) y su enlace lleva a la tarjeta del producto.
-  const cintaAviso = $("cinta-aviso");
-  if (cintaAviso) {
-    const hasta = new Date(`${cintaAviso.dataset.hasta}T23:59:59`);
-    if (!Number.isNaN(hasta.getTime()) && new Date() > hasta) cintaAviso.hidden = true;
-    $("cinta-aviso-enlace").addEventListener("click", (evento) => {
+  // Lo mismo vale para la franja con imagen (tablet y escritorio).
+  for (const [idAviso, idEnlace] of [["cinta-aviso", "cinta-aviso-enlace"], ["franja-aviso", "franja-aviso-enlace"]]) {
+    const aviso = $(idAviso);
+    if (!aviso) continue;
+    const hasta = new Date(`${aviso.dataset.hasta}T23:59:59`);
+    if (!Number.isNaN(hasta.getTime()) && new Date() > hasta) aviso.hidden = true;
+    $(idEnlace).addEventListener("click", (evento) => {
       evento.preventDefault();
       irATarjeta("empanadas-amazonicas");
     });
