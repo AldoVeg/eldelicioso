@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-version="202609232130">
+<html lang="es" data-version="202609232245">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,7 +35,7 @@
        index.js, hay que actualizar ESTOS TRES LUGARES A LA VEZ con la misma fecha y hora (AAAAMMDDHHmm):
        1) el ?v= de index.css y de index.js aquí abajo, 2) data-version en la etiqueta <html> de arriba,
        3) el valor "v" de version.json en la raíz del repositorio. -->
-  <link rel="stylesheet" href="index.css?v=202609232130">
+  <link rel="stylesheet" href="index.css?v=202609232245">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -55,7 +55,7 @@
     "priceRange": "S/ 28 - S/ 255"
   }
   </script>
-  <script src="index.js?v=202609232130" defer></script>
+  <script src="index.js?v=202609232245" defer></script>
 </head>
 <body id="arriba">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -76,8 +76,7 @@
       <nav class="menu" aria-label="Principal">
         <a href="#planificador">Planifica</a>
         <a href="#catalogo">Catálogo</a>
-        <a href="#ocasiones">Ocasiones</a>
-        <a href="#combos">Combos</a>
+        <a href="#promos">Promos</a>
         <a href="#nosotros">Nosotros</a>
         <!-- Subrayado decorativo que sigue al cursor cerca de la zona superior (solo escritorio con puntero fino) -->
         <span class="menu__indicador" aria-hidden="true"></span>
@@ -999,7 +998,7 @@
           <li class="paso">
             <span class="paso__numero" aria-hidden="true">1</span>
             <h3 class="paso__titulo">Elige tus antojos</h3>
-            <p>Recorre el catálogo o toma un combo y ve armando tu lista. Mezcla dulces y salados a tu gusto.</p>
+            <p>Recorre el catálogo o toma una promo y ve armando tu lista. Mezcla dulces y salados a tu gusto.</p>
           </li>
           <li class="paso">
             <span class="paso__numero" aria-hidden="true">2</span>
@@ -1015,72 +1014,18 @@
       </div>
     </section>
 
-    <section id="ocasiones" class="seccion ocasiones" aria-labelledby="titulo-ocasiones">
+    <!-- Promo para cada ocasión: el script arma las tarjetas (definiciones en COMBOS de index.js) con los productos y
+         precios del catálogo de arriba. Cada tarjeta lleva su foto de ocasión (img/OCASIONES/) oculta de fondo; aparece
+         solo al acercar el cursor (o con foco de teclado dentro, o al tocar), y el texto pasa a un recuadro
+         semitransparente para seguir siendo legible. Sin JavaScript la sección queda oculta. -->
+    <section id="promos" class="seccion promos" aria-labelledby="titulo-promos" hidden>
       <div class="contenedor">
         <header class="seccion__cabecera">
           <span class="filete" aria-hidden="true"></span>
-          <h2 id="titulo-ocasiones" class="seccion__titulo">Para tu ocasión</h2>
-          <p class="seccion__intro">Dinos qué celebras y elegimos contigo.</p>
+          <h2 id="titulo-promos" class="seccion__titulo">Promo para cada ocasión</h2>
+          <p class="seccion__intro">Mitad salados, mitad dulces, con 5% de descuento.</p>
         </header>
-
-        <!-- Cada tarjeta lleva su foto de ocasión (img/OCASIONES/) oculta de fondo; aparece solo al acercar el
-             cursor (o con foco de teclado dentro, o al tocar en pantallas táctiles), y el texto pasa a un recuadro
-             semitransparente para seguir siendo legible. La foto es decorativa: el texto ya dice de qué ocasión se trata. -->
-        <div class="ocasiones__rejilla">
-          <article class="ocasion ocasion--cumpleanos">
-            <img class="ocasion__foto" src="img/OCASIONES/cumpleanos.jpg" width="549" height="213" alt="" aria-hidden="true" loading="lazy" decoding="async">
-            <div class="ocasion__cuerpo">
-              <h3 class="ocasion__titulo">Cumpleaños</h3>
-              <p>Que los invitados vuelvan por más.</p>
-              <a class="ocasion__enlace" data-ubicacion="ocasion_cumpleanos" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Celebro%20un%20cumplea%C3%B1os%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
-            </div>
-          </article>
-          <article class="ocasion ocasion--baby">
-            <img class="ocasion__foto" src="img/OCASIONES/baby-shower.jpg" width="530" height="208" alt="" aria-hidden="true" loading="lazy" decoding="async">
-            <div class="ocasion__cuerpo">
-              <h3 class="ocasion__titulo">Baby shower</h3>
-              <p>Una bienvenida dulce (y salada) para el bebé.</p>
-              <a class="ocasion__enlace" data-ubicacion="ocasion_baby" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Organizo%20un%20baby%20shower%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
-            </div>
-          </article>
-          <article class="ocasion ocasion--trabajo">
-            <img class="ocasion__foto" src="img/OCASIONES/reunion-trabajo.jpg" width="474" height="217" alt="" aria-hidden="true" loading="lazy" decoding="async">
-            <div class="ocasion__cuerpo">
-              <h3 class="ocasion__titulo">Reunión de trabajo</h3>
-              <p>Un detalle para que la pausa sepa mejor.</p>
-              <a class="ocasion__enlace" data-ubicacion="ocasion_trabajo" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Tengo%20una%20reuni%C3%B3n%20de%20trabajo%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
-            </div>
-          </article>
-          <article class="ocasion ocasion--colegio">
-            <img class="ocasion__foto" src="img/OCASIONES/colegio-iglesia.jpg" width="631" height="245" alt="" aria-hidden="true" loading="lazy" decoding="async">
-            <div class="ocasion__cuerpo">
-              <h3 class="ocasion__titulo">Colegio o iglesia</h3>
-              <p>Para compartir con todos, en cantidad.</p>
-              <a class="ocasion__enlace" data-ubicacion="ocasion_colegio" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Organizo%20un%20evento%20en%20un%20colegio%20o%20iglesia%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
-            </div>
-          </article>
-          <article class="ocasion ocasion--otro">
-            <img class="ocasion__foto" src="img/OCASIONES/otro-evento.jpg" width="584" height="226" alt="" aria-hidden="true" loading="lazy" decoding="async">
-            <div class="ocasion__cuerpo">
-              <h3 class="ocasion__titulo">Otro evento</h3>
-              <p>¿Otro plan? Escríbenos y lo armamos contigo.</p>
-              <a class="ocasion__enlace" data-ubicacion="ocasion_otro" href="https://wa.me/51980592747?text=Hola%2C%20El%20Delicioso.%20Tengo%20otro%20plan%20y%20quiero%20que%20me%20ayuden%20a%20elegir%20bocaditos." target="_blank" rel="noopener noreferrer">Consultar por WhatsApp</a>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Combos por ocasión: el script arma las tarjetas (definiciones en COMBOS de index.js) con los productos y precios
-         del catálogo de arriba; sin JavaScript la sección queda oculta. -->
-    <section id="combos" class="seccion combos" aria-labelledby="titulo-combos" hidden>
-      <div class="contenedor">
-        <header class="seccion__cabecera">
-          <span class="filete" aria-hidden="true"></span>
-          <h2 id="titulo-combos" class="seccion__titulo">Combos por ocasión</h2>
-          <p class="seccion__intro">Mitad salados, mitad dulces, con 5% de descuento. Cambia los sabores a tu antojo.</p>
-        </header>
-        <div class="combos__rejilla" id="combos-rejilla"></div>
+        <div class="promos__rejilla" id="promos-rejilla"></div>
       </div>
     </section>
 

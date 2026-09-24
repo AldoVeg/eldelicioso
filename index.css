@@ -635,83 +635,6 @@ button { cursor: pointer; }
   color: var(--acento);
 }
 
-/* ===== Para tu ocasión ===== */
-/* Va justo después de "Ventajas" (rosado), así que se queda en el fondo claro */
-.ocasiones { background: var(--fondo); }
-
-.ocasiones__rejilla {
-  display: grid;
-  gap: var(--e-4);
-  grid-template-columns: minmax(0, 1fr);
-}
-
-/* Tarjetas en reposo: solo borde fino y texto, sin foto. La foto es decorativa (el texto ya nombra la ocasión) y
-   queda oculta de fondo hasta que se acerca el cursor (o hay foco de teclado dentro, o se toca en pantallas táctiles);
-   entonces aparece cubriendo toda la tarjeta y el texto pasa a un recuadro semitransparente para seguir siendo legible
-   (contraste AA, mínimo 4,8:1) sobre cualquier foto. */
-.ocasion {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: var(--e-5);
-  background-color: transparent;
-  border: 1px solid var(--borde);
-  border-radius: var(--r-lg);
-}
-.ocasion__foto {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  pointer-events: none;
-}
-.ocasion__cuerpo {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  gap: var(--e-2);
-  margin: calc(var(--e-5) * -1);
-  padding: var(--e-5);
-  border-radius: var(--r-md);
-  background-color: transparent;
-}
-.ocasion__titulo { font-size: var(--t-lg); font-weight: 700; }
-.ocasion p { color: var(--texto-suave); }
-
-.ocasion__enlace {
-  align-self: flex-start;
-  margin-top: auto;
-  padding-top: var(--e-4);
-  font-family: var(--fuente-mono);
-  font-size: var(--t-mono);
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-}
-.ocasion__enlace::after { content: " \2192"; content: " \2192" / ""; }
-
-/* Foto y recuadro semitransparente: solo al acercar el cursor, con foco de teclado dentro o al pulsar (táctil) */
-.ocasion:hover .ocasion__foto,
-.ocasion:focus-within .ocasion__foto,
-.ocasion:active .ocasion__foto { opacity: 1; }
-.ocasion:hover .ocasion__cuerpo,
-.ocasion:focus-within .ocasion__cuerpo,
-.ocasion:active .ocasion__cuerpo {
-  background-color: rgba(255, 251, 246, .88);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .ocasion__foto { transition: opacity .3s ease; }
-  .ocasion__cuerpo { transition: background-color .3s ease; }
-}
-
 /* Planificador: tarjeta con barra superior degradada (rojo a dorado).
    Cabecera (título y campos), barra de resultado y cuerpo (datos a la izquierda, caminos a la derecha). */
 .calculadora {
@@ -991,8 +914,6 @@ button { cursor: pointer; }
 @media (min-width: 40em) {
   .portada__acciones { display: flex; flex-wrap: wrap; }
   .catalogo__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-5); }
-  .ocasiones__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ocasiones__rejilla > article:last-of-type { grid-column: 1 / -1; }
 }
 
 /* ===== Escritorio ===== */
@@ -1041,10 +962,6 @@ button { cursor: pointer; }
   .tarjeta--destacada .tarjeta__foto img { position: absolute; inset: 0; }
   .tarjeta--destacada .tarjeta__cuerpo { justify-content: center; padding: var(--e-6); }
   .tarjeta--destacada .tarjeta__nombre { font-size: var(--t-xl); }
-
-  .ocasiones__rejilla { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .ocasion, .ocasiones__rejilla > article:last-of-type { grid-column: span 2; }
-  .ocasion--cumpleanos, .ocasion--baby { grid-column: span 3; }
 }
 
 @media (min-width: 75em) {
@@ -1090,7 +1007,7 @@ button { cursor: pointer; }
 
   /* 5. Aparición suave al desplazar (solo navegadores con animaciones por scroll) */
   @supports (animation-timeline: view()) {
-    .tarjeta, .ocasion, .calculadora, .datos__item {
+    .tarjeta, .promo, .calculadora, .datos__item {
       animation: aparecer linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 35%;
@@ -1643,7 +1560,7 @@ button { cursor: pointer; }
 }
 
 /* =====================================================================
-   Guía de 3 pasos, combos por ocasión y control de pausa de la galería
+   Guía de 3 pasos, promos por ocasión y control de pausa de la galería
    ===================================================================== */
 
 /* ===== Galería: botón de pausa/reproducir (WCAG 2.2.2) ===== */
@@ -1677,7 +1594,7 @@ button { cursor: pointer; }
 .galeria__pausa[aria-pressed="true"]:hover { background: var(--acento-hover); border-color: var(--acento-hover); color: #fff; }
 
 /* ===== Cómo pedir en 3 pasos ===== */
-/* Tinte rosado (como Nosotros); ocasiones vuelve al fondo claro y combos a blanco, así no se pegan dos bloques iguales */
+/* Tinte rosado (como Nosotros); las promos van en el fondo claro, así no se pegan dos bloques rosados */
 .pasos { background: var(--fondo-rosado); }
 .pasos__lista { display: grid; gap: var(--e-4); }
 .paso {
@@ -1708,49 +1625,84 @@ button { cursor: pointer; }
 .paso__titulo { font-size: var(--t-lg); font-weight: 700; }
 .paso p { color: var(--texto-suave); }
 
-/* ===== Combos por ocasión ===== */
-.combos { background: var(--superficie); }
-.combos__rejilla {
+/* ===== Promo para cada ocasión ===== */
+/* Una tarjeta por ocasión, en tono minimalista: título, datos suaves, precio y un solo botón. Las tarjetas son
+   blancas sobre el fondo claro. La foto de la ocasión es decorativa (el texto ya la nombra) y queda oculta de fondo
+   hasta que se acerca el cursor (o hay foco de teclado dentro, o se toca en pantallas táctiles); entonces cubre la
+   tarjeta y el texto pasa a un recuadro semitransparente (contraste AA sobre cualquier foto). */
+.promos { background: var(--fondo); }
+.promos__rejilla {
   display: grid;
-  gap: var(--e-5);
+  gap: var(--e-4);
   grid-template-columns: minmax(0, 1fr);
 }
 
-.combo {
+.promo {
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: var(--e-3);
   min-width: 0;
   padding: var(--e-5);
-  padding-top: calc(var(--e-5) + 6px);
-  background: var(--fondo);
+  background: var(--superficie);
   border: 1px solid var(--borde);
   border-radius: var(--r-lg);
-  box-shadow: var(--sombra-suave);
   transition: box-shadow .25s;
 }
-/* Misma barra degradada rojo a dorado del planificador */
-.combo::before {
-  content: "";
+.promo:hover, .promo:focus-within { box-shadow: var(--sombra); }
+.promo__foto {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: var(--gradiente-pasion);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
 }
-.combo:hover, .combo:focus-within { box-shadow: var(--sombra); }
-.combo--personalizado { background: var(--fondo-rosado); }
+.promo__cuerpo {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--e-2);
+  margin: calc(var(--e-5) * -1);
+  padding: var(--e-5);
+  border-radius: var(--r-md);
+  background-color: transparent;
+}
+.promo__titulo { padding-right: 3.5rem; font-size: var(--t-lg); font-weight: 700; }
 
-/* Sello de "ya agregado": el mismo de las tarjetas del catálogo */
-.combo[data-en-lista] .tarjeta__sello { opacity: 1; visibility: visible; }
+/* Datos secundarios en letra suave: color tenue, tamaño pequeño y un halo claro casi imperceptible */
+.promo__dato {
+  color: var(--texto-suave);
+  font-size: var(--t-sm);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .8);
+}
+.promo__personas { font-weight: 600; }
 
-.combo__titulo { font-size: var(--t-lg); font-weight: 700; }
-.combo__frase { color: var(--texto-suave); font-size: var(--t-sm); }
-.combo__campos { display: grid; gap: var(--e-3); margin-top: var(--e-2); }
-.combo .selector { margin: 0; }
+/* "Cambiar productos": plegado por defecto */
+.promo__cambiar { margin-top: var(--e-1); }
+.promo__cambiar summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--acento);
+  font-family: var(--fuente-mono);
+  font-size: var(--t-mono);
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  list-style: none;
+}
+.promo__cambiar summary::-webkit-details-marker { display: none; }
+.promo__cambiar summary::after { content: "+"; font-size: 1.125rem; line-height: 1; }
+.promo__cambiar[open] summary::after { content: "\2212"; }
+.promo__cambiar summary:hover { color: var(--acento-hover); }
+.promo__campos { display: grid; gap: var(--e-3); padding-bottom: var(--e-2); }
+.promo .selector { margin: 0; }
 .selector__opciones--dos { grid-template-columns: repeat(2, 1fr); }
 
 .campo select {
@@ -1764,7 +1716,7 @@ button { cursor: pointer; }
 }
 .campo select:hover { border-color: var(--acento); }
 
-.combo__precio {
+.promo__precio {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -1772,15 +1724,15 @@ button { cursor: pointer; }
   margin-top: auto;
   padding-top: var(--e-2);
 }
-.combo__antes { color: var(--texto-suave); font-size: var(--t-md); }
-.combo__ahora {
+.promo__antes { color: var(--texto-suave); font-size: var(--t-md); }
+.promo__ahora {
   font-family: var(--fuente-titulo);
   font-size: var(--t-xl);
   font-weight: 800;
   line-height: 1.1;
   color: var(--acento);
 }
-.combo__ahorro {
+.promo__ahorro {
   padding: 2px 10px;
   background: #FFF1D6;
   border: 1.5px solid var(--acento-2);
@@ -1792,26 +1744,61 @@ button { cursor: pointer; }
   color: var(--texto);
 }
 
+/* Enlace discreto de dudas por WhatsApp, centrado bajo el botón */
+.promo__dudas {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--t-sm);
+  color: var(--texto-suave);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.promo__dudas:hover { color: var(--acento); }
+
+/* Sello de "ya agregado": el mismo de las tarjetas del catálogo */
+.promo[data-en-lista] .tarjeta__sello { opacity: 1; visibility: visible; }
+
+/* Foto y recuadro semitransparente: solo al acercar el cursor, con foco de teclado dentro o al pulsar (táctil) */
+.promo:hover .promo__foto,
+.promo:focus-within .promo__foto,
+.promo:active .promo__foto { opacity: 1; }
+.promo:hover .promo__cuerpo,
+.promo:focus-within .promo__cuerpo,
+.promo:active .promo__cuerpo {
+  background-color: rgba(255, 251, 246, .88);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .promo__foto { transition: opacity .3s ease; }
+  .promo__cuerpo { transition: background-color .3s ease; }
+}
+
 /* Fila de un combo en la lista: qué incluye y el precio anterior tachado */
 .lista__item-descuento { grid-column: 1; font-size: var(--t-xs); color: var(--texto-suave); }
 
 @media (min-width: 40em) {
-  .combos__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .combo--personalizado { grid-column: 1 / -1; }
-  .combo--personalizado .combo__campos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (min-width: 48em) {
-  .pasos__lista { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-5); }
+  .promos__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .promo:last-child { grid-column: 1 / -1; }
+  .promo:last-child .promo__campos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (min-width: 62.5em) {
-  .combos__rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .combo--personalizado { grid-column: span 2; }
+  .promos__rejilla { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .promo { grid-column: span 2; }
+  .promo:nth-child(n+4) { grid-column: span 3; }
+  .promo:last-child .promo__campos { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 48em) {
+  .pasos__lista { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-5); }
 }
 
 /* Aparición suave al desplazar (misma que las demás tarjetas) */
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
-    .paso, .combo {
+    .paso, .promo {
       animation: aparecer linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 35%;
@@ -1819,8 +1806,3 @@ button { cursor: pointer; }
   }
 }
 
-/* Tablet: con el enlace "Combos" el menú tiene cinco entradas; se reduce el relleno para que quepan todas */
-@media (min-width: 48em) and (max-width: 62.49em) {
-  .menu { gap: 0; }
-  .menu a { padding-inline: 6px; font-size: .875rem; }
-}

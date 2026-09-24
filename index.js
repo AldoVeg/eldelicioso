@@ -43,34 +43,51 @@ const CLAVE_ORIGEN = "el-delicioso-origen"; // sessionStorage: sobrevive mientra
 // Combos por ocasión: descuento sobre la suma de los precios del catálogo de cada mitad, redondeado al sol entero.
 // Aquí solo viven los ids de los productos por defecto y los textos; los precios salen siempre del catálogo real.
 const DESCUENTO_COMBO_PORCIENTO = 5;
+// Bocaditos que se cuentan por persona para decir "para cuántas personas alcanza".
+const BOCADITOS_POR_PERSONA = 3;
 // Cada combo se reparte mitad y mitad: la mitad es un paquete del catálogo (25 o 50 unidades).
 const MITADES_COMBO = [25, 50];
 const COMBOS = {
   cumpleanos: {
     clave: "cumpleanos", titulo: "Cumpleaños", nombreLista: "Combo Cumpleaños", total: 50,
     salado: "pettit-pollo", dulce: "mini-alfajores-coco",
-    frase: "Salado y dulce para que los invitados vuelvan por más."
+    frase: "Que los invitados vuelvan por más.",
+    foto: "img/OCASIONES/cumpleanos.jpg", fotoAncho: 549, fotoAlto: 213,
+    // Mensaje prellenado de "¿Dudas? Escríbenos" (el origen de la visita se suma después)
+    mensaje: "Hola, El Delicioso. Celebro un cumpleaños y quiero que me ayuden a elegir bocaditos."
   },
   "baby-shower": {
     clave: "baby-shower", titulo: "Baby shower", nombreLista: "Combo Baby shower", total: 50,
     salado: "mini-empanaditas-pollo", dulce: "mini-pay-limon",
-    frase: "Una bienvenida dulce (y salada) para el bebé."
+    frase: "Una bienvenida dulce (y salada) para el bebé.",
+    foto: "img/OCASIONES/baby-shower.jpg", fotoAncho: 530, fotoAlto: 208,
+    // Mensaje prellenado de "¿Dudas? Escríbenos" (el origen de la visita se suma después)
+    mensaje: "Hola, El Delicioso. Organizo un baby shower y quiero que me ayuden a elegir bocaditos."
   },
   "reunion-trabajo": {
     clave: "reunion-trabajo", titulo: "Reunión de trabajo", nombreLista: "Combo Reunión de trabajo", total: 50,
     salado: "mini-causitas-atun", dulce: "mini-alfachips",
-    frase: "Un detalle para que la pausa sepa mejor."
+    frase: "Un detalle para que la pausa sepa mejor.",
+    foto: "img/OCASIONES/reunion-trabajo.jpg", fotoAncho: 474, fotoAlto: 217,
+    // Mensaje prellenado de "¿Dudas? Escríbenos" (el origen de la visita se suma después)
+    mensaje: "Hola, El Delicioso. Tengo una reunión de trabajo y quiero que me ayuden a elegir bocaditos."
   },
   "colegio-iglesia": {
     clave: "colegio-iglesia", titulo: "Colegio o iglesia", nombreLista: "Combo Colegio o iglesia", total: 100,
     salado: "mini-empanaditas-pollo", dulce: "mini-alfajores-coco",
-    frase: "Para compartir con todos, en cantidad."
+    frase: "Para compartir con todos, en cantidad.",
+    foto: "img/OCASIONES/colegio-iglesia.jpg", fotoAncho: 631, fotoAlto: 245,
+    // Mensaje prellenado de "¿Dudas? Escríbenos" (el origen de la visita se suma después)
+    mensaje: "Hola, El Delicioso. Organizo un evento en un colegio o iglesia y quiero que me ayuden a elegir bocaditos."
   },
   // Sin total fijo: el visitante elige 50 o 100 unidades (mitad y mitad).
   personalizado: {
     clave: "personalizado", titulo: "Arma el tuyo", nombreLista: "Combo personalizado", total: null,
     salado: "pettit-pollo", dulce: "mini-alfajores-coco",
-    frase: "Elige tu salado, tu dulce y el tamaño: el descuento va incluido."
+    frase: "Tu plan, tus sabores: tú eliges.",
+    foto: "img/OCASIONES/otro-evento.jpg", fotoAncho: 584, fotoAlto: 226,
+    // Mensaje prellenado de "¿Dudas? Escríbenos" (el origen de la visita se suma después)
+    mensaje: "Hola, El Delicioso. Tengo otro plan y quiero que me ayuden a elegir bocaditos."
   }
 };
 
@@ -742,6 +759,12 @@ function calcularPrecioCombo(catalogo, { dulce, salado, tamano }) {
   return { anteriorCentimos, comboCentimos, ahorroCentimos: anteriorCentimos - comboCentimos };
 }
 
+// Para cuántas personas alcanza un combo contando BOCADITOS_POR_PERSONA por cabeza (solo personas completas).
+function calcularPersonasCombo(unidades) {
+  if (!Number.isInteger(unidades) || unidades < 0) return 0;
+  return Math.floor(unidades / BOCADITOS_POR_PERSONA);
+}
+
 // Devuelve la línea limpia de un combo guardado o null si está dañado, ya no existe o no coincide con su definición.
 function normalizarLineaCombo(item, catalogo) {
   if (!esComboValido(item.combo)) return null;
@@ -1119,7 +1142,7 @@ function iniciar() {
       boton.dataset.etiquetaOriginal = boton.getAttribute("aria-label") || "";
     }
     // Sirve para las tarjetas del catálogo y para las de combo.
-    const nombre = boton.closest(".tarjeta, .combo").querySelector(".tarjeta__nombre, .combo__titulo").textContent.trim();
+    const nombre = boton.closest(".tarjeta, .promo").querySelector(".tarjeta__nombre, .promo__titulo").textContent.trim();
     boton.textContent = "Agregado";
     boton.setAttribute("aria-label", `${nombre} agregado a la lista`);
     clearTimeout(Number(boton.dataset.temporizador));
@@ -1691,11 +1714,11 @@ function iniciar() {
     dibujarContextoCamino();
   }
 
-  /* --- Combos por ocasión --- */
+  /* --- Promo para cada ocasión (combos) --- */
 
-  const seccionCombos = $("combos");
-  const rejillaCombos = $("combos-rejilla");
-  // Una entrada por tarjeta: { definicion, tarjeta, selectDulce, selectSalado, radios, unidades, ... }
+  const seccionCombos = $("promos");
+  const rejillaCombos = $("promos-rejilla");
+  // Una entrada por tarjeta: { definicion, tarjeta, selectDulce, selectSalado, radios, contenido, personas, ... }
   const tarjetasCombos = [];
 
   // Opciones del selector: los productos con precio de esa categoría, en el orden del catálogo (el especial
@@ -1725,7 +1748,7 @@ function iniciar() {
 
   // Tamaño del combo (solo "Arma el tuyo"): 50 o 100 unidades, mitad y mitad.
   function crearSelectorTamanoCombo(clave) {
-    const grupo = crear("fieldset", "selector combo__tamano");
+    const grupo = crear("fieldset", "selector promo__tamano");
     grupo.append(crear("legend", "selector__leyenda", "Tamaño del combo"));
     const opciones = crear("div", "selector__opciones selector__opciones--dos");
     const radios = [50, 100].map((total, indice) => {
@@ -1745,9 +1768,20 @@ function iniciar() {
     return { grupo, radios };
   }
 
+  // Tarjeta de una ocasión: foto decorativa oculta de fondo (aparece con hover, foco o toque) y, encima, el cuerpo
+  // con título, frase, contenido, personas, "Cambiar productos" plegado, precio, botón y enlace de dudas.
   function crearTarjetaCombo(definicion) {
-    const tarjeta = crear("article", definicion.total ? "combo" : "combo combo--personalizado");
+    const tarjeta = crear("article", "promo");
     tarjeta.dataset.combo = definicion.clave;
+
+    const foto = crear("img", "promo__foto");
+    foto.src = definicion.foto;
+    foto.width = definicion.fotoAncho;
+    foto.height = definicion.fotoAlto;
+    foto.alt = "";
+    foto.setAttribute("aria-hidden", "true");
+    foto.loading = "lazy";
+    foto.decoding = "async";
 
     // Sello de "ya agregado" (el mismo de las tarjetas del catálogo) y su aviso para lectores de pantalla.
     const sello = crear("span", "tarjeta__sello");
@@ -1756,36 +1790,48 @@ function iniciar() {
     const aviso = crear("span", "solo-lectores tarjeta__aviso");
     aviso.setAttribute("role", "status");
 
-    const unidades = crear("p", "insignia combo__unidades");
-    const titulo = crear("h3", "combo__titulo", definicion.titulo);
-    const frase = crear("p", "combo__frase", definicion.frase);
+    const titulo = crear("h3", "promo__titulo", definicion.titulo);
+    const frase = crear("p", "promo__dato", definicion.frase);
+    const contenido = crear("p", "promo__dato promo__contenido");
+    const personas = crear("p", "promo__dato promo__personas");
+    personas.setAttribute("aria-live", "polite");
 
     const idBase = `combo-${definicion.clave}`;
     const selectDulce = crearSelectorCombo(`${idBase}-dulce`, "dulce", definicion.dulce);
     const selectSalado = crearSelectorCombo(`${idBase}-salado`, "salado", definicion.salado);
     const campoDulce = crearCampoCombo(selectDulce.id, "Dulce", selectDulce);
     const campoSalado = crearCampoCombo(selectSalado.id, "Salado", selectSalado);
-    const campos = crear("div", "combo__campos");
-    campos.append(campoDulce.campo, campoSalado.campo);
+    const campos = crear("div", "promo__campos");
+    campos.append(campoSalado.campo, campoDulce.campo);
+    const cambiar = crear("details", "promo__cambiar");
+    cambiar.append(crear("summary", "", "Cambiar productos"), campos);
 
     const tamano = definicion.total ? null : crearSelectorTamanoCombo(definicion.clave);
 
-    const precio = crear("p", "combo__precio");
+    const precio = crear("p", "promo__precio");
     precio.setAttribute("aria-live", "polite");
-    const antes = crear("s", "combo__antes");
-    const ahora = crear("strong", "combo__ahora");
-    const ahorro = crear("span", "combo__ahorro");
+    const antes = crear("s", "promo__antes");
+    const ahora = crear("strong", "promo__ahora");
+    const ahorro = crear("span", "promo__ahorro");
     precio.append(crear("span", "solo-lectores", "Precio sin descuento: "), antes, " ",
       crear("span", "solo-lectores", "Precio del combo: "), ahora, " ", ahorro);
 
-    const boton = crear("button", "boton boton--principal boton--bloque", "Agregar combo a mi lista");
+    const boton = crear("button", "boton boton--principal boton--bloque", "Agregar a mi lista");
     boton.type = "button";
     boton.dataset.agregarCombo = "";
-    boton.setAttribute("aria-label", `Agregar combo a mi lista: ${definicion.titulo}`);
+    boton.setAttribute("aria-label", `Agregar a mi lista: ${definicion.titulo}`);
 
-    tarjeta.append(sello, aviso, unidades, titulo, frase, campos, ...(tamano ? [tamano.grupo] : []), precio, boton);
+    const dudas = crear("a", "promo__dudas", "¿Dudas? Escríbenos");
+    dudas.href = `https://wa.me/${NEGOCIO.whatsapp}?text=${encodeURIComponent(definicion.mensaje)}`;
+    dudas.dataset.ubicacion = `promo_${definicion.clave}`;
+    dudas.target = "_blank";
+    dudas.rel = "noopener noreferrer";
+
+    const cuerpo = crear("div", "promo__cuerpo");
+    cuerpo.append(titulo, frase, contenido, personas, ...(tamano ? [tamano.grupo] : []), cambiar, precio, boton, dudas);
+    tarjeta.append(foto, sello, aviso, cuerpo);
     return {
-      definicion, tarjeta, selectDulce, selectSalado, unidades, antes, ahora, ahorro, boton,
+      definicion, tarjeta, selectDulce, selectSalado, contenido, personas, antes, ahora, ahorro, boton,
       radios: tamano ? tamano.radios : [],
       cantidades: [campoDulce.cantidad, campoSalado.cantidad]
     };
@@ -1805,7 +1851,14 @@ function iniciar() {
   // Precio anterior tachado y precio del combo, en vivo con los selectores.
   function actualizarTarjetaCombo(entrada) {
     const estado = leerEstadoCombo(entrada);
-    entrada.unidades.textContent = `${estado.tamano * 2} unidades`;
+    const unidades = estado.tamano * 2;
+    const nombreEnMinuscula = (id) => {
+      const nombre = catalogo.get(id).nombre;
+      return nombre.charAt(0).toLowerCase() + nombre.slice(1);
+    };
+    entrada.contenido.textContent =
+      `${estado.tamano} ${nombreEnMinuscula(estado.salado)} + ${estado.tamano} ${nombreEnMinuscula(estado.dulce)}`;
+    entrada.personas.textContent = `Para ${calcularPersonasCombo(unidades)} personas · ${BOCADITOS_POR_PERSONA} c/u`;
     entrada.cantidades.forEach((cantidad) => { cantidad.textContent = `(${estado.tamano} unidades)`; });
     const precio = calcularPrecioCombo(catalogo, estado);
     entrada.boton.disabled = !precio;
@@ -1846,7 +1899,7 @@ function iniciar() {
     marcarAgregado(boton);
   }
 
-  // Sin productos con precio no hay combos que armar: la sección sigue oculta.
+  // Sin productos con precio no hay promos que armar: la sección sigue oculta.
   function prepararCombos() {
     if (catalogo.size === 0) return;
     Object.values(COMBOS).forEach((definicion) => {
@@ -2385,7 +2438,7 @@ function iniciar() {
 
   /* --- Origen de la visita en los enlaces prellenados de WhatsApp --- */
 
-  // Los enlaces fijos del HTML (portada, ocasiones, botón flotante) suman la línea de origen por JS, sin duplicar textos.
+  // Los enlaces fijos del HTML (portada, promos, botón flotante) suman la línea de origen por JS, sin duplicar textos.
   // Los de cotización (data-solicitar) ya la llevan porque su mensaje se arma con construirMensajeCotizacion.
   function aplicarOrigenAEnlaces() {
     if (!origenVisita) return;
@@ -2439,7 +2492,7 @@ if (typeof module !== "undefined" && module.exports) {
     registrar, aSoles, codificarSugerencia,
     CAMINOS, calcularMetas, evaluarAvance, describirEstadoLista, describirLista, normalizarPlan,
     textoContextoCamino, textoEventoPedido, textoSobrantesEquidad, textoSobrantesOpcion, planCompleto, mezclar, sacarDeBaraja,
-    COMBOS, DESCUENTO_COMBO_PORCIENTO, calcularPrecioCombo, agregarCombo, normalizarLineaCombo, claveLinea, esLineaCombo,
+    COMBOS, DESCUENTO_COMBO_PORCIENTO, BOCADITOS_POR_PERSONA, calcularPersonasCombo, calcularPrecioCombo, agregarCombo, normalizarLineaCombo, claveLinea, esLineaCombo,
     ORIGENES_PERMITIDOS, normalizarOrigen, leerOrigenDeURL, textoOrigen, agregarLineaOrigen, enlaceConOrigen,
     fijarOrigenMedicion
   };
