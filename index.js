@@ -2212,17 +2212,31 @@ function iniciar() {
     temporizadorResalte = setTimeout(() => tarjeta.classList.remove("tarjeta--resaltada"), 1900);
   }
 
-  // Cinta de aviso: se oculta pasada su fecha (data-hasta) y su enlace lleva a la tarjeta del producto.
-  // Lo mismo vale para la franja con imagen (tablet y escritorio).
-  for (const [idAviso, idEnlace] of [["cinta-aviso", "cinta-aviso-enlace"], ["franja-aviso", "franja-aviso-enlace"]]) {
-    const aviso = $(idAviso);
-    if (!aviso) continue;
-    const hasta = new Date(`${aviso.dataset.hasta}T23:59:59`);
-    if (!Number.isNaN(hasta.getTime()) && new Date() > hasta) aviso.hidden = true;
-    $(idEnlace).addEventListener("click", (evento) => {
-      evento.preventDefault();
-      irATarjeta("empanadas-amazonicas");
+  // Ventana flotante de novedad: sale al poco de cargar, no bloquea la página y SOLO se cierra con su X (sin Escape ni clic
+  // fuera, por pedido del usuario). Cerrada, no vuelve en esa visita; pasada su fecha (data-hasta) tampoco aparece.
+  const ventanaAviso = $("ventana-aviso");
+  if (ventanaAviso) {
+    const claveCierre = `el-delicioso-aviso-${ventanaAviso.dataset.clave}`;
+    const hasta = new Date(`${ventanaAviso.dataset.hasta}T23:59:59`);
+    let cerrada = false;
+    try { cerrada = window.sessionStorage.getItem(claveCierre) === "1"; } catch (error) { /* sin almacenamiento: se muestra */ }
+    const vigente = Number.isNaN(hasta.getTime()) || new Date() <= hasta;
+    if (vigente && !cerrada) {
+      window.setTimeout(() => {
+        ventanaAviso.hidden = false;
+        $("ventana-aviso-cerrar").focus({ preventScroll: true });
+      }, 700);
+    }
+    $("ventana-aviso-cerrar").addEventListener("click", () => {
+      ventanaAviso.hidden = true;
+      try { window.sessionStorage.setItem(claveCierre, "1"); } catch (error) { /* se ignora */ }
     });
+    for (const id of ["ventana-aviso-enlace", "ventana-aviso-enlace-texto"]) {
+      $(id).addEventListener("click", (evento) => {
+        evento.preventDefault(); // lleva a la tarjeta; la ventana sigue abierta hasta que se pulse la X
+        irATarjeta("empanadas-amazonicas");
+      });
+    }
   }
 
   /* --- Subrayado del menú que sigue al cursor (escritorio con puntero fino) --- */

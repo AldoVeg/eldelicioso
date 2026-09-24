@@ -1806,34 +1806,55 @@ button { cursor: pointer; }
   }
 }
 
-/* ===== Cinta de aviso sobre el encabezado ===== */
-.cinta-aviso {
-  padding: var(--e-2) var(--e-4);
-  background-color: var(--acento);
-  color: #fff;
-  text-align: center;
-  font-size: var(--t-sm);
+/* ===== Ventana flotante de novedad ===== */
+/* Fija bajo el encabezado, centrada, sin fondo oscuro: no bloquea la página. Solo se cierra con su X.
+   En móvil muestra una versión compacta en texto (la imagen sería ilegible); desde 48em, la imagen completa. */
+.ventana-aviso {
+  position: fixed;
+  top: calc(var(--alto-encabezado) + var(--e-3));
+  left: 50%;
+  z-index: 35;
+  translate: -50% 0;
+  width: min(56rem, calc(100vw - 2 * var(--e-4)));
+  overflow: hidden;
+  background-color: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sombra);
 }
-.cinta-aviso[hidden] { display: none; }
-.cinta-aviso p { margin: 0; }
-.cinta-aviso a { color: #fff; font-weight: 700; text-decoration: underline; text-underline-offset: .2em; }
-.cinta-aviso a:hover { text-decoration-thickness: 2px; }
-
-/* ===== Franja de novedad con imagen (tablet y escritorio) ===== */
-/* En móvil la imagen sería ilegible, así que ahí queda la cinta de texto; desde 48em la cinta cede su lugar a la franja. */
-.franja-aviso { display: none; overflow: hidden; background-color: #F1EDE1; border-bottom: 1px solid var(--borde); }
-.franja-aviso__enlace { display: block; }
-.franja-aviso__enlace:focus-visible { outline-offset: -6px; }
-.franja-aviso__imagen { display: block; width: 100%; height: auto; }
+.ventana-aviso[hidden] { display: none; }
+.ventana-aviso__cerrar {
+  position: absolute;
+  top: var(--e-2);
+  right: var(--e-2);
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  background-color: rgba(255, 251, 246, .92);
+  color: var(--texto);
+  border: 1px solid var(--borde);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.ventana-aviso__cerrar:hover { background-color: #fff; color: var(--acento); }
+.ventana-aviso__cerrar .icono { width: 1.25rem; height: 1.25rem; }
+.ventana-aviso__imagen { display: none; }
+.ventana-aviso__imagen img { display: block; width: 100%; height: auto; }
+.ventana-aviso__texto { display: grid; gap: var(--e-1); justify-items: start; padding: var(--e-4) 3.75rem var(--e-4) var(--e-4); }
+.ventana-aviso__texto p { margin: 0; }
+.ventana-aviso__titulo { font-size: var(--t-lg); }
+.ventana-aviso__texto .boton { margin-top: var(--e-2); }
 @media (min-width: 48em) {
-  .cinta-aviso { display: none; }
-  .franja-aviso:not([hidden]) { display: block; }
+  .ventana-aviso__imagen { display: block; }
+  .ventana-aviso__texto { display: none; }
 }
-/* Movimiento sutil: la imagen "respira" con un acercamiento mínimo, centrado, para que ningún texto llegue a recortarse */
 @media (prefers-reduced-motion: no-preference) {
-  .franja-aviso__imagen { transform-origin: 50% 50%; animation: franja-respira 20s ease-in-out infinite alternate; }
+  .ventana-aviso:not([hidden]) { animation: ventana-aviso-entrada .45s ease-out; }
 }
-@keyframes franja-respira {
-  from { transform: scale(1); }
-  to { transform: scale(1.035); }
+@keyframes ventana-aviso-entrada {
+  from { opacity: 0; translate: -50% -1rem; }
+  to { opacity: 1; translate: -50% 0; }
 }
