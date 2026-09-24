@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-version="202609231907">
+<html lang="es" data-version="202609231929">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,7 +35,7 @@
        index.js, hay que actualizar ESTOS TRES LUGARES A LA VEZ con la misma fecha y hora (AAAAMMDDHHmm):
        1) el ?v= de index.css y de index.js aquí abajo, 2) data-version en la etiqueta <html> de arriba,
        3) el valor "v" de version.json en la raíz del repositorio. -->
-  <link rel="stylesheet" href="index.css?v=202609231907">
+  <link rel="stylesheet" href="index.css?v=202609231929">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -55,7 +55,7 @@
     "priceRange": "S/ 28 - S/ 255"
   }
   </script>
-  <script src="index.js?v=202609231907" defer></script>
+  <script src="index.js?v=202609231929" defer></script>
 </head>
 <body id="arriba">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -140,16 +140,16 @@
                 </ul>
               </div>
             </div>
-            <form class="calculadora__formulario" id="form-calculadora" novalidate>
+            <form class="calculadora__formulario" id="form-calculadora" autocomplete="off" novalidate>
               <div class="calculadora__campos">
                 <div class="campo">
                   <label for="invitados">Número de invitados</label>
-                  <input type="number" id="invitados" name="invitados" min="1" step="1" inputmode="numeric" aria-describedby="ayuda-invitados">
+                  <input type="number" id="invitados" name="invitados" min="1" step="1" inputmode="numeric" autocomplete="off" aria-describedby="ayuda-invitados">
                   <p class="campo__ayuda" id="ayuda-invitados">De 1 a 1000.</p>
                 </div>
                 <div class="campo">
                   <label for="bocaditos-por-invitado">Bocaditos por invitado</label>
-                  <input type="number" id="bocaditos-por-invitado" name="bocaditos-por-invitado" min="3" max="10" step="1" required inputmode="numeric" aria-describedby="ayuda-bocaditos">
+                  <input type="number" id="bocaditos-por-invitado" name="bocaditos-por-invitado" min="3" max="10" step="1" required inputmode="numeric" autocomplete="off" aria-describedby="ayuda-bocaditos">
                   <p class="campo__ayuda" id="ayuda-bocaditos">De 3 a 10.</p>
                 </div>
               </div>

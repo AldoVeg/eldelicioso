@@ -813,7 +813,10 @@ function iniciar() {
 
   const catalogo = leerCatalogo(rejilla);
   let lineas = normalizarLineas(leerAlmacenamiento(CLAVE_ALMACENAMIENTO), catalogo);
-  let plan = normalizarPlan(leerAlmacenamiento(CLAVE_PLAN));
+  // La calculadora siempre arranca en blanco al abrir o actualizar la página: se descarta el plan de la visita
+  // anterior (antes se restauraba y parecía que la calculadora "no se reiniciaba"). La lista de compras sí se conserva.
+  let plan = normalizarPlan(null);
+  try { window.localStorage.removeItem(CLAVE_PLAN); } catch (error) { /* almacenamiento bloqueado: se ignora */ }
   let temporizadorRebote = 0;
   // Falso hasta terminar el arranque: así lo restaurado (lista, filtro guardado) aparece sin animaciones.
   let arrancado = false;
@@ -1901,6 +1904,8 @@ function iniciar() {
     if (document.visibilityState === "visible") comprobarVersionNueva();
   });
   window.setInterval(comprobarVersionNueva, INTERVALO_VERSION_MS);
+  // Al volver con "atrás" el navegador puede devolver la página congelada con lo escrito antes: se recarga en blanco.
+  window.addEventListener("pageshow", (evento) => { if (evento.persisted) window.location.reload(); });
 
   /* --- Nosotros --- */
 
