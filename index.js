@@ -2299,7 +2299,7 @@ function iniciar() {
      Importante: en una página web NO se puede impedir de verdad copiar ni hacer capturas (basta una cámara, "ver código
      fuente" o desactivar JavaScript). Esto solo dificulta la copia casual: sin selección de texto, sin clic derecho, sin
      arrastrar imágenes, atajos de copiar/guardar/imprimir/inspeccionar bloqueados, impresión vacía, portapapeles limpio con
-     Impr Pant y contenido oculto al perder el foco. La marca de agua (CSS) es la defensa más real ante una captura.
+     Impr Pant y contenido oculto al perder el foco. (La marca de agua se probó y se retiró por pedido del usuario.)
      Los campos (calculadora, fecha) siguen funcionando con normalidad. */
   const MENSAJE_PROTEGIDO = "Contenido protegido © El Delicioso";
   const esCampoEditable = (elemento) => Boolean(elemento && elemento.closest && elemento.closest("input, textarea, select"));
