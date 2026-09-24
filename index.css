@@ -1806,3 +1806,15 @@ button { cursor: pointer; }
   }
 }
 
+/* ===== Cinta de aviso sobre el encabezado ===== */
+.cinta-aviso {
+  padding: var(--e-2) var(--e-4);
+  background-color: var(--acento);
+  color: #fff;
+  text-align: center;
+  font-size: var(--t-sm);
+}
+.cinta-aviso[hidden] { display: none; }
+.cinta-aviso p { margin: 0; }
+.cinta-aviso a { color: #fff; font-weight: 700; text-decoration: underline; text-underline-offset: .2em; }
+.cinta-aviso a:hover { text-decoration-thickness: 2px; }

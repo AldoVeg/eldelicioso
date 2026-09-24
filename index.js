@@ -945,6 +945,12 @@ function construirMensajeCotizacion(cantidad, nombreProducto, negocio = NEGOCIO,
     "¿Me indican el precio y la disponibilidad?", origen);
 }
 
+// Reserva de un producto de temporada con precio fijo (empanadas amazónicas): cantidad, precio y fecha de salida.
+function construirMensajeReserva(cantidad, nombreProducto, precioCentimos, salida, negocio = NEGOCIO, origen = null) {
+  return agregarLineaOrigen(`Hola, ${negocio.nombre}. Quisiera separar ${cantidad} unidades de ${nombreProducto.toLowerCase()} ` +
+    `(${formatearMoneda(precioCentimos)}) para su salida del ${salida}. ¿Me confirman la disponibilidad?`, origen);
+}
+
 function construirEnlaceWhatsApp(mensaje, negocio = NEGOCIO) {
   return `https://wa.me/${negocio.whatsapp}?text=${encodeURIComponent(mensaje)}`;
 }
@@ -1113,11 +1119,20 @@ function iniciar() {
     salida.textContent = formatearMoneda(producto.precios[tamanoElegido(tarjeta)]);
   }
 
-  // Producto por cotizar: el enlace de WhatsApp lleva la cantidad elegida.
+  // Producto especial: el enlace de WhatsApp lleva la cantidad elegida. Con precio de reserva (data-reserva-N, en soles)
+  // muestra el precio y pide separarlo para su fecha de salida; sin él, pide cotizar.
   function actualizarCotizacion(tarjeta) {
     const enlace = tarjeta.querySelector("[data-solicitar]");
     if (!enlace) return;
     const nombre = tarjeta.querySelector(".tarjeta__nombre").textContent.trim();
+    const cantidad = tamanoElegido(tarjeta);
+    const precioReserva = aCentimos(tarjeta.getAttribute(`data-reserva-${cantidad}`));
+    if (Number.isFinite(precioReserva) && precioReserva > 0) {
+      const salida = tarjeta.querySelector("[data-precio-total]");
+      if (salida) salida.textContent = formatearMoneda(precioReserva);
+      enlace.href = construirEnlaceWhatsApp(construirMensajeReserva(cantidad, nombre, precioReserva, tarjeta.dataset.salida || "próximo jueves", NEGOCIO, origenVisita));
+      return;
+    }
     enlace.href = construirEnlaceWhatsApp(construirMensajeCotizacion(tamanoElegido(tarjeta), nombre, NEGOCIO, origenVisita));
   }
 
@@ -2197,6 +2212,17 @@ function iniciar() {
     temporizadorResalte = setTimeout(() => tarjeta.classList.remove("tarjeta--resaltada"), 1900);
   }
 
+  // Cinta de aviso: se oculta pasada su fecha (data-hasta) y su enlace lleva a la tarjeta del producto.
+  const cintaAviso = $("cinta-aviso");
+  if (cintaAviso) {
+    const hasta = new Date(`${cintaAviso.dataset.hasta}T23:59:59`);
+    if (!Number.isNaN(hasta.getTime()) && new Date() > hasta) cintaAviso.hidden = true;
+    $("cinta-aviso-enlace").addEventListener("click", (evento) => {
+      evento.preventDefault();
+      irATarjeta("empanadas-amazonicas");
+    });
+  }
+
   /* --- Subrayado del menú que sigue al cursor (escritorio con puntero fino) --- */
 
   const encabezado = $("inicio");
@@ -2486,7 +2512,7 @@ if (typeof module !== "undefined" && module.exports) {
     describirCombinacion, textoResultadoCalculadora, calcularOpciones, describirResultado,
     sugerirProductos, describirSugerencia, productosDeCategoria, validarFechaEvento, fechaMinimaEvento,
     formatearFechaLarga, agregarLinea, cambiarPacks, quitarLinea, normalizarLineas,
-    resumirCarrito, construirMensajePedido, construirMensajeCotizacion, construirEnlaceWhatsApp, aCentimos, tienePrecios,
+    resumirCarrito, construirMensajePedido, construirMensajeCotizacion, construirMensajeReserva, construirEnlaceWhatsApp, aCentimos, tienePrecios,
     registrar, aSoles, codificarSugerencia,
     CAMINOS, calcularMetas, evaluarAvance, describirEstadoLista, describirLista, normalizarPlan,
     textoContextoCamino, textoEventoPedido, textoSobrantesEquidad, textoSobrantesOpcion, planCompleto, mezclar, sacarDeBaraja,
