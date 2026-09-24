@@ -1858,3 +1858,54 @@ button { cursor: pointer; }
   from { opacity: 0; translate: -50% -1rem; }
   to { opacity: 1; translate: -50% 0; }
 }
+
+/* ===== Cuenta regresiva de la ventana (verde vivo, llamativa) ===== */
+.cuenta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-2) var(--e-4);
+  padding: var(--e-3) var(--e-4);
+  background: linear-gradient(90deg, #00C853, #7CDC1F);
+  color: #04330F;
+  text-align: center;
+}
+.cuenta p { margin: 0; }
+.cuenta__titulo { font-weight: 800; font-size: var(--t-sm); text-transform: uppercase; letter-spacing: .03em; }
+.cuenta__cierre { font-weight: 800; }
+.cuenta__reloj { display: flex; gap: var(--e-2); }
+.cuenta__reloj[hidden] { display: none; }
+.cuenta__unidad {
+  display: grid;
+  justify-items: center;
+  min-width: 3.4rem;
+  padding: .3rem .4rem .2rem;
+  background-color: #052E12;
+  color: #B6FF5A;
+  border-radius: var(--r-sm);
+}
+.cuenta__unidad b { font-family: var(--fuente-mono); font-size: 1.5rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.cuenta__unidad small { font-size: .625rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+@media (min-width: 48em) {
+  .cuenta {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "titulo reloj" "cierre reloj";
+    align-items: center;
+    text-align: left;
+    column-gap: var(--e-5);
+    row-gap: var(--e-1);
+  }
+  .cuenta__titulo { grid-area: titulo; align-self: end; }
+  .cuenta__cierre { grid-area: cierre; align-self: start; font-size: var(--t-lg); }
+  .cuenta__reloj { grid-area: reloj; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  /* Latido suave del borde luminoso para llamar la atención sin distraer */
+  .ventana-aviso:not([hidden]) .cuenta { animation: cuenta-brillo 2.4s ease-in-out infinite; }
+}
+@keyframes cuenta-brillo {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0); }
+  50% { box-shadow: inset 0 0 22px 2px rgba(255, 255, 255, .45); }
+}

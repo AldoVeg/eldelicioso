@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-version="202609232128">
+<html lang="es" data-version="202609232136">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,7 +35,7 @@
        index.js, hay que actualizar ESTOS TRES LUGARES A LA VEZ con la misma fecha y hora (AAAAMMDDHHmm):
        1) el ?v= de index.css y de index.js aquí abajo, 2) data-version en la etiqueta <html> de arriba,
        3) el valor "v" de version.json en la raíz del repositorio. -->
-  <link rel="stylesheet" href="index.css?v=202609232128">
+  <link rel="stylesheet" href="index.css?v=202609232136">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -55,7 +55,7 @@
     "priceRange": "S/ 28 - S/ 255"
   }
   </script>
-  <script src="index.js?v=202609232128" defer></script>
+  <script src="index.js?v=202609232136" defer></script>
 </head>
 <body id="arriba">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -84,6 +84,18 @@
       <p class="ventana-aviso__titulo"><strong>Jueves 01:</strong> salen las empanadas amazónicas</p>
       <p>¡Ya volvieron! Media docena a S/ 25.</p>
       <a class="boton boton--principal" id="ventana-aviso-enlace-texto" href="#empanadas-amazonicas">Separa el tuyo</a>
+    </div>
+    <!-- Cuenta regresiva hasta data-objetivo (con zona horaria: 15:00 de Lima). Al llegar a cero cambia a "¡Hoy salen!". -->
+    <div class="cuenta" id="cuenta-regresiva" data-objetivo="2026-10-01T15:00:00-05:00">
+      <p class="cuenta__titulo" id="cuenta-titulo">Faltan para el día de las empanadas amazónicas</p>
+      <p class="cuenta__reloj" id="cuenta-reloj" role="timer" aria-live="off" aria-labelledby="cuenta-titulo">
+        <span class="cuenta__unidad"><b data-cuenta="dias">00</b><small>días</small></span>
+        <span class="cuenta__unidad"><b data-cuenta="horas">00</b><small>horas</small></span>
+        <span class="cuenta__unidad"><b data-cuenta="minutos">00</b><small>min</small></span>
+        <span class="cuenta__unidad"><b data-cuenta="segundos">00</b><small>seg</small></span>
+      </p>
+      <p class="cuenta__cierre" id="cuenta-cierre">¡No te la pierdas y separa el tuyo!</p>
+      <p class="solo-lectores" id="cuenta-resumen" aria-live="polite"></p>
     </div>
   </aside>
 

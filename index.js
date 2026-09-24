@@ -951,6 +951,19 @@ function construirMensajeReserva(cantidad, nombreProducto, precioCentimos, salid
     `(${formatearMoneda(precioCentimos)}) para su salida del ${salida}. ¿Me confirman la disponibilidad?`, origen);
 }
 
+// Cuenta regresiva: parte una diferencia de milisegundos en días, horas, minutos y segundos (sin negativos).
+function calcularCuentaRegresiva(ahoraMs, objetivoMs) {
+  const restante = Math.floor((objetivoMs - ahoraMs) / 1000);
+  if (!Number.isFinite(restante) || restante <= 0) return { vencida: true, dias: 0, horas: 0, minutos: 0, segundos: 0 };
+  return {
+    vencida: false,
+    dias: Math.floor(restante / 86400),
+    horas: Math.floor((restante % 86400) / 3600),
+    minutos: Math.floor((restante % 3600) / 60),
+    segundos: restante % 60
+  };
+}
+
 function construirEnlaceWhatsApp(mensaje, negocio = NEGOCIO) {
   return `https://wa.me/${negocio.whatsapp}?text=${encodeURIComponent(mensaje)}`;
 }
@@ -2228,6 +2241,39 @@ function iniciar() {
     $("ventana-aviso-cerrar").addEventListener("click", () => {
       ventanaAviso.hidden = true;
     });
+    // Cronómetro: se actualiza cada segundo mientras la ventana está abierta y la pestaña visible. Los lectores de pantalla
+    // reciben un resumen solo cuando cambia el minuto (el reloj en sí no se anuncia cada segundo).
+    const cuenta = $("cuenta-regresiva");
+    if (cuenta) {
+      const objetivo = new Date(cuenta.dataset.objetivo).getTime();
+      const campos = Object.fromEntries([...cuenta.querySelectorAll("[data-cuenta]")].map((el) => [el.dataset.cuenta, el]));
+      let minutoAnunciado = -1;
+      const dosCifras = (n) => String(n).padStart(2, "0");
+      const pintarCuenta = () => {
+        if (ventanaAviso.hidden || document.visibilityState === "hidden") return;
+        const t = calcularCuentaRegresiva(Date.now(), objetivo);
+        if (t.vencida) {
+          $("cuenta-titulo").textContent = "¡Hoy salen las empanadas amazónicas!";
+          $("cuenta-reloj").hidden = true;
+          $("cuenta-cierre").textContent = "Separa el tuyo antes de que se acaben.";
+          $("cuenta-resumen").textContent = "Hoy salen las empanadas amazónicas.";
+          window.clearInterval(temporizadorCuenta);
+          return;
+        }
+        campos.dias.textContent = dosCifras(t.dias);
+        campos.horas.textContent = dosCifras(t.horas);
+        campos.minutos.textContent = dosCifras(t.minutos);
+        campos.segundos.textContent = dosCifras(t.segundos);
+        const minutoTotal = t.dias * 1440 + t.horas * 60 + t.minutos;
+        if (minutoTotal !== minutoAnunciado) {
+          minutoAnunciado = minutoTotal;
+          $("cuenta-resumen").textContent = `Faltan ${t.dias} días, ${t.horas} horas y ${t.minutos} minutos para el día de las empanadas amazónicas.`;
+        }
+      };
+      pintarCuenta();
+      var temporizadorCuenta = window.setInterval(pintarCuenta, 1000);
+      document.addEventListener("visibilitychange", pintarCuenta);
+    }
     for (const id of ["ventana-aviso-enlace", "ventana-aviso-enlace-texto"]) {
       $(id).addEventListener("click", (evento) => {
         evento.preventDefault(); // lleva a la tarjeta; la ventana sigue abierta hasta que se pulse la X
@@ -2525,7 +2571,7 @@ if (typeof module !== "undefined" && module.exports) {
     describirCombinacion, textoResultadoCalculadora, calcularOpciones, describirResultado,
     sugerirProductos, describirSugerencia, productosDeCategoria, validarFechaEvento, fechaMinimaEvento,
     formatearFechaLarga, agregarLinea, cambiarPacks, quitarLinea, normalizarLineas,
-    resumirCarrito, construirMensajePedido, construirMensajeCotizacion, construirMensajeReserva, construirEnlaceWhatsApp, aCentimos, tienePrecios,
+    resumirCarrito, construirMensajePedido, construirMensajeCotizacion, construirMensajeReserva, calcularCuentaRegresiva, construirEnlaceWhatsApp, aCentimos, tienePrecios,
     registrar, aSoles, codificarSugerencia,
     CAMINOS, calcularMetas, evaluarAvance, describirEstadoLista, describirLista, normalizarPlan,
     textoContextoCamino, textoEventoPedido, textoSobrantesEquidad, textoSobrantesOpcion, planCompleto, mezclar, sacarDeBaraja,
