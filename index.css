@@ -1655,7 +1655,9 @@ button { cursor: pointer; }
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  /* "contain": la ilustración se ve entera y a su tamaño natural (con "cover" se estiraba más del doble y se veía borrosa) */
+  object-fit: contain;
+  object-position: 50% 60%;
   opacity: 0;
   pointer-events: none;
 }
@@ -1760,20 +1762,18 @@ button { cursor: pointer; }
 /* Sello de "ya agregado": el mismo de las tarjetas del catálogo */
 .promo[data-en-lista] .tarjeta__sello { opacity: 1; visibility: visible; }
 
-/* Foto y recuadro semitransparente: solo al acercar el cursor, con foco de teclado dentro o al pulsar (táctil) */
+/* Foto de la ocasión: solo al acercar el cursor, con foco de teclado dentro o al pulsar (táctil). Se ve con una transparencia
+   sutil pero NÍTIDA: sin desenfoque (nada de backdrop-filter) ni velo que la empañe; el texto se sostiene con un halo claro. */
 .promo:hover .promo__foto,
 .promo:focus-within .promo__foto,
-.promo:active .promo__foto { opacity: 1; }
+.promo:active .promo__foto { opacity: .6; }
 .promo:hover .promo__cuerpo,
 .promo:focus-within .promo__cuerpo,
 .promo:active .promo__cuerpo {
-  background-color: rgba(255, 251, 246, .88);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  text-shadow: 0 0 3px #fff, 0 0 8px rgba(255, 255, 255, .95), 0 0 14px rgba(255, 255, 255, .8);
 }
 @media (prefers-reduced-motion: no-preference) {
   .promo__foto { transition: opacity .3s ease; }
-  .promo__cuerpo { transition: background-color .3s ease; }
 }
 
 /* Fila de un combo en la lista: qué incluye y el precio anterior tachado */
