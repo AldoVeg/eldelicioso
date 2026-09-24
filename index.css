@@ -1641,3 +1641,186 @@ button { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   .progreso { display: none; }
 }
+
+/* =====================================================================
+   Guía de 3 pasos, combos por ocasión y control de pausa de la galería
+   ===================================================================== */
+
+/* ===== Galería: botón de pausa/reproducir (WCAG 2.2.2) ===== */
+/* Círculo de 44 px como los botones anterior/siguiente. aria-pressed="true" = en pausa: se pinta en rojo y muestra
+   "reproducir"; en marcha muestra "pausa". Con movimiento reducido el script lo oculta y su fila desaparece. */
+.galeria__control {
+  display: flex;
+  justify-content: center;
+  margin-top: -.5rem;
+  padding-bottom: var(--e-5);
+}
+.galeria__control:has(.galeria__pausa[hidden]) { display: none; }
+.galeria__pausa {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: rgba(255, 251, 246, .94);
+  border: 1.5px solid var(--borde-campo);
+  border-radius: 50%;
+  box-shadow: var(--sombra-suave);
+  color: var(--texto);
+  transition: background-color .2s, color .2s, border-color .2s;
+}
+.galeria__pausa:hover { background: var(--fondo-rosado); border-color: var(--acento); color: var(--acento-hover); }
+.galeria__pausa .galeria__icono-reproducir,
+.galeria__pausa[aria-pressed="true"] .galeria__icono-pausa { display: none; }
+.galeria__pausa[aria-pressed="true"] .galeria__icono-reproducir { display: block; }
+.galeria__pausa[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: #fff; }
+.galeria__pausa[aria-pressed="true"]:hover { background: var(--acento-hover); border-color: var(--acento-hover); color: #fff; }
+
+/* ===== Cómo pedir en 3 pasos ===== */
+/* Tinte rosado (como Nosotros); ocasiones vuelve al fondo claro y combos a blanco, así no se pegan dos bloques iguales */
+.pasos { background: var(--fondo-rosado); }
+.pasos__lista { display: grid; gap: var(--e-4); }
+.paso {
+  display: grid;
+  gap: var(--e-2);
+  align-content: start;
+  min-width: 0;
+  padding: var(--e-5);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-lg);
+  box-shadow: inset 0 4px 0 var(--acento-2), var(--sombra-suave);
+}
+.paso__numero {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: var(--e-1);
+  background: var(--acento);
+  border-radius: 50%;
+  color: #fff;
+  font-family: var(--fuente-titulo);
+  font-size: 1.375rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.paso__titulo { font-size: var(--t-lg); font-weight: 700; }
+.paso p { color: var(--texto-suave); }
+
+/* ===== Combos por ocasión ===== */
+.combos { background: var(--superficie); }
+.combos__rejilla {
+  display: grid;
+  gap: var(--e-5);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.combo {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-3);
+  min-width: 0;
+  padding: var(--e-5);
+  padding-top: calc(var(--e-5) + 6px);
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sombra-suave);
+  transition: box-shadow .25s;
+}
+/* Misma barra degradada rojo a dorado del planificador */
+.combo::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--gradiente-pasion);
+}
+.combo:hover, .combo:focus-within { box-shadow: var(--sombra); }
+.combo--personalizado { background: var(--fondo-rosado); }
+
+/* Sello de "ya agregado": el mismo de las tarjetas del catálogo */
+.combo[data-en-lista] .tarjeta__sello { opacity: 1; visibility: visible; }
+
+.combo__titulo { font-size: var(--t-lg); font-weight: 700; }
+.combo__frase { color: var(--texto-suave); font-size: var(--t-sm); }
+.combo__campos { display: grid; gap: var(--e-3); margin-top: var(--e-2); }
+.combo .selector { margin: 0; }
+.selector__opciones--dos { grid-template-columns: repeat(2, 1fr); }
+
+.campo select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--e-3);
+  background: var(--superficie);
+  border: 1.5px solid var(--borde-campo);
+  border-radius: var(--r-sm);
+  text-overflow: ellipsis;
+}
+.campo select:hover { border-color: var(--acento); }
+
+.combo__precio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--e-1) var(--e-3);
+  margin-top: auto;
+  padding-top: var(--e-2);
+}
+.combo__antes { color: var(--texto-suave); font-size: var(--t-md); }
+.combo__ahora {
+  font-family: var(--fuente-titulo);
+  font-size: var(--t-xl);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--acento);
+}
+.combo__ahorro {
+  padding: 2px 10px;
+  background: #FFF1D6;
+  border: 1.5px solid var(--acento-2);
+  border-radius: var(--r-pildora);
+  font-family: var(--fuente-mono);
+  font-size: var(--t-mono);
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--texto);
+}
+
+/* Fila de un combo en la lista: qué incluye y el precio anterior tachado */
+.lista__item-descuento { grid-column: 1; font-size: var(--t-xs); color: var(--texto-suave); }
+
+@media (min-width: 40em) {
+  .combos__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .combo--personalizado { grid-column: 1 / -1; }
+  .combo--personalizado .combo__campos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 48em) {
+  .pasos__lista { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-5); }
+}
+@media (min-width: 62.5em) {
+  .combos__rejilla { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .combo--personalizado { grid-column: span 2; }
+}
+
+/* Aparición suave al desplazar (misma que las demás tarjetas) */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .paso, .combo {
+      animation: aparecer linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
+
+/* Tablet: con el enlace "Combos" el menú tiene cinco entradas; se reduce el relleno para que quepan todas */
+@media (min-width: 48em) and (max-width: 62.49em) {
+  .menu { gap: 0; }
+  .menu a { padding-inline: 6px; font-size: .875rem; }
+}

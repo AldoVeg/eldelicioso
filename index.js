@@ -27,8 +27,57 @@ const ALIAS_IDS = { "trufas-chocolate": "mini-trufas-chocolate" };
 const DURACION_REBOTE_MS = 300;
 const DURACION_AGREGADO_MS = 1200;
 
+// Origen de la visita (?origen= o ?utm_source=): solo se aceptan estos valores (clave -> texto para el mensaje).
+// Nunca se copia texto libre de la dirección al mensaje de WhatsApp.
+const ORIGENES_PERMITIDOS = {
+  qr: "QR",
+  instagram: "Instagram",
+  facebook: "Facebook",
+  tiktok: "TikTok",
+  google: "Google"
+};
+// Formas cortas habituales que se reconducen a un origen permitido.
+const ALIAS_ORIGEN = { ig: "instagram", insta: "instagram", fb: "facebook", "tik-tok": "tiktok" };
+const CLAVE_ORIGEN = "el-delicioso-origen"; // sessionStorage: sobrevive mientras se navega dentro de la página
+
+// Combos por ocasión: descuento sobre la suma de los precios del catálogo de cada mitad, redondeado al sol entero.
+// Aquí solo viven los ids de los productos por defecto y los textos; los precios salen siempre del catálogo real.
+const DESCUENTO_COMBO_PORCIENTO = 5;
+// Cada combo se reparte mitad y mitad: la mitad es un paquete del catálogo (25 o 50 unidades).
+const MITADES_COMBO = [25, 50];
+const COMBOS = {
+  cumpleanos: {
+    clave: "cumpleanos", titulo: "Cumpleaños", nombreLista: "Combo Cumpleaños", total: 50,
+    salado: "pettit-pollo", dulce: "mini-alfajores-coco",
+    frase: "Salado y dulce para que los invitados vuelvan por más."
+  },
+  "baby-shower": {
+    clave: "baby-shower", titulo: "Baby shower", nombreLista: "Combo Baby shower", total: 50,
+    salado: "mini-empanaditas-pollo", dulce: "mini-pay-limon",
+    frase: "Una bienvenida dulce (y salada) para el bebé."
+  },
+  "reunion-trabajo": {
+    clave: "reunion-trabajo", titulo: "Reunión de trabajo", nombreLista: "Combo Reunión de trabajo", total: 50,
+    salado: "mini-causitas-atun", dulce: "mini-alfachips",
+    frase: "Un detalle para que la pausa sepa mejor."
+  },
+  "colegio-iglesia": {
+    clave: "colegio-iglesia", titulo: "Colegio o iglesia", nombreLista: "Combo Colegio o iglesia", total: 100,
+    salado: "mini-empanaditas-pollo", dulce: "mini-alfajores-coco",
+    frase: "Para compartir con todos, en cantidad."
+  },
+  // Sin total fijo: el visitante elige 50 o 100 unidades (mitad y mitad).
+  personalizado: {
+    clave: "personalizado", titulo: "Arma el tuyo", nombreLista: "Combo personalizado", total: null,
+    salado: "pettit-pollo", dulce: "mini-alfajores-coco",
+    frase: "Elige tu salado, tu dulce y el tamaño: el descuento va incluido."
+  }
+};
+
 // Galería: tiempos del carrusel (avance automático muy suave) y del conteo de las tarjetas de camino.
 const INTERVALO_GALERIA_MS = 4000;
+// Transición entre imágenes: ~0,7 s con curva de desaceleración (ease-out), sin desenfoque.
+const DURACION_TRANSICION_GALERIA_MS = 700;
 const PAUSA_TRAS_TOQUE_MS = 8000;
 const DURACION_CONTEO_MS = 500;
 // Zona superior activa del subrayado del menú: el encabezado y estos píxeles debajo.
@@ -523,7 +572,12 @@ function describirEstadoLista(hayLineas, categorias) {
 // Todo lo que muestra la lista de compras, a partir de las líneas de la lista (resumirCarrito) y el plan.
 function describirLista({ items }, plan) {
   const llevado = { dulce: 0, salado: 0 };
-  items.forEach((item) => { llevado[item.categoria] += item.unidades; });
+  // Un combo suma la mitad a dulces y la mitad a salados; una línea normal, todo a su categoría.
+  items.forEach((item) => {
+    const reparto = item.porCategoria || { [item.categoria]: item.unidades };
+    llevado.dulce += reparto.dulce || 0;
+    llevado.salado += reparto.salado || 0;
+  });
   const unidadesTotales = items.reduce((suma, item) => suma + item.unidades, 0);
   const hayPlan = planCompleto(plan);
   const metas = hayPlan
@@ -626,14 +680,32 @@ function validarFechaEvento(valor, hoy, dias = NEGOCIO.anticipacionDias) {
 /* ===== Funciones puras: líneas de la lista de compras (lo guardado se llama "carrito" por historia) ===== */
 
 // Una línea de la lista es { id, tamano, packs }; el nombre y el precio salen del catálogo.
+// Un combo es una sola línea { combo, dulce, salado, tamano, packs }: "tamano" es el paquete de cada mitad (25 o 50)
+// y "packs" cuántos combos iguales lleva. Las listas guardadas antes de los combos no tienen ese campo y siguen igual.
+function esLineaCombo(linea) {
+  return Boolean(linea && linea.combo);
+}
+
 function claveLinea(linea) {
-  return `${linea.id}|${linea.tamano}`;
+  return esLineaCombo(linea)
+    ? `combo|${linea.combo}|${linea.salado}|${linea.dulce}|${linea.tamano}`
+    : `${linea.id}|${linea.tamano}`;
 }
 
 function agregarLinea(lineas, id, tamano) {
-  const existe = lineas.some((linea) => linea.id === id && linea.tamano === tamano);
-  if (!existe) return [...lineas, { id, tamano, packs: 1 }];
-  return lineas.map((linea) => (linea.id === id && linea.tamano === tamano
+  const esLaLinea = (linea) => !esLineaCombo(linea) && linea.id === id && linea.tamano === tamano;
+  if (!lineas.some(esLaLinea)) return [...lineas, { id, tamano, packs: 1 }];
+  return lineas.map((linea) => (esLaLinea(linea)
+    ? { ...linea, packs: Math.min(linea.packs + 1, MAX_PACKS_POR_LINEA) }
+    : linea));
+}
+
+// Suma un combo a la lista; si ya hay uno igual (mismos productos y tamaño), sube su cantidad.
+function agregarCombo(lineas, { combo, dulce, salado, tamano }) {
+  const nueva = { combo, dulce, salado, tamano, packs: 1 };
+  const clave = claveLinea(nueva);
+  if (!lineas.some((linea) => claveLinea(linea) === clave)) return [...lineas, nueva];
+  return lineas.map((linea) => (claveLinea(linea) === clave
     ? { ...linea, packs: Math.min(linea.packs + 1, MAX_PACKS_POR_LINEA) }
     : linea));
 }
@@ -648,6 +720,40 @@ function quitarLinea(lineas, clave) {
   return lineas.filter((linea) => claveLinea(linea) !== clave);
 }
 
+/* ===== Funciones puras: combos por ocasión ===== */
+
+function esComboValido(clave) {
+  return typeof clave === "string" && Object.prototype.hasOwnProperty.call(COMBOS, clave);
+}
+
+// Precio de UN combo: descuento sobre la suma de los precios de catálogo de cada mitad (paquete "tamano"),
+// redondeado al sol entero. Todo en céntimos. Devuelve null si algún dato no vale (producto sin precio, categoría
+// cambiada o tamaño no permitido). Ejemplo: 35,00 + 28,00 = 63,00 -> S/ 60,00.
+function calcularPrecioCombo(catalogo, { dulce, salado, tamano }) {
+  const productoDulce = catalogo.get(dulce);
+  const productoSalado = catalogo.get(salado);
+  if (!tienePrecios(productoDulce) || !tienePrecios(productoSalado)) return null;
+  if (productoDulce.categoria !== "dulce" || productoSalado.categoria !== "salado") return null;
+  if (!MITADES_COMBO.includes(tamano)) return null;
+  const anteriorCentimos = productoDulce.precios[tamano] + productoSalado.precios[tamano];
+  // Todo con enteros (céntimos x porcentaje) para no depender de decimales binarios.
+  const descontado = Math.floor((anteriorCentimos * (100 - DESCUENTO_COMBO_PORCIENTO) + 5000) / 10000) * 100;
+  const comboCentimos = Math.min(descontado, anteriorCentimos);
+  return { anteriorCentimos, comboCentimos, ahorroCentimos: anteriorCentimos - comboCentimos };
+}
+
+// Devuelve la línea limpia de un combo guardado o null si está dañado, ya no existe o no coincide con su definición.
+function normalizarLineaCombo(item, catalogo) {
+  if (!esComboValido(item.combo)) return null;
+  const definicion = COMBOS[item.combo];
+  const dulce = ALIAS_IDS[item.dulce] || item.dulce;
+  const salado = ALIAS_IDS[item.salado] || item.salado;
+  const tamanoPermitido = definicion.total ? item.tamano === definicion.total / 2 : MITADES_COMBO.includes(item.tamano);
+  if (!tamanoPermitido || !Number.isInteger(item.packs) || item.packs < 1) return null;
+  if (!calcularPrecioCombo(catalogo, { dulce, salado, tamano: item.tamano })) return null;
+  return { combo: item.combo, dulce, salado, tamano: item.tamano, packs: Math.min(item.packs, MAX_PACKS_POR_LINEA) };
+}
+
 // Descarta datos guardados que ya no existan en el catálogo o estén dañados.
 function normalizarLineas(crudo, catalogo) {
   if (!Array.isArray(crudo)) return [];
@@ -655,6 +761,14 @@ function normalizarLineas(crudo, catalogo) {
   const limpias = [];
   for (const item of crudo) {
     if (!item) continue;
+    if (item.combo) {
+      const combo = normalizarLineaCombo(item, catalogo);
+      if (combo && !vistas.has(claveLinea(combo))) {
+        vistas.add(claveLinea(combo));
+        limpias.push(combo);
+      }
+      continue;
+    }
     const id = ALIAS_IDS[item.id] || item.id;
     if (!tienePrecios(catalogo.get(id)) || !TAMANOS.includes(item.tamano)) continue;
     if (!Number.isInteger(item.packs) || item.packs < 1) continue;
@@ -666,16 +780,45 @@ function normalizarLineas(crudo, catalogo) {
   return limpias;
 }
 
+// Línea de combo con todo lo que muestran la lista y el mensaje. El subtotal YA lleva el descuento
+// (precio de un combo x cantidad), así el total de la lista y el del mensaje son siempre el mismo número.
+function resumirCombo(linea, catalogo) {
+  const definicion = COMBOS[linea.combo];
+  const precio = calcularPrecioCombo(catalogo, linea);
+  const nombreSalado = catalogo.get(linea.salado).nombre;
+  const nombreDulce = catalogo.get(linea.dulce).nombre;
+  const porMitad = linea.tamano * linea.packs;
+  return {
+    ...linea,
+    clave: claveLinea(linea),
+    esCombo: true,
+    nombre: definicion.nombreLista,
+    categoria: "combo",
+    ids: [linea.salado, linea.dulce],
+    unidades: porMitad * 2,
+    porCategoria: { dulce: porMitad, salado: porMitad },
+    composicion: `${linea.tamano} ${nombreSalado} + ${linea.tamano} ${nombreDulce}`,
+    descuentoPorciento: DESCUENTO_COMBO_PORCIENTO,
+    precioAnteriorCentimos: precio.anteriorCentimos * linea.packs,
+    ahorroCentimos: precio.ahorroCentimos * linea.packs,
+    subtotalCentimos: precio.comboCentimos * linea.packs
+  };
+}
+
 // Añade a cada línea nombre, unidades y subtotal; y calcula total y cantidad de packs.
 function resumirCarrito(lineas, catalogo) {
   const items = lineas.map((linea) => {
+    if (esLineaCombo(linea)) return resumirCombo(linea, catalogo);
     const producto = catalogo.get(linea.id);
+    const unidades = linea.tamano * linea.packs;
     return {
       ...linea,
       clave: claveLinea(linea),
       nombre: producto.nombre,
       categoria: producto.categoria,
-      unidades: linea.tamano * linea.packs,
+      ids: [linea.id],
+      unidades,
+      porCategoria: { [producto.categoria]: unidades },
       subtotalCentimos: producto.precios[linea.tamano] * linea.packs
     };
   });
@@ -694,11 +837,74 @@ function describirUnidades(item) {
     : `${item.unidades} unidades (${item.packs} x ${item.tamano})`;
 }
 
-function construirMensajePedido({ items, totalCentimos }, fechaISO, negocio = NEGOCIO, plan = null) {
-  const lineas = items.map((item) =>
-    `- ${item.nombre}: ${describirUnidades(item)} - ${formatearMoneda(item.subtotalCentimos)}`);
-  const evento = textoEventoPedido(plan);
+// Líneas del mensaje de un elemento de la lista. Un combo nombra el combo, su precio ya con descuento
+// (el mismo que suma el total) y, aparte, qué incluye.
+function lineasMensajeItem(item) {
+  if (!item.esCombo) {
+    return [`- ${item.nombre}: ${describirUnidades(item)} - ${formatearMoneda(item.subtotalCentimos)}`];
+  }
+  const unidades = item.packs === 1
+    ? `${item.unidades} unidades`
+    : `${item.unidades} unidades (${item.packs} combos de ${item.tamano * 2})`;
   return [
+    `- ${item.nombre}: ${unidades} - ${formatearMoneda(item.subtotalCentimos)} ` +
+      `(${item.descuentoPorciento}% de descuento sobre ${formatearMoneda(item.precioAnteriorCentimos)})`,
+    `  ${item.packs === 1 ? "Incluye" : "Cada combo incluye"}: ${item.composicion}`
+  ];
+}
+
+/* ===== Funciones puras: origen de la visita ===== */
+
+// Texto libre -> clave permitida ("qr", "instagram", ...) o null. Ignora mayúsculas y espacios; lo desconocido se descarta.
+function normalizarOrigen(valor) {
+  if (typeof valor !== "string") return null;
+  const limpio = valor.trim().toLowerCase();
+  const clave = Object.prototype.hasOwnProperty.call(ALIAS_ORIGEN, limpio) ? ALIAS_ORIGEN[limpio] : limpio;
+  return Object.prototype.hasOwnProperty.call(ORIGENES_PERMITIDOS, clave) ? clave : null;
+}
+
+// Lee ?origen= y, si no sirve, ?utm_source= de la cadena de consulta (por ejemplo "?origen=qr"). Devuelve la clave o null.
+function leerOrigenDeURL(cadenaConsulta) {
+  let parametros;
+  try {
+    parametros = new URLSearchParams(cadenaConsulta || "");
+  } catch (error) {
+    return null;
+  }
+  return normalizarOrigen(parametros.get("origen")) || normalizarOrigen(parametros.get("utm_source"));
+}
+
+// "(Vi la web por: QR)"; vacío si no hay un origen permitido.
+function textoOrigen(origen) {
+  const clave = normalizarOrigen(origen);
+  return clave ? `(Vi la web por: ${ORIGENES_PERMITIDOS[clave]})` : "";
+}
+
+// Añade al final del mensaje una línea discreta con el origen; sin origen devuelve el mensaje intacto.
+function agregarLineaOrigen(mensaje, origen) {
+  const linea = textoOrigen(origen);
+  return linea ? `${mensaje}\n\n${linea}` : mensaje;
+}
+
+// Enlace wa.me prellenado -> el mismo enlace con la línea de origen sumada a su texto. Sin origen o sin texto, igual.
+function enlaceConOrigen(enlace, origen) {
+  if (!textoOrigen(origen)) return enlace;
+  try {
+    const url = new URL(enlace);
+    const texto = url.searchParams.get("text");
+    if (texto === null) return enlace;
+    url.searchParams.set("text", agregarLineaOrigen(texto, origen));
+    url.search = url.search.replace(/\+/g, "%20"); // los espacios viajan como %20, igual que en el resto de enlaces
+    return url.toString();
+  } catch (error) {
+    return enlace;
+  }
+}
+
+function construirMensajePedido({ items, totalCentimos }, fechaISO, negocio = NEGOCIO, plan = null, origen = null) {
+  const lineas = items.flatMap(lineasMensajeItem);
+  const evento = textoEventoPedido(plan);
+  const mensaje = [
     `Hola, ${negocio.nombre}. Quisiera hacer este pedido:`,
     "",
     ...lineas,
@@ -709,12 +915,13 @@ function construirMensajePedido({ items, totalCentimos }, fechaISO, negocio = NE
     "",
     "¿Me confirman el costo del delivery y los datos de pago? Gracias."
   ].join("\n");
+  return agregarLineaOrigen(mensaje, origen);
 }
 
 // Mensaje para cotizar un producto sin precio: solo lleva la cantidad, nunca datos personales.
-function construirMensajeCotizacion(cantidad, nombreProducto, negocio = NEGOCIO) {
-  return `Hola, ${negocio.nombre}. Quisiera cotizar ${cantidad} unidades de ${nombreProducto.toLowerCase()}. ` +
-    "¿Me indican el precio y la disponibilidad?";
+function construirMensajeCotizacion(cantidad, nombreProducto, negocio = NEGOCIO, origen = null) {
+  return agregarLineaOrigen(`Hola, ${negocio.nombre}. Quisiera cotizar ${cantidad} unidades de ${nombreProducto.toLowerCase()}. ` +
+    "¿Me indican el precio y la disponibilidad?", origen);
 }
 
 function construirEnlaceWhatsApp(mensaje, negocio = NEGOCIO) {
@@ -725,13 +932,21 @@ function construirEnlaceWhatsApp(mensaje, negocio = NEGOCIO) {
 
 // Emite un evento del documento y, solo si ya existe window.dataLayer, lo empuja allí.
 // No carga ninguna herramienta ni envía datos personales (nada de fechas ni textos del pedido).
+// El origen de la visita (clave permitida o null) viaja en todos los eventos; lo fija iniciar() al cargar.
+let origenMedicion = null;
+
+function fijarOrigenMedicion(origen) {
+  origenMedicion = normalizarOrigen(origen);
+}
+
 function registrar(nombre, datos = {}) {
   try {
+    const conOrigen = origenMedicion ? { origen: origenMedicion, ...datos } : datos;
     if (typeof document !== "undefined" && typeof CustomEvent === "function") {
-      document.dispatchEvent(new CustomEvent("eldelicioso:evento", { detail: { nombre, ...datos } }));
+      document.dispatchEvent(new CustomEvent("eldelicioso:evento", { detail: { nombre, ...conOrigen } }));
     }
     if (typeof window !== "undefined" && window.dataLayer && typeof window.dataLayer.push === "function") {
-      window.dataLayer.push({ event: nombre, ...datos });
+      window.dataLayer.push({ event: nombre, ...conOrigen });
     }
   } catch (error) {
     // La medición nunca debe romper la página.
@@ -756,6 +971,21 @@ function ubicacionWhatsApp(enlace) {
   if (enlace.dataset.ubicacion) return enlace.dataset.ubicacion;
   const seccion = enlace.closest("section[id], header[id], footer, aside[id]");
   return (seccion && seccion.id) || "otra";
+}
+
+// Origen de la visita: el de la dirección (?origen= o ?utm_source=) o, si no trae, el guardado en sessionStorage,
+// así sobrevive a navegar dentro de la página. Solo claves permitidas; devuelve la clave o null.
+function resolverOrigenVisita() {
+  const deLaURL = leerOrigenDeURL(window.location.search);
+  try {
+    if (deLaURL) {
+      window.sessionStorage.setItem(CLAVE_ORIGEN, deLaURL);
+      return deLaURL;
+    }
+    return normalizarOrigen(window.sessionStorage.getItem(CLAVE_ORIGEN));
+  } catch (error) {
+    return deLaURL; // sessionStorage bloqueado: al menos vale para esta carga
+  }
 }
 
 function esEnlaceWhatsApp(enlace) {
@@ -811,6 +1041,8 @@ function iniciar() {
   const avisoVersion = $("aviso-version");
   const botonActualizarVersion = $("boton-actualizar-version");
 
+  const origenVisita = resolverOrigenVisita();
+  fijarOrigenMedicion(origenVisita);
   const catalogo = leerCatalogo(rejilla);
   let lineas = normalizarLineas(leerAlmacenamiento(CLAVE_ALMACENAMIENTO), catalogo);
   // La calculadora siempre arranca en blanco al abrir o actualizar la página: se descarta el plan de la visita
@@ -865,7 +1097,7 @@ function iniciar() {
     const enlace = tarjeta.querySelector("[data-solicitar]");
     if (!enlace) return;
     const nombre = tarjeta.querySelector(".tarjeta__nombre").textContent.trim();
-    enlace.href = construirEnlaceWhatsApp(construirMensajeCotizacion(tamanoElegido(tarjeta), nombre));
+    enlace.href = construirEnlaceWhatsApp(construirMensajeCotizacion(tamanoElegido(tarjeta), nombre, NEGOCIO, origenVisita));
   }
 
   // "medir" es falso cuando el filtro se sincroniza solo (al elegir un camino o al restaurar el plan).
@@ -886,7 +1118,8 @@ function iniciar() {
       boton.dataset.textoOriginal = boton.textContent;
       boton.dataset.etiquetaOriginal = boton.getAttribute("aria-label") || "";
     }
-    const nombre = boton.closest(".tarjeta").querySelector(".tarjeta__nombre").textContent.trim();
+    // Sirve para las tarjetas del catálogo y para las de combo.
+    const nombre = boton.closest(".tarjeta, .combo").querySelector(".tarjeta__nombre, .combo__titulo").textContent.trim();
     boton.textContent = "Agregado";
     boton.setAttribute("aria-label", `${nombre} agregado a la lista`);
     clearTimeout(Number(boton.dataset.temporizador));
@@ -907,15 +1140,19 @@ function iniciar() {
       valor: aSoles(catalogo.get(tarjeta.dataset.id).precios[tamano])
     });
     guardarLineas();
-    // En escritorio la lista se abre sola al agregar, para que el visitante la vea sumar; el foco no se mueve.
+    mostrarListaTrasAgregar();
+    dibujarLista(claveLinea({ id: tarjeta.dataset.id, tamano }));
+    rebotarContador();
+    marcarAgregado(boton);
+  }
+
+  // En escritorio la lista se abre sola al agregar, para que el visitante la vea sumar; el foco no se mueve.
+  function mostrarListaTrasAgregar() {
     if (consultaEscritorio.matches && !listaAbierta) {
       listaAbierta = true;
       origenLista = null;
       actualizarMinimoFecha();
     }
-    dibujarLista(claveLinea({ id: tarjeta.dataset.id, tamano }));
-    rebotarContador();
-    marcarAgregado(boton);
   }
 
   // Sello de la marca en la foto de cada producto que tenga al menos una línea en la lista (cualquier tamaño).
@@ -934,23 +1171,29 @@ function iniciar() {
     });
   }
 
+  // Muestra u oculta el sello de "ya agregado" de una tarjeta (de catálogo o de combo).
+  function actualizarSello(contenedor, esta) {
+    const sello = contenedor.querySelector(".tarjeta__sello");
+    if (!sello) return;
+    const estaba = contenedor.hasAttribute("data-en-lista");
+    if (esta === estaba) return;
+    contenedor.toggleAttribute("data-en-lista", esta);
+    contenedor.querySelector(".tarjeta__aviso").textContent = esta ? "En tu lista" : "";
+    sello.classList.remove("tarjeta__sello--nuevo");
+    // Pop de aparición solo al agregar (no al restaurar la lista guardada) y con movimiento permitido.
+    if (esta && arrancado && !consultaMovimiento.matches) {
+      void sello.offsetWidth; // Reinicia la animación.
+      sello.classList.add("tarjeta__sello--nuevo");
+    }
+  }
+
+  // Un producto lleva sello si está en la lista, suelto o dentro de un combo.
   function sincronizarSellos(resumen) {
-    const enLista = new Set(resumen.items.map((item) => item.id));
+    const enLista = new Set(resumen.items.flatMap((item) => item.ids));
     rejilla.querySelectorAll(".tarjeta").forEach((tarjeta) => {
-      const sello = tarjeta.querySelector(".tarjeta__sello");
-      if (!sello) return;
-      const estaba = tarjeta.hasAttribute("data-en-lista");
-      const esta = enLista.has(tarjeta.dataset.id);
-      if (esta === estaba) return;
-      tarjeta.toggleAttribute("data-en-lista", esta);
-      tarjeta.querySelector(".tarjeta__aviso").textContent = esta ? "En tu lista" : "";
-      sello.classList.remove("tarjeta__sello--nuevo");
-      // Pop de aparición solo al agregar (no al restaurar la lista guardada) y con movimiento permitido.
-      if (esta && arrancado && !consultaMovimiento.matches) {
-        void sello.offsetWidth; // Reinicia la animación.
-        sello.classList.add("tarjeta__sello--nuevo");
-      }
+      actualizarSello(tarjeta, enLista.has(tarjeta.dataset.id));
     });
+    sincronizarSellosCombos(resumen);
   }
 
   /* --- Almacenamiento (con respaldo en memoria si el navegador lo bloquea) --- */
@@ -991,11 +1234,12 @@ function iniciar() {
 
   // Los botones −, + y quitar de cada fila describen el producto y su tamaño.
   function configurarControles(fila, item, descripcion) {
+    const unidad = item.esCombo ? "combo" : "paquete";
     const menos = fila.querySelector("[data-disminuir]");
-    menos.setAttribute("aria-label", `Disminuir un paquete de ${descripcion}`);
+    menos.setAttribute("aria-label", `Disminuir un ${unidad} de ${descripcion}`);
     menos.disabled = item.packs <= 1;
     const mas = fila.querySelector("[data-aumentar]");
-    mas.setAttribute("aria-label", `Aumentar un paquete de ${descripcion}`);
+    mas.setAttribute("aria-label", `Aumentar un ${unidad} de ${descripcion}`);
     mas.disabled = item.packs >= MAX_PACKS_POR_LINEA;
     fila.querySelector("[data-quitar]").setAttribute("aria-label", `Quitar ${descripcion}`);
   }
@@ -1027,12 +1271,25 @@ function iniciar() {
 
   function crearFilaLista(item) {
     const fila = plantillaLista.content.firstElementChild.cloneNode(true);
-    const descripcion = `${item.nombre}, ${item.tamano} unidades`;
+    const descripcion = item.esCombo ? item.nombre : `${item.nombre}, ${item.tamano} unidades`;
     fila.dataset.clave = item.clave;
     fila.querySelector(".lista__item-nombre").textContent = item.nombre;
-    fila.querySelector(".lista__item-detalle").textContent = `${item.unidades} unid.`;
     fila.querySelector(".lista__item-precio").textContent = formatearMoneda(item.subtotalCentimos);
-    fila.querySelector(".lista__packs").setAttribute("aria-label", `Paquetes de ${descripcion}`);
+    const detalle = fila.querySelector(".lista__item-detalle");
+    const descuento = fila.querySelector(".lista__item-descuento");
+    if (item.esCombo) {
+      // Combo: qué incluye y cuánto se ahorra (precio anterior tachado; el precio de la fila ya es el del combo).
+      detalle.textContent = item.packs === 1
+        ? `${item.unidades} unid.: ${item.composicion}`
+        : `${item.unidades} unid.: ${item.packs} x (${item.composicion})`;
+      const antes = crear("s", "", formatearMoneda(item.precioAnteriorCentimos));
+      descuento.replaceChildren(crear("span", "solo-lectores", "Precio sin descuento: "), antes,
+        ` · ${item.descuentoPorciento}% de descuento`);
+      descuento.hidden = false;
+    } else {
+      detalle.textContent = `${item.unidades} unid.`;
+    }
+    fila.querySelector(".lista__packs").setAttribute("aria-label", `${item.esCombo ? "Combos" : "Paquetes"} de ${descripcion}`);
     fila.querySelector(".lista__packs-numero").textContent = item.packs;
     configurarControles(fila, item, descripcion);
     return fila;
@@ -1231,7 +1488,7 @@ function iniciar() {
       return;
     }
 
-    const mensaje = construirMensajePedido(resumen, campoFecha.value, NEGOCIO, plan);
+    const mensaje = construirMensajePedido(resumen, campoFecha.value, NEGOCIO, plan, origenVisita);
     registrar("enviar_pedido", {
       valor_total: aSoles(resumen.totalCentimos),
       lineas: resumen.items.length,
@@ -1434,6 +1691,173 @@ function iniciar() {
     dibujarContextoCamino();
   }
 
+  /* --- Combos por ocasión --- */
+
+  const seccionCombos = $("combos");
+  const rejillaCombos = $("combos-rejilla");
+  // Una entrada por tarjeta: { definicion, tarjeta, selectDulce, selectSalado, radios, unidades, ... }
+  const tarjetasCombos = [];
+
+  // Opciones del selector: los productos con precio de esa categoría, en el orden del catálogo (el especial
+  // "por cotizar" no tiene precio y no entra). Los nombres y precios salen del catálogo leído del HTML.
+  function crearSelectorCombo(id, categoria, elegido) {
+    const select = crear("select");
+    select.id = id;
+    select.name = id;
+    [...catalogo].filter(([, producto]) => producto.categoria === categoria).forEach(([idProducto, producto]) => {
+      const opcion = crear("option", "", producto.nombre);
+      opcion.value = idProducto;
+      select.append(opcion);
+    });
+    select.value = elegido;
+    return select;
+  }
+
+  function crearCampoCombo(idSelector, textoEtiqueta, select) {
+    const campo = crear("div", "campo");
+    const etiqueta = crear("label", "", `${textoEtiqueta} `);
+    etiqueta.htmlFor = idSelector;
+    const cantidad = crear("span", "campo__obligatorio");
+    etiqueta.append(cantidad);
+    campo.append(etiqueta, select);
+    return { campo, cantidad };
+  }
+
+  // Tamaño del combo (solo "Arma el tuyo"): 50 o 100 unidades, mitad y mitad.
+  function crearSelectorTamanoCombo(clave) {
+    const grupo = crear("fieldset", "selector combo__tamano");
+    grupo.append(crear("legend", "selector__leyenda", "Tamaño del combo"));
+    const opciones = crear("div", "selector__opciones selector__opciones--dos");
+    const radios = [50, 100].map((total, indice) => {
+      const etiqueta = crear("label", "segmento");
+      const radio = crear("input");
+      radio.type = "radio";
+      radio.name = `tamano-combo-${clave}`;
+      radio.value = String(total);
+      radio.checked = indice === 0;
+      const cuerpo = crear("span", "segmento__cuerpo");
+      cuerpo.append(crear("span", "segmento__cantidad", `${total} unidades`));
+      etiqueta.append(radio, cuerpo);
+      opciones.append(etiqueta);
+      return radio;
+    });
+    grupo.append(opciones);
+    return { grupo, radios };
+  }
+
+  function crearTarjetaCombo(definicion) {
+    const tarjeta = crear("article", definicion.total ? "combo" : "combo combo--personalizado");
+    tarjeta.dataset.combo = definicion.clave;
+
+    // Sello de "ya agregado" (el mismo de las tarjetas del catálogo) y su aviso para lectores de pantalla.
+    const sello = crear("span", "tarjeta__sello");
+    sello.setAttribute("aria-hidden", "true");
+    sello.addEventListener("animationend", () => sello.classList.remove("tarjeta__sello--nuevo"));
+    const aviso = crear("span", "solo-lectores tarjeta__aviso");
+    aviso.setAttribute("role", "status");
+
+    const unidades = crear("p", "insignia combo__unidades");
+    const titulo = crear("h3", "combo__titulo", definicion.titulo);
+    const frase = crear("p", "combo__frase", definicion.frase);
+
+    const idBase = `combo-${definicion.clave}`;
+    const selectDulce = crearSelectorCombo(`${idBase}-dulce`, "dulce", definicion.dulce);
+    const selectSalado = crearSelectorCombo(`${idBase}-salado`, "salado", definicion.salado);
+    const campoDulce = crearCampoCombo(selectDulce.id, "Dulce", selectDulce);
+    const campoSalado = crearCampoCombo(selectSalado.id, "Salado", selectSalado);
+    const campos = crear("div", "combo__campos");
+    campos.append(campoDulce.campo, campoSalado.campo);
+
+    const tamano = definicion.total ? null : crearSelectorTamanoCombo(definicion.clave);
+
+    const precio = crear("p", "combo__precio");
+    precio.setAttribute("aria-live", "polite");
+    const antes = crear("s", "combo__antes");
+    const ahora = crear("strong", "combo__ahora");
+    const ahorro = crear("span", "combo__ahorro");
+    precio.append(crear("span", "solo-lectores", "Precio sin descuento: "), antes, " ",
+      crear("span", "solo-lectores", "Precio del combo: "), ahora, " ", ahorro);
+
+    const boton = crear("button", "boton boton--principal boton--bloque", "Agregar combo a mi lista");
+    boton.type = "button";
+    boton.dataset.agregarCombo = "";
+    boton.setAttribute("aria-label", `Agregar combo a mi lista: ${definicion.titulo}`);
+
+    tarjeta.append(sello, aviso, unidades, titulo, frase, campos, ...(tamano ? [tamano.grupo] : []), precio, boton);
+    return {
+      definicion, tarjeta, selectDulce, selectSalado, unidades, antes, ahora, ahorro, boton,
+      radios: tamano ? tamano.radios : [],
+      cantidades: [campoDulce.cantidad, campoSalado.cantidad]
+    };
+  }
+
+  // Lo que el visitante tiene elegido en una tarjeta: { combo, dulce, salado, tamano } ("tamano" es cada mitad).
+  function leerEstadoCombo(entrada) {
+    const total = entrada.definicion.total || Number(entrada.radios.find((radio) => radio.checked).value);
+    return {
+      combo: entrada.definicion.clave,
+      dulce: entrada.selectDulce.value,
+      salado: entrada.selectSalado.value,
+      tamano: total / 2
+    };
+  }
+
+  // Precio anterior tachado y precio del combo, en vivo con los selectores.
+  function actualizarTarjetaCombo(entrada) {
+    const estado = leerEstadoCombo(entrada);
+    entrada.unidades.textContent = `${estado.tamano * 2} unidades`;
+    entrada.cantidades.forEach((cantidad) => { cantidad.textContent = `(${estado.tamano} unidades)`; });
+    const precio = calcularPrecioCombo(catalogo, estado);
+    entrada.boton.disabled = !precio;
+    if (precio) {
+      entrada.antes.textContent = formatearMoneda(precio.anteriorCentimos);
+      entrada.ahora.textContent = formatearMoneda(precio.comboCentimos);
+      entrada.ahorro.textContent = `${DESCUENTO_COMBO_PORCIENTO}% de descuento`;
+    }
+    sincronizarSellosCombos();
+  }
+
+  // Un combo lleva sello mientras la lista tenga uno igual (mismos productos y tamaño).
+  function sincronizarSellosCombos(resumen = resumirCarrito(lineas, catalogo)) {
+    const enLista = new Set(resumen.items.filter((item) => item.esCombo).map((item) => item.clave));
+    tarjetasCombos.forEach((entrada) => {
+      actualizarSello(entrada.tarjeta, enLista.has(claveLinea(leerEstadoCombo(entrada))));
+    });
+  }
+
+  function agregarComboDesdeTarjeta(boton) {
+    const entrada = tarjetasCombos.find((candidata) => candidata.tarjeta.contains(boton));
+    if (!entrada) return;
+    const estado = leerEstadoCombo(entrada);
+    const precio = calcularPrecioCombo(catalogo, estado);
+    if (!precio) return;
+    lineas = agregarCombo(lineas, estado);
+    registrar("agregar_combo", {
+      combo: estado.combo,
+      dulce_id: estado.dulce,
+      salado_id: estado.salado,
+      unidades: estado.tamano * 2,
+      valor: aSoles(precio.comboCentimos)
+    });
+    guardarLineas();
+    mostrarListaTrasAgregar();
+    dibujarLista(claveLinea(estado));
+    rebotarContador();
+    marcarAgregado(boton);
+  }
+
+  // Sin productos con precio no hay combos que armar: la sección sigue oculta.
+  function prepararCombos() {
+    if (catalogo.size === 0) return;
+    Object.values(COMBOS).forEach((definicion) => {
+      const entrada = crearTarjetaCombo(definicion);
+      tarjetasCombos.push(entrada);
+      rejillaCombos.append(entrada.tarjeta);
+      actualizarTarjetaCombo(entrada);
+    });
+    seccionCombos.hidden = false;
+  }
+
   /* --- Grupo: selector de la portada, foto, filtro del catálogo y galería (un solo estado) --- */
 
   const selectorGrupo = $("selector-grupo");
@@ -1547,6 +1971,11 @@ function iniciar() {
   const pistaGaleria = $("galeria-pista");
   const pausaGaleria = { cursor: false, foco: false, enPantalla: true, toqueHasta: 0 };
   let animacionGaleria = 0;
+  let fundidoGaleria = null;
+  // Pausa PERSISTENTE pedida con el botón (WCAG 2.2.2): distinta de las pausas automáticas de arriba (cursor, foco,
+  // toque, pestaña oculta), que se levantan solas. Esta solo la levanta el visitante y no se reinicia por sí sola.
+  let pausadaPorUsuario = false;
+  const botonPausaGaleria = $("galeria-pausa");
   let temporizadorGaleria = 0;
   let temporizadorResalte = 0;
   let tarjetaResaltada = null;
@@ -1602,10 +2031,14 @@ function iniciar() {
   function cancelarAnimacionGaleria() {
     animacionGaleria += 1;
     pistaGaleria.style.scrollSnapType = "";
+    if (fundidoGaleria) {
+      fundidoGaleria.cancel();
+      fundidoGaleria = null;
+    }
   }
 
-  // Desplazamiento propio y pausado (más lento que el de "smooth"); sin movimiento permitido, salta directo.
-  function desplazarGaleria(destino, duracion) {
+  // Desplazamiento de ~0,7 s con desaceleración (ease-out cúbico), sin desenfoque; sin movimiento permitido, salta directo.
+  function desplazarGaleria(destino, duracion = DURACION_TRANSICION_GALERIA_MS) {
     cancelarAnimacionGaleria();
     const inicio = pistaGaleria.scrollLeft;
     if (consultaMovimiento.matches || Math.abs(destino - inicio) < 1) {
@@ -1618,7 +2051,7 @@ function iniciar() {
     function cuadro(ahora) {
       if (identificador !== animacionGaleria) return;
       const avance = Math.min(1, (ahora - comienzo) / duracion);
-      const suavizado = avance < .5 ? 4 * avance ** 3 : 1 - ((-2 * avance + 2) ** 3) / 2;
+      const suavizado = 1 - (1 - avance) ** 3;
       pistaGaleria.scrollLeft = inicio + (destino - inicio) * suavizado;
       if (avance < 1) requestAnimationFrame(cuadro);
       else pistaGaleria.style.scrollSnapType = "";
@@ -1626,8 +2059,26 @@ function iniciar() {
     requestAnimationFrame(cuadro);
   }
 
-  // Avanza (o retrocede) una diapositiva; al pasar el final vuelve al inicio (y al revés) con desplazamiento suave.
-  function avanzarGaleria(sentido, automatico = false) {
+  // Del final al inicio (o al revés) no se recorren todas las imágenes de golpe: la pista se desvanece, salta y reaparece,
+  // en el mismo tiempo que un desplazamiento normal.
+  function saltarGaleriaConFundido(destino) {
+    cancelarAnimacionGaleria();
+    if (consultaMovimiento.matches || typeof pistaGaleria.animate !== "function") {
+      pistaGaleria.scrollLeft = destino;
+      return;
+    }
+    const identificador = animacionGaleria;
+    fundidoGaleria = pistaGaleria.animate(
+      [{ opacity: 1 }, { opacity: 0, offset: .4 }, { opacity: 0, offset: .5 }, { opacity: 1 }],
+      { duration: DURACION_TRANSICION_GALERIA_MS, easing: "linear" }
+    );
+    setTimeout(() => {
+      if (identificador === animacionGaleria) pistaGaleria.scrollLeft = destino;
+    }, DURACION_TRANSICION_GALERIA_MS * .45);
+  }
+
+  // Avanza (o retrocede) una diapositiva; al pasar el final vuelve al inicio (y al revés) con un fundido.
+  function avanzarGaleria(sentido) {
     const diapositivas = pistaGaleria.children;
     if (diapositivas.length < 2) return;
     const paso = diapositivas[1].offsetLeft - diapositivas[0].offsetLeft;
@@ -1635,32 +2086,44 @@ function iniciar() {
     if (maximo <= 1 || paso <= 0) return;
     const posicion = pistaGaleria.scrollLeft;
     const indice = Math.round(posicion / paso);
-    let destino;
-    let duracion = automatico ? 1100 : 650;
-    if (sentido > 0) {
-      if (posicion >= maximo - 2) { destino = 0; duracion = 1300; }
-      else destino = Math.min((indice + 1) * paso, maximo);
-    } else if (posicion <= 2) {
-      destino = maximo;
-      duracion = 1300;
-    } else {
-      destino = Math.max((indice - 1) * paso, 0);
-    }
-    desplazarGaleria(destino, duracion);
+    if (sentido > 0 && posicion >= maximo - 2) return saltarGaleriaConFundido(0);
+    if (sentido < 0 && posicion <= 2) return saltarGaleriaConFundido(maximo);
+    desplazarGaleria(sentido > 0 ? Math.min((indice + 1) * paso, maximo) : Math.max((indice - 1) * paso, 0));
   }
 
-  // El avance automático se pausa con el cursor encima, con foco dentro, al tocar o arrastrar y con la pestaña oculta.
+  // El avance automático se pausa con el cursor encima, con foco dentro, al tocar o arrastrar, con la pestaña oculta
+  // y, de forma persistente, cuando el visitante pulsa el botón de pausa.
   function avanceAutomaticoGaleria() {
+    if (pausadaPorUsuario) return;
     if (consultaMovimiento.matches || document.hidden || seccionGaleria.hidden) return;
     if (pausaGaleria.cursor || pausaGaleria.foco || !pausaGaleria.enPantalla) return;
     if (Date.now() < pausaGaleria.toqueHasta) return;
-    avanzarGaleria(1, true);
+    avanzarGaleria(1);
   }
 
   // Con movimiento reducido no hay avance automático; si el ajuste cambia, se enciende o apaga.
   function programarAvanceGaleria() {
     clearInterval(temporizadorGaleria);
     temporizadorGaleria = consultaMovimiento.matches ? 0 : setInterval(avanceAutomaticoGaleria, INTERVALO_GALERIA_MS);
+  }
+
+  // Botón de pausa/reproducir: aria-pressed="true" significa "en pausa" (la etiqueta no cambia). Con movimiento
+  // reducido no hay avance automático, así que el botón no tiene nada que controlar y se oculta.
+  function dibujarBotonPausaGaleria() {
+    botonPausaGaleria.setAttribute("aria-pressed", String(pausadaPorUsuario));
+    botonPausaGaleria.hidden = consultaMovimiento.matches;
+  }
+
+  function alternarPausaGaleria() {
+    pausadaPorUsuario = !pausadaPorUsuario;
+    // Al reproducir se levantan las pausas automáticas pendientes (el toque o el foco que dejó pulsar el propio botón):
+    // quien pulsa "reproducir" espera ver avanzar la galería.
+    if (!pausadaPorUsuario) {
+      pausaGaleria.toqueHasta = 0;
+      pausaGaleria.foco = false;
+    }
+    dibujarBotonPausaGaleria();
+    registrar("pausar_galeria", { pausada: pausadaPorUsuario });
   }
 
   function tocarGaleria() {
@@ -1841,6 +2304,15 @@ function iniciar() {
   campoBocaditos.addEventListener("input", resaltarTramo);
   campoBocaditos.addEventListener("change", resaltarTramo);
 
+  rejillaCombos.addEventListener("change", (evento) => {
+    const entrada = tarjetasCombos.find((candidata) => candidata.tarjeta.contains(evento.target));
+    if (entrada) actualizarTarjetaCombo(entrada);
+  });
+  rejillaCombos.addEventListener("click", (evento) => {
+    const boton = evento.target.closest("[data-agregar-combo]");
+    if (boton) agregarComboDesdeTarjeta(boton);
+  });
+
   opcionesCalculadora.addEventListener("click", (evento) => {
     const boton = evento.target.closest("[data-camino]");
     if (boton) elegirCamino(boton.dataset.camino);
@@ -1873,10 +2345,14 @@ function iniciar() {
   });
   $("galeria-anterior").addEventListener("click", () => avanzarGaleria(-1));
   $("galeria-siguiente").addEventListener("click", () => avanzarGaleria(1));
-  seccionGaleria.addEventListener("pointerenter", (evento) => {
+  botonPausaGaleria.addEventListener("click", alternarPausaGaleria);
+  // El cursor pausa solo sobre las imágenes y sus flechas, no sobre el botón de pausa/reproducir: así "reproducir"
+  // arranca de verdad aunque el ratón siga encima del botón.
+  const marcoGaleria = seccionGaleria.querySelector(".galeria__marco");
+  marcoGaleria.addEventListener("pointerenter", (evento) => {
     if (evento.pointerType !== "touch") pausaGaleria.cursor = true;
   });
-  seccionGaleria.addEventListener("pointerleave", () => { pausaGaleria.cursor = false; });
+  marcoGaleria.addEventListener("pointerleave", () => { pausaGaleria.cursor = false; });
   ["pointerdown", "touchstart", "wheel"].forEach((tipo) => {
     seccionGaleria.addEventListener(tipo, tocarGaleria, { passive: true });
   });
@@ -1890,7 +2366,7 @@ function iniciar() {
   if ("IntersectionObserver" in window) {
     new IntersectionObserver(([entrada]) => { pausaGaleria.enPantalla = entrada.isIntersecting; }).observe(seccionGaleria);
   }
-  consultaMovimiento.addEventListener("change", () => { programarAvanceGaleria(); actualizarProgreso(); });
+  consultaMovimiento.addEventListener("change", () => { programarAvanceGaleria(); dibujarBotonPausaGaleria(); actualizarProgreso(); });
 
   // Subrayado del menú y barra de lectura
   consultaPunteroFino.addEventListener("change", sincronizarSubrayadoMenu);
@@ -1906,6 +2382,17 @@ function iniciar() {
   window.setInterval(comprobarVersionNueva, INTERVALO_VERSION_MS);
   // Al volver con "atrás" el navegador puede devolver la página congelada con lo escrito antes: se recarga en blanco.
   window.addEventListener("pageshow", (evento) => { if (evento.persisted) window.location.reload(); });
+
+  /* --- Origen de la visita en los enlaces prellenados de WhatsApp --- */
+
+  // Los enlaces fijos del HTML (portada, ocasiones, botón flotante) suman la línea de origen por JS, sin duplicar textos.
+  // Los de cotización (data-solicitar) ya la llevan porque su mensaje se arma con construirMensajeCotizacion.
+  function aplicarOrigenAEnlaces() {
+    if (!origenVisita) return;
+    document.querySelectorAll('a[href^="https://wa.me/"]:not([data-solicitar])').forEach((enlace) => {
+      enlace.href = enlaceConOrigen(enlace.getAttribute("href"), origenVisita);
+    });
+  }
 
   /* --- Nosotros --- */
 
@@ -1924,8 +2411,11 @@ function iniciar() {
     actualizarCotizacion(tarjeta);
   });
   prepararSellos();
+  prepararCombos();
+  aplicarOrigenAEnlaces();
   escribirCantidadSabores();
   dibujarGaleria(grupoActual);
+  dibujarBotonPausaGaleria();
   actualizarMinimoFecha();
   restaurarPlan();
   dibujarLista();
@@ -1948,6 +2438,9 @@ if (typeof module !== "undefined" && module.exports) {
     resumirCarrito, construirMensajePedido, construirMensajeCotizacion, construirEnlaceWhatsApp, aCentimos, tienePrecios,
     registrar, aSoles, codificarSugerencia,
     CAMINOS, calcularMetas, evaluarAvance, describirEstadoLista, describirLista, normalizarPlan,
-    textoContextoCamino, textoEventoPedido, textoSobrantesEquidad, textoSobrantesOpcion, planCompleto, mezclar, sacarDeBaraja
+    textoContextoCamino, textoEventoPedido, textoSobrantesEquidad, textoSobrantesOpcion, planCompleto, mezclar, sacarDeBaraja,
+    COMBOS, DESCUENTO_COMBO_PORCIENTO, calcularPrecioCombo, agregarCombo, normalizarLineaCombo, claveLinea, esLineaCombo,
+    ORIGENES_PERMITIDOS, normalizarOrigen, leerOrigenDeURL, textoOrigen, agregarLineaOrigen, enlaceConOrigen,
+    fijarOrigenMedicion
   };
 }

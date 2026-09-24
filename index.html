@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-version="202609231929">
+<html lang="es" data-version="202609232130">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,7 +35,7 @@
        index.js, hay que actualizar ESTOS TRES LUGARES A LA VEZ con la misma fecha y hora (AAAAMMDDHHmm):
        1) el ?v= de index.css y de index.js aquí abajo, 2) data-version en la etiqueta <html> de arriba,
        3) el valor "v" de version.json en la raíz del repositorio. -->
-  <link rel="stylesheet" href="index.css?v=202609231929">
+  <link rel="stylesheet" href="index.css?v=202609232130">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -55,13 +55,15 @@
     "priceRange": "S/ 28 - S/ 255"
   }
   </script>
-  <script src="index.js?v=202609231929" defer></script>
+  <script src="index.js?v=202609232130" defer></script>
 </head>
 <body id="arriba">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
     <symbol id="icono-whatsapp" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></symbol>
     <symbol id="icono-bolsa" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0"/></symbol>
     <symbol id="icono-flecha" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="icono-pausa" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4h3.5v16H7zM13.5 4H17v16h-3.5z"/></symbol>
+    <symbol id="icono-reproducir" viewBox="0 0 24 24"><path fill="currentColor" d="M8 4.5v15a.6.6 0 0 0 .9.5l12-7.5a.6.6 0 0 0 0-1l-12-7.5a.6.6 0 0 0-.9.5z"/></symbol>
     <symbol id="icono-cerrar" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
   </svg>
 
@@ -75,6 +77,7 @@
         <a href="#planificador">Planifica</a>
         <a href="#catalogo">Catálogo</a>
         <a href="#ocasiones">Ocasiones</a>
+        <a href="#combos">Combos</a>
         <a href="#nosotros">Nosotros</a>
         <!-- Subrayado decorativo que sigue al cursor cerca de la zona superior (solo escritorio con puntero fino) -->
         <span class="menu__indicador" aria-hidden="true"></span>
@@ -180,6 +183,14 @@
         <div class="galeria__pista" id="galeria-pista"></div>
         <button type="button" class="galeria__boton galeria__boton--siguiente" id="galeria-siguiente" aria-label="Bocadito siguiente" aria-controls="galeria-pista">
           <svg class="icono" aria-hidden="true" focusable="false"><use href="#icono-flecha"/></svg>
+        </button>
+      </div>
+      <!-- Pausa persistente del avance automático (WCAG 2.2.2). aria-pressed="true" = en pausa; la etiqueta no cambia.
+           Con movimiento reducido no hay avance automático y el script lo oculta. -->
+      <div class="contenedor galeria__control">
+        <button type="button" class="galeria__pausa" id="galeria-pausa" aria-pressed="false" aria-controls="galeria-pista" aria-label="Pausar el avance automático de la galería">
+          <svg class="icono galeria__icono-pausa" aria-hidden="true" focusable="false"><use href="#icono-pausa"/></svg>
+          <svg class="icono galeria__icono-reproducir" aria-hidden="true" focusable="false"><use href="#icono-reproducir"/></svg>
         </button>
       </div>
     </section>
@@ -976,6 +987,34 @@
       </div>
     </section>
 
+    <!-- Cómo pedir en 3 pasos: va justo después del catálogo, cuando el visitante ya vio los productos y se pregunta "¿y ahora qué?". -->
+    <section id="como-pedir" class="seccion pasos" aria-labelledby="titulo-como-pedir">
+      <div class="contenedor">
+        <header class="seccion__cabecera">
+          <span class="filete" aria-hidden="true"></span>
+          <h2 id="titulo-como-pedir" class="seccion__titulo">Pedir es facilísimo</h2>
+          <p class="seccion__intro">Tres pasos y tus antojos ya van rumbo a tu mesa.</p>
+        </header>
+        <ol class="pasos__lista">
+          <li class="paso">
+            <span class="paso__numero" aria-hidden="true">1</span>
+            <h3 class="paso__titulo">Elige tus antojos</h3>
+            <p>Recorre el catálogo o toma un combo y ve armando tu lista. Mezcla dulces y salados a tu gusto.</p>
+          </li>
+          <li class="paso">
+            <span class="paso__numero" aria-hidden="true">2</span>
+            <h3 class="paso__titulo">Escríbenos por WhatsApp</h3>
+            <p>Con tu lista lista, pulsa enviar: el mensaje sale redactado, solo falta que nos lo mandes.</p>
+          </li>
+          <li class="paso">
+            <span class="paso__numero" aria-hidden="true">3</span>
+            <h3 class="paso__titulo">Coordinamos entrega y pago</h3>
+            <p>Acordamos el día, la entrega en Lima y la forma de pago. Pide con 2 días de anticipación.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
     <section id="ocasiones" class="seccion ocasiones" aria-labelledby="titulo-ocasiones">
       <div class="contenedor">
         <header class="seccion__cabecera">
@@ -1029,6 +1068,19 @@
             </div>
           </article>
         </div>
+      </div>
+    </section>
+
+    <!-- Combos por ocasión: el script arma las tarjetas (definiciones en COMBOS de index.js) con los productos y precios
+         del catálogo de arriba; sin JavaScript la sección queda oculta. -->
+    <section id="combos" class="seccion combos" aria-labelledby="titulo-combos" hidden>
+      <div class="contenedor">
+        <header class="seccion__cabecera">
+          <span class="filete" aria-hidden="true"></span>
+          <h2 id="titulo-combos" class="seccion__titulo">Combos por ocasión</h2>
+          <p class="seccion__intro">Mitad salados, mitad dulces, con 5% de descuento. Cambia los sabores a tu antojo.</p>
+        </header>
+        <div class="combos__rejilla" id="combos-rejilla"></div>
       </div>
     </section>
 
@@ -1120,6 +1172,7 @@
       <p class="lista__item-nombre"></p>
       <p class="lista__item-precio"></p>
       <p class="lista__item-detalle"></p>
+      <p class="lista__item-descuento" hidden></p>
       <div class="lista__packs" role="group">
         <button type="button" class="lista__paso" data-disminuir>&minus;</button>
         <span class="lista__packs-numero"></span>
