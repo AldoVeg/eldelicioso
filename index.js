@@ -40,9 +40,9 @@ const ORIGENES_PERMITIDOS = {
 const ALIAS_ORIGEN = { ig: "instagram", insta: "instagram", fb: "facebook", "tik-tok": "tiktok" };
 const CLAVE_ORIGEN = "el-delicioso-origen"; // sessionStorage: sobrevive mientras se navega dentro de la página
 
-// Combos por ocasión: descuento sobre la suma de los precios del catálogo de cada mitad, redondeado al sol entero.
+// Combos por ocasión: precio promo = suma de los precios del catálogo de cada mitad menos un ahorro fijo (en céntimos).
 // Aquí solo viven los ids de los productos por defecto y los textos; los precios salen siempre del catálogo real.
-const DESCUENTO_COMBO_PORCIENTO = 5;
+const DESCUENTO_COMBO_CENTIMOS = 100; // S/ 1,00 menos que sumando los productos sueltos
 // Bocaditos que se cuentan por persona para decir "para cuántas personas alcanza".
 const BOCADITOS_POR_PERSONA = 3;
 // Cada combo se reparte mitad y mitad: la mitad es un paquete del catálogo (25 o 50 unidades).
@@ -743,9 +743,9 @@ function esComboValido(clave) {
   return typeof clave === "string" && Object.prototype.hasOwnProperty.call(COMBOS, clave);
 }
 
-// Precio de UN combo: descuento sobre la suma de los precios de catálogo de cada mitad (paquete "tamano"),
-// redondeado al sol entero. Todo en céntimos. Devuelve null si algún dato no vale (producto sin precio, categoría
-// cambiada o tamaño no permitido). Ejemplo: 35,00 + 28,00 = 63,00 -> S/ 60,00.
+// Precio de UN combo: suma de los precios de catálogo de cada mitad (paquete "tamano") menos DESCUENTO_COMBO_CENTIMOS.
+// Todo en céntimos. Devuelve null si algún dato no vale (producto sin precio, categoría
+// cambiada o tamaño no permitido). Ejemplo: 35,00 + 28,00 = 63,00 -> S/ 62,00.
 function calcularPrecioCombo(catalogo, { dulce, salado, tamano }) {
   const productoDulce = catalogo.get(dulce);
   const productoSalado = catalogo.get(salado);
@@ -753,9 +753,8 @@ function calcularPrecioCombo(catalogo, { dulce, salado, tamano }) {
   if (productoDulce.categoria !== "dulce" || productoSalado.categoria !== "salado") return null;
   if (!MITADES_COMBO.includes(tamano)) return null;
   const anteriorCentimos = productoDulce.precios[tamano] + productoSalado.precios[tamano];
-  // Todo con enteros (céntimos x porcentaje) para no depender de decimales binarios.
-  const descontado = Math.floor((anteriorCentimos * (100 - DESCUENTO_COMBO_PORCIENTO) + 5000) / 10000) * 100;
-  const comboCentimos = Math.min(descontado, anteriorCentimos);
+  // Todo con enteros (céntimos) para no depender de decimales binarios; el precio nunca baja de cero.
+  const comboCentimos = Math.max(anteriorCentimos - DESCUENTO_COMBO_CENTIMOS, 0);
   return { anteriorCentimos, comboCentimos, ahorroCentimos: anteriorCentimos - comboCentimos };
 }
 
@@ -821,7 +820,6 @@ function resumirCombo(linea, catalogo) {
     unidades: porMitad * 2,
     porCategoria: { dulce: porMitad, salado: porMitad },
     composicion: `${linea.tamano} ${nombreSalado} + ${linea.tamano} ${nombreDulce}`,
-    descuentoPorciento: DESCUENTO_COMBO_PORCIENTO,
     precioAnteriorCentimos: precio.anteriorCentimos * linea.packs,
     ahorroCentimos: precio.ahorroCentimos * linea.packs,
     subtotalCentimos: precio.comboCentimos * linea.packs
@@ -871,7 +869,7 @@ function lineasMensajeItem(item) {
     : `${item.unidades} unidades (${item.packs} combos de ${item.tamano * 2})`;
   return [
     `- ${item.nombre}: ${unidades} - ${formatearMoneda(item.subtotalCentimos)} ` +
-      `(${item.descuentoPorciento}% de descuento sobre ${formatearMoneda(item.precioAnteriorCentimos)})`,
+      `(precio promo; por separado suman ${formatearMoneda(item.precioAnteriorCentimos)})`,
     `  ${item.packs === 1 ? "Incluye" : "Cada combo incluye"}: ${item.composicion}`
   ];
 }
@@ -1306,8 +1304,8 @@ function iniciar() {
         ? `${item.unidades} unid.: ${item.composicion}`
         : `${item.unidades} unid.: ${item.packs} x (${item.composicion})`;
       const antes = crear("s", "", formatearMoneda(item.precioAnteriorCentimos));
-      descuento.replaceChildren(crear("span", "solo-lectores", "Precio sin descuento: "), antes,
-        ` · ${item.descuentoPorciento}% de descuento`);
+      descuento.replaceChildren(crear("span", "solo-lectores", "Precio por separado: "), antes,
+        " · precio promo");
       descuento.hidden = false;
     } else {
       detalle.textContent = `${item.unidades} unid.`;
@@ -1813,7 +1811,7 @@ function iniciar() {
     const antes = crear("s", "promo__antes");
     const ahora = crear("strong", "promo__ahora");
     const ahorro = crear("span", "promo__ahorro");
-    precio.append(crear("span", "solo-lectores", "Precio sin descuento: "), antes, " ",
+    precio.append(crear("span", "solo-lectores", "Precio por separado: "), antes, " ",
       crear("span", "solo-lectores", "Precio del combo: "), ahora, " ", ahorro);
 
     const boton = crear("button", "boton boton--principal boton--bloque", "Agregar a mi lista");
@@ -1865,7 +1863,7 @@ function iniciar() {
     if (precio) {
       entrada.antes.textContent = formatearMoneda(precio.anteriorCentimos);
       entrada.ahora.textContent = formatearMoneda(precio.comboCentimos);
-      entrada.ahorro.textContent = `${DESCUENTO_COMBO_PORCIENTO}% de descuento`;
+      entrada.ahorro.textContent = "Precio promo";
     }
     sincronizarSellosCombos();
   }
@@ -2492,7 +2490,7 @@ if (typeof module !== "undefined" && module.exports) {
     registrar, aSoles, codificarSugerencia,
     CAMINOS, calcularMetas, evaluarAvance, describirEstadoLista, describirLista, normalizarPlan,
     textoContextoCamino, textoEventoPedido, textoSobrantesEquidad, textoSobrantesOpcion, planCompleto, mezclar, sacarDeBaraja,
-    COMBOS, DESCUENTO_COMBO_PORCIENTO, BOCADITOS_POR_PERSONA, calcularPersonasCombo, calcularPrecioCombo, agregarCombo, normalizarLineaCombo, claveLinea, esLineaCombo,
+    COMBOS, DESCUENTO_COMBO_CENTIMOS, BOCADITOS_POR_PERSONA, calcularPersonasCombo, calcularPrecioCombo, agregarCombo, normalizarLineaCombo, claveLinea, esLineaCombo,
     ORIGENES_PERMITIDOS, normalizarOrigen, leerOrigenDeURL, textoOrigen, agregarLineaOrigen, enlaceConOrigen,
     fijarOrigenMedicion
   };
