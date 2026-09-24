@@ -1655,9 +1655,9 @@ button { cursor: pointer; }
   inset: 0;
   width: 100%;
   height: 100%;
-  /* "contain": la ilustración se ve entera y a su tamaño natural (con "cover" se estiraba más del doble y se veía borrosa) */
-  object-fit: contain;
-  object-position: 50% 60%;
+  /* Ampliada para cubrir toda la tarjeta: se usan versiones de 1600 px de ancho, enfocadas, para que ampliada no se empañe */
+  object-fit: cover;
+  object-position: 50% 50%;
   opacity: 0;
   pointer-events: none;
 }
@@ -1762,16 +1762,11 @@ button { cursor: pointer; }
 /* Sello de "ya agregado": el mismo de las tarjetas del catálogo */
 .promo[data-en-lista] .tarjeta__sello { opacity: 1; visibility: visible; }
 
-/* Foto de la ocasión: solo al acercar el cursor, con foco de teclado dentro o al pulsar (táctil). Se ve con una transparencia
-   sutil pero NÍTIDA: sin desenfoque (nada de backdrop-filter) ni velo que la empañe; el texto se sostiene con un halo claro. */
+/* Foto de la ocasión: solo al acercar el cursor, con foco de teclado dentro o al pulsar (táctil). Ampliada, muy tenue (solo
+   un detalle) y NÍTIDA: sin desenfoque (nada de backdrop-filter) ni velo. Con tan poca opacidad el texto no necesita apoyo. */
 .promo:hover .promo__foto,
 .promo:focus-within .promo__foto,
-.promo:active .promo__foto { opacity: .6; }
-.promo:hover .promo__cuerpo,
-.promo:focus-within .promo__cuerpo,
-.promo:active .promo__cuerpo {
-  text-shadow: 0 0 3px #fff, 0 0 8px rgba(255, 255, 255, .95), 0 0 14px rgba(255, 255, 255, .8);
-}
+.promo:active .promo__foto { opacity: .2; }
 @media (prefers-reduced-motion: no-preference) {
   .promo__foto { transition: opacity .3s ease; }
 }

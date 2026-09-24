@@ -52,7 +52,7 @@ const COMBOS = {
     clave: "cumpleanos", titulo: "Cumpleaños", nombreLista: "Combo Cumpleaños", total: 50,
     salado: "pettit-pollo", dulce: "mini-alfajores-coco",
     frase: "Que los invitados vuelvan por más.",
-    foto: "img/OCASIONES/cumpleanos.jpg", fotoAncho: 549, fotoAlto: 213,
+    foto: "img/OCASIONES/cumpleanos-grande.webp", fotoAncho: 1600, fotoAlto: 621,
     // Mensaje prellenado de "¿Dudas? Escríbenos" (el origen de la visita se suma después)
     mensaje: "Hola, El Delicioso. Celebro un cumpleaños y quiero que me ayuden a elegir bocaditos."
   },
@@ -60,7 +60,7 @@ const COMBOS = {
     clave: "baby-shower", titulo: "Baby shower", nombreLista: "Combo Baby shower", total: 50,
     salado: "mini-empanaditas-pollo", dulce: "mini-pay-limon",
     frase: "Una bienvenida dulce (y salada) para el bebé.",
-    foto: "img/OCASIONES/baby-shower.jpg", fotoAncho: 530, fotoAlto: 208,
+    foto: "img/OCASIONES/baby-shower-grande.webp", fotoAncho: 1600, fotoAlto: 628,
     // Mensaje prellenado de "¿Dudas? Escríbenos" (el origen de la visita se suma después)
     mensaje: "Hola, El Delicioso. Organizo un baby shower y quiero que me ayuden a elegir bocaditos."
   },
@@ -68,7 +68,7 @@ const COMBOS = {
     clave: "reunion-trabajo", titulo: "Reunión de trabajo", nombreLista: "Combo Reunión de trabajo", total: 50,
     salado: "mini-causitas-atun", dulce: "mini-alfachips",
     frase: "Un detalle para que la pausa sepa mejor.",
-    foto: "img/OCASIONES/reunion-trabajo.jpg", fotoAncho: 474, fotoAlto: 217,
+    foto: "img/OCASIONES/reunion-trabajo-grande.webp", fotoAncho: 1600, fotoAlto: 732,
     // Mensaje prellenado de "¿Dudas? Escríbenos" (el origen de la visita se suma después)
     mensaje: "Hola, El Delicioso. Tengo una reunión de trabajo y quiero que me ayuden a elegir bocaditos."
   },
@@ -76,7 +76,7 @@ const COMBOS = {
     clave: "colegio-iglesia", titulo: "Colegio o iglesia", nombreLista: "Combo Colegio o iglesia", total: 100,
     salado: "mini-empanaditas-pollo", dulce: "mini-alfajores-coco",
     frase: "Para compartir con todos, en cantidad.",
-    foto: "img/OCASIONES/colegio-iglesia.jpg", fotoAncho: 631, fotoAlto: 245,
+    foto: "img/OCASIONES/colegio-iglesia-grande.webp", fotoAncho: 1600, fotoAlto: 621,
     // Mensaje prellenado de "¿Dudas? Escríbenos" (el origen de la visita se suma después)
     mensaje: "Hola, El Delicioso. Organizo un evento en un colegio o iglesia y quiero que me ayuden a elegir bocaditos."
   },
@@ -85,7 +85,7 @@ const COMBOS = {
     clave: "personalizado", titulo: "Arma el tuyo", nombreLista: "Combo personalizado", total: null,
     salado: "pettit-pollo", dulce: "mini-alfajores-coco",
     frase: "Tu plan, tus sabores: tú eliges.",
-    foto: "img/OCASIONES/otro-evento.jpg", fotoAncho: 584, fotoAlto: 226,
+    foto: "img/OCASIONES/otro-evento-grande.webp", fotoAncho: 1600, fotoAlto: 619,
     // Mensaje prellenado de "¿Dudas? Escríbenos" (el origen de la visita se suma después)
     mensaje: "Hola, El Delicioso. Tengo otro plan y quiero que me ayuden a elegir bocaditos."
   }
