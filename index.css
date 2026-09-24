@@ -1859,51 +1859,39 @@ button { cursor: pointer; }
   to { opacity: 1; translate: -50% 0; }
 }
 
-/* ===== Cuenta regresiva de la ventana (verde vivo, llamativa) ===== */
-.cuenta {
+/* ===== Cuenta regresiva permanente (franja sutil pegada al encabezado) ===== */
+/* Suma 1,75 rem al encabezado mientras exista (la clase con-cuenta de <html> la quita index.js al retirarla). */
+html.con-cuenta { --alto-encabezado: 8rem; }
+.cuenta-mini { background-color: #ECF8EE; border-top: 1px solid #CFEBD5; color: #14532D; }
+.cuenta-mini[hidden] { display: none; }
+.cuenta-mini__interior { display: flex; justify-content: center; }
+.cuenta-mini__texto {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  gap: var(--e-2) var(--e-4);
-  padding: var(--e-3) var(--e-4);
-  background: linear-gradient(90deg, #00C853, #7CDC1F);
-  color: #04330F;
-  text-align: center;
+  gap: .4rem;
+  height: 1.75rem;
+  margin: 0;
+  font-size: .8125rem;
+  white-space: nowrap;
+  overflow: hidden;
 }
-.cuenta p { margin: 0; }
-.cuenta__titulo { font-weight: 800; font-size: var(--t-sm); text-transform: uppercase; letter-spacing: .03em; }
-.cuenta__cierre { font-weight: 800; }
-.cuenta__reloj { display: flex; gap: var(--e-2); }
-.cuenta__reloj[hidden] { display: none; }
-.cuenta__unidad {
-  display: grid;
-  justify-items: center;
-  min-width: 3.4rem;
-  padding: .3rem .4rem .2rem;
-  background-color: #052E12;
-  color: #B6FF5A;
-  border-radius: var(--r-sm);
-}
-.cuenta__unidad b { font-family: var(--fuente-mono); font-size: 1.5rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.cuenta__unidad small { font-size: .625rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
-@media (min-width: 48em) {
-  .cuenta {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas: "titulo reloj" "cierre reloj";
-    align-items: center;
-    text-align: left;
-    column-gap: var(--e-5);
-    row-gap: var(--e-1);
-  }
-  .cuenta__titulo { grid-area: titulo; align-self: end; }
-  .cuenta__cierre { grid-area: cierre; align-self: start; font-size: var(--t-lg); }
-  .cuenta__reloj { grid-area: reloj; }
-}
+.cuenta-mini__punto { flex-shrink: 0; width: .5rem; height: .5rem; background-color: #16C24E; border-radius: 50%; }
+.cuenta-mini__reloj { font-family: var(--fuente-mono); font-variant-numeric: tabular-nums; }
+.cuenta-mini__reloj[hidden] { display: none; }
+.cuenta-mini__reloj b { font-weight: 700; color: #0B6B2E; }
+.cuenta-mini__reloj i { font-style: normal; font-size: .7rem; margin-right: .15rem; }
+.cuenta-mini__enlace { flex-shrink: 0; color: #0B6B2E; font-weight: 700; text-decoration: underline; text-underline-offset: .2em; }
+.cuenta-mini__enlace:hover { color: #14532D; text-decoration-thickness: 2px; }
+@media (max-width: 30em) { .cuenta-mini__enlace { display: none; } }
+@media (min-width: 48em) { html.con-cuenta { --alto-encabezado: 6.25rem; } }
 @media (prefers-reduced-motion: no-preference) {
-  /* Latido suave del borde luminoso para llamar la atención sin distraer */
-  .ventana-aviso:not([hidden]) .cuenta { animation: cuenta-brillo 2.4s ease-in-out infinite; }
+  .cuenta-mini__punto { animation: cuenta-mini-latido 2s ease-in-out infinite; }
+}
+@keyframes cuenta-mini-latido {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(22, 194, 78, .55); }
+  50% { box-shadow: 0 0 0 .35rem rgba(22, 194, 78, 0); }
 }
 @keyframes cuenta-brillo {
   0%, 100% { box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0); }

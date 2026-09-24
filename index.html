@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-version="202609232136">
+<html lang="es" class="con-cuenta" data-version="202609232140">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,7 +35,7 @@
        index.js, hay que actualizar ESTOS TRES LUGARES A LA VEZ con la misma fecha y hora (AAAAMMDDHHmm):
        1) el ?v= de index.css y de index.js aquí abajo, 2) data-version en la etiqueta <html> de arriba,
        3) el valor "v" de version.json en la raíz del repositorio. -->
-  <link rel="stylesheet" href="index.css?v=202609232136">
+  <link rel="stylesheet" href="index.css?v=202609232140">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -55,7 +55,7 @@
     "priceRange": "S/ 28 - S/ 255"
   }
   </script>
-  <script src="index.js?v=202609232136" defer></script>
+  <script src="index.js?v=202609232140" defer></script>
 </head>
 <body id="arriba">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -85,18 +85,6 @@
       <p>¡Ya volvieron! Media docena a S/ 25.</p>
       <a class="boton boton--principal" id="ventana-aviso-enlace-texto" href="#empanadas-amazonicas">Separa el tuyo</a>
     </div>
-    <!-- Cuenta regresiva hasta data-objetivo (con zona horaria: 15:00 de Lima). Al llegar a cero cambia a "¡Hoy salen!". -->
-    <div class="cuenta" id="cuenta-regresiva" data-objetivo="2026-10-01T15:00:00-05:00">
-      <p class="cuenta__titulo" id="cuenta-titulo">Faltan para el día de las empanadas amazónicas</p>
-      <p class="cuenta__reloj" id="cuenta-reloj" role="timer" aria-live="off" aria-labelledby="cuenta-titulo">
-        <span class="cuenta__unidad"><b data-cuenta="dias">00</b><small>días</small></span>
-        <span class="cuenta__unidad"><b data-cuenta="horas">00</b><small>horas</small></span>
-        <span class="cuenta__unidad"><b data-cuenta="minutos">00</b><small>min</small></span>
-        <span class="cuenta__unidad"><b data-cuenta="segundos">00</b><small>seg</small></span>
-      </p>
-      <p class="cuenta__cierre" id="cuenta-cierre">¡No te la pierdas y separa el tuyo!</p>
-      <p class="solo-lectores" id="cuenta-resumen" aria-live="polite"></p>
-    </div>
   </aside>
 
   <header id="inicio" class="encabezado">
@@ -116,6 +104,19 @@
         <span class="contador-lista" id="contador-lista" aria-live="polite" aria-atomic="true">0</span>
         <span class="solo-lectores">artículos</span>
       </button>
+    </div>
+    <!-- Cuenta regresiva permanente y sutil (sin botón de cierre): queda pegada al encabezado y se retira sola pasado
+         data-hasta (AAAA-MM-DD, incluida): con 2026-10-01 desaparece el 2 de octubre. data-objetivo lleva zona horaria (15:00 de Lima). -->
+    <div class="cuenta-mini" id="cuenta-mini" data-objetivo="2026-10-01T15:00:00-05:00" data-hasta="2026-10-01">
+      <div class="contenedor cuenta-mini__interior">
+        <p class="cuenta-mini__texto">
+          <span class="cuenta-mini__punto" aria-hidden="true"></span>
+          <span class="cuenta-mini__frase" id="cuenta-mini-frase">El sabor de la selva llega en</span>
+          <span class="cuenta-mini__reloj" id="cuenta-reloj" role="timer" aria-live="off" aria-labelledby="cuenta-mini-frase"><b data-cuenta="dias">00</b><i>d</i> <b data-cuenta="horas">00</b><i>h</i> <b data-cuenta="minutos">00</b><i>m</i> <b data-cuenta="segundos">00</b><i>s</i></span>
+          <a class="cuenta-mini__enlace" id="cuenta-mini-enlace" href="#empanadas-amazonicas">Separa la tuya</a>
+        </p>
+        <p class="solo-lectores" id="cuenta-resumen" aria-live="polite"></p>
+      </div>
     </div>
     <!-- Barra de progreso de lectura: decorativa, crece con el desplazamiento -->
     <div class="progreso" aria-hidden="true"><span class="progreso__barra" id="progreso-lectura"></span></div>

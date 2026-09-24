@@ -2241,21 +2241,36 @@ function iniciar() {
     $("ventana-aviso-cerrar").addEventListener("click", () => {
       ventanaAviso.hidden = true;
     });
-    // Cronómetro: se actualiza cada segundo mientras la ventana está abierta y la pestaña visible. Los lectores de pantalla
-    // reciben un resumen solo cuando cambia el minuto (el reloj en sí no se anuncia cada segundo).
-    const cuenta = $("cuenta-regresiva");
-    if (cuenta) {
-      const objetivo = new Date(cuenta.dataset.objetivo).getTime();
-      const campos = Object.fromEntries([...cuenta.querySelectorAll("[data-cuenta]")].map((el) => [el.dataset.cuenta, el]));
+    for (const id of ["ventana-aviso-enlace", "ventana-aviso-enlace-texto"]) {
+      $(id).addEventListener("click", (evento) => {
+        evento.preventDefault(); // lleva a la tarjeta; la ventana sigue abierta hasta que se pulse la X
+        irATarjeta("empanadas-amazonicas");
+      });
+    }
+  }
+
+  // Cuenta regresiva permanente y sutil (pegada al encabezado, sin botón de cierre). Se actualiza cada segundo con la pestaña
+  // visible; los lectores de pantalla reciben un resumen solo cuando cambia el minuto. Se retira sola pasado data-hasta
+  // (con 2026-10-01 desaparece el 2 de octubre) y entonces el encabezado recupera su altura normal.
+  const cuentaMini = $("cuenta-mini");
+  if (cuentaMini) {
+    const hastaCuenta = new Date(`${cuentaMini.dataset.hasta}T23:59:59`);
+    const objetivo = new Date(cuentaMini.dataset.objetivo).getTime();
+    const caducada = !Number.isNaN(hastaCuenta.getTime()) && new Date() > hastaCuenta;
+    if (caducada || Number.isNaN(objetivo)) {
+      cuentaMini.hidden = true;
+      document.documentElement.classList.remove("con-cuenta");
+    } else {
+      const campos = Object.fromEntries([...cuentaMini.querySelectorAll("[data-cuenta]")].map((el) => [el.dataset.cuenta, el]));
       let minutoAnunciado = -1;
+      let temporizadorCuenta = 0;
       const dosCifras = (n) => String(n).padStart(2, "0");
       const pintarCuenta = () => {
-        if (ventanaAviso.hidden || document.visibilityState === "hidden") return;
+        if (document.visibilityState === "hidden") return;
         const t = calcularCuentaRegresiva(Date.now(), objetivo);
         if (t.vencida) {
-          $("cuenta-titulo").textContent = "¡Hoy salen las empanadas amazónicas!";
+          $("cuenta-mini-frase").textContent = "¡Hoy salen las empanadas amazónicas!";
           $("cuenta-reloj").hidden = true;
-          $("cuenta-cierre").textContent = "Separa el tuyo antes de que se acaben.";
           $("cuenta-resumen").textContent = "Hoy salen las empanadas amazónicas.";
           window.clearInterval(temporizadorCuenta);
           return;
@@ -2267,16 +2282,14 @@ function iniciar() {
         const minutoTotal = t.dias * 1440 + t.horas * 60 + t.minutos;
         if (minutoTotal !== minutoAnunciado) {
           minutoAnunciado = minutoTotal;
-          $("cuenta-resumen").textContent = `Faltan ${t.dias} días, ${t.horas} horas y ${t.minutos} minutos para el día de las empanadas amazónicas.`;
+          $("cuenta-resumen").textContent = `El sabor de la selva llega en ${t.dias} días, ${t.horas} horas y ${t.minutos} minutos.`;
         }
       };
       pintarCuenta();
-      var temporizadorCuenta = window.setInterval(pintarCuenta, 1000);
+      temporizadorCuenta = window.setInterval(pintarCuenta, 1000);
       document.addEventListener("visibilitychange", pintarCuenta);
-    }
-    for (const id of ["ventana-aviso-enlace", "ventana-aviso-enlace-texto"]) {
-      $(id).addEventListener("click", (evento) => {
-        evento.preventDefault(); // lleva a la tarjeta; la ventana sigue abierta hasta que se pulse la X
+      $("cuenta-mini-enlace").addEventListener("click", (evento) => {
+        evento.preventDefault();
         irATarjeta("empanadas-amazonicas");
       });
     }
