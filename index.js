@@ -2213,15 +2213,13 @@ function iniciar() {
   }
 
   // Ventana flotante de novedad: sale al poco de cargar, no bloquea la página y SOLO se cierra con su X (sin Escape ni clic
-  // fuera, por pedido del usuario). Cerrada, no vuelve en esa visita; pasada su fecha (data-hasta) tampoco aparece.
+  // fuera, por pedido del usuario). Reaparece en CADA carga o actualización de la página (más frecuencia informativa, a
+  // pedido del usuario); pasada su fecha (data-hasta) deja de aparecer.
   const ventanaAviso = $("ventana-aviso");
   if (ventanaAviso) {
-    const claveCierre = `el-delicioso-aviso-${ventanaAviso.dataset.clave}`;
     const hasta = new Date(`${ventanaAviso.dataset.hasta}T23:59:59`);
-    let cerrada = false;
-    try { cerrada = window.sessionStorage.getItem(claveCierre) === "1"; } catch (error) { /* sin almacenamiento: se muestra */ }
     const vigente = Number.isNaN(hasta.getTime()) || new Date() <= hasta;
-    if (vigente && !cerrada) {
+    if (vigente) {
       window.setTimeout(() => {
         ventanaAviso.hidden = false;
         $("ventana-aviso-cerrar").focus({ preventScroll: true });
@@ -2229,7 +2227,6 @@ function iniciar() {
     }
     $("ventana-aviso-cerrar").addEventListener("click", () => {
       ventanaAviso.hidden = true;
-      try { window.sessionStorage.setItem(claveCierre, "1"); } catch (error) { /* se ignora */ }
     });
     for (const id of ["ventana-aviso-enlace", "ventana-aviso-enlace-texto"]) {
       $(id).addEventListener("click", (evento) => {
