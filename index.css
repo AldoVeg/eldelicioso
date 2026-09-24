@@ -1766,7 +1766,7 @@ button { cursor: pointer; }
    un detalle) y NÍTIDA: sin desenfoque (nada de backdrop-filter) ni velo. Con tan poca opacidad el texto no necesita apoyo. */
 .promo:hover .promo__foto,
 .promo:focus-within .promo__foto,
-.promo:active .promo__foto { opacity: .2; }
+.promo:active .promo__foto { opacity: .1; }
 @media (prefers-reduced-motion: no-preference) {
   .promo__foto { transition: opacity .3s ease; }
 }
