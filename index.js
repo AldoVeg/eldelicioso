@@ -964,6 +964,17 @@ function calcularCuentaRegresiva(ahoraMs, objetivoMs) {
   };
 }
 
+// Filtra lo que se escribe en un campo numérico de la calculadora: deja solo dígitos (nada de letras, signos, puntos ni "e"),
+// respeta el tope de dígitos y quita ceros a la izquierda. Si el número resultante supera el máximo, se conserva el valor
+// anterior (el último válido), así no se puede escribir ni pegar un valor mayor.
+function filtrarEntradaNumerica(texto, maxDigitos, maximo, anterior = "") {
+  let limpio = String(texto == null ? "" : texto).replace(/\D/g, "");
+  if (limpio.length > maxDigitos) limpio = limpio.slice(0, maxDigitos);
+  limpio = limpio.replace(/^0+(?=\d)/, "");
+  if (limpio !== "" && Number(limpio) > maximo) return anterior;
+  return limpio;
+}
+
 function construirEnlaceWhatsApp(mensaje, negocio = NEGOCIO) {
   return `https://wa.me/${negocio.whatsapp}?text=${encodeURIComponent(mensaje)}`;
 }
@@ -2485,6 +2496,26 @@ function iniciar() {
   campoFecha.addEventListener("input", ocultarErrorFecha);
   formPedido.addEventListener("submit", enviarPedido);
   formCalculadora.addEventListener("submit", calcularInvitados);
+
+  // Campos de la calculadora: solo dígitos, tope de dígitos y de valor (invitados hasta 1000 = 4 dígitos; bocaditos por
+  // invitado hasta 10 = 2 dígitos). Son campos de texto numérico (no type="number"), así no hay flechitas, ni rueda del
+  // ratón, ni incremento con las flechas del teclado; aun así se bloquean por si acaso.
+  const limitesCalculadora = [[campoInvitados, 4, MAX_INVITADOS], [campoBocaditos, 2, MAX_BOCADITOS_POR_INVITADO]];
+  for (const [campo, maxDigitos, maximo] of limitesCalculadora) {
+    let ultimoValido = "";
+    campo.addEventListener("beforeinput", (evento) => {
+      if (evento.data && /\D/.test(evento.data)) evento.preventDefault(); // letras, signos, puntos y espacios no entran
+    });
+    campo.addEventListener("keydown", (evento) => {
+      if (evento.key === "ArrowUp" || evento.key === "ArrowDown") evento.preventDefault();
+    });
+    campo.addEventListener("wheel", (evento) => { if (document.activeElement === campo) evento.preventDefault(); }, { passive: false });
+    campo.addEventListener("input", () => {
+      const filtrado = filtrarEntradaNumerica(campo.value, maxDigitos, maximo, ultimoValido);
+      if (filtrado !== campo.value) campo.value = filtrado; // cubre pegar, arrastrar y autocompletar
+      ultimoValido = filtrado;
+    });
+  }
   [campoInvitados, campoBocaditos].forEach((campo) => {
     campo.addEventListener("input", () => campo.removeAttribute("aria-invalid"));
   });
@@ -2622,7 +2653,7 @@ if (typeof module !== "undefined" && module.exports) {
     describirCombinacion, textoResultadoCalculadora, calcularOpciones, describirResultado,
     sugerirProductos, describirSugerencia, productosDeCategoria, validarFechaEvento, fechaMinimaEvento,
     formatearFechaLarga, agregarLinea, cambiarPacks, quitarLinea, normalizarLineas,
-    resumirCarrito, construirMensajePedido, construirMensajeCotizacion, construirMensajeReserva, calcularCuentaRegresiva, construirEnlaceWhatsApp, aCentimos, tienePrecios,
+    resumirCarrito, construirMensajePedido, construirMensajeCotizacion, construirMensajeReserva, calcularCuentaRegresiva, filtrarEntradaNumerica, construirEnlaceWhatsApp, aCentimos, tienePrecios,
     registrar, aSoles, codificarSugerencia,
     CAMINOS, calcularMetas, evaluarAvance, describirEstadoLista, describirLista, normalizarPlan,
     textoContextoCamino, textoEventoPedido, textoSobrantesEquidad, textoSobrantesOpcion, planCompleto, mezclar, sacarDeBaraja,
