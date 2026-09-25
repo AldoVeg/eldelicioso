@@ -8,12 +8,12 @@ const NEGOCIO = {
 };
 
 const TAMANOS = [25, 50, 100];
-// "Bocaditos por invitado" no tiene valor inicial: el visitante lo escribe siempre (de 3 a 10).
+// "Bocaditos por invitado" no tiene valor inicial: el visitante lo escribe siempre (de 3 a 20).
 const MIN_BOCADITOS_POR_INVITADO = 3;
-const MAX_BOCADITOS_POR_INVITADO = 10;
+const MAX_BOCADITOS_POR_INVITADO = 20;
 const MAX_INVITADOS = 1000;
 // Tope de unidades totales que se arman en línea; más allá se atiende por WhatsApp.
-const MAX_UNIDADES = 10000;
+const MAX_UNIDADES = 20000;
 // Máximo de líneas de producto que muestra cada categoría en la sugerencia.
 const MAX_LINEAS_SUGERENCIA = 6;
 const MAX_PACKS_POR_LINEA = 99;
@@ -480,7 +480,7 @@ function describirResultado(invitados, catalogo, porInvitado) {
 /* ===== Funciones puras: plan (invitados y camino) y avance de la lista ===== */
 
 // Datos guardados del plan -> { invitados, porInvitado, camino }; descarta lo dañado o inexistente.
-// Los planes viejos sin "porInvitado" válido (ausente o fuera de 3 a 10) conservan los invitados si son
+// Los planes viejos sin "porInvitado" válido (ausente o fuera de 3 a 20) conservan los invitados si son
 // válidos, dejan "porInvitado" en null y pierden el camino: sin ese dato no se puede calcular la meta.
 function normalizarPlan(crudo) {
   const vacio = { invitados: null, porInvitado: null, camino: null };
@@ -1681,7 +1681,7 @@ function iniciar() {
   }
 
   // Datos a considerar: resalta el tramo (data-desde y data-hasta) que contiene lo escrito en "Bocaditos por invitado".
-  // Vacío, decimal o fuera de 3 a 10: ninguno. No cambia ni rellena el campo.
+  // Vacío, decimal o fuera de 3 a 20: ninguno. No cambia ni rellena el campo.
   const itemsConsiderar = [...document.querySelectorAll(".considerar__item[data-desde]")];
   function resaltarTramo() {
     const texto = campoBocaditos.validity.badInput ? "" : campoBocaditos.value.trim();

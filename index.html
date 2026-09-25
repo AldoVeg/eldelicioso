@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="con-cuenta" data-version="202609250933">
+<html lang="es" class="con-cuenta" data-version="202609250936">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,7 +35,7 @@
        index.js, hay que actualizar ESTOS TRES LUGARES A LA VEZ con la misma fecha y hora (AAAAMMDDHHmm):
        1) el ?v= de index.css y de index.js aquí abajo, 2) data-version en la etiqueta <html> de arriba,
        3) el valor "v" de version.json en la raíz del repositorio. -->
-  <link rel="stylesheet" href="index.css?v=202609250933">
+  <link rel="stylesheet" href="index.css?v=202609250936">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -55,7 +55,7 @@
     "priceRange": "S/ 28 - S/ 255"
   }
   </script>
-  <script src="index.js?v=202609250933" defer></script>
+  <script src="index.js?v=202609250936" defer></script>
 </head>
 <body id="arriba">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -175,7 +175,7 @@
                 <ul class="considerar__lista" aria-labelledby="titulo-considerar">
                   <li class="considerar__item" data-desde="3" data-hasta="4"><span class="considerar__etiqueta">3 a 4 por invitado</span> <span class="considerar__texto">Acompañan un almuerzo o cena.</span></li>
                   <li class="considerar__item" data-desde="5" data-hasta="7"><span class="considerar__etiqueta">5 a 7 por invitado</span> <span class="considerar__texto">Picoteo, brindis o cumpleaños con torta.</span></li>
-                  <li class="considerar__item" data-desde="8" data-hasta="10"><span class="considerar__etiqueta">8 a 10 por invitado</span> <span class="considerar__texto">Serán la comida principal.</span></li>
+                  <li class="considerar__item" data-desde="8" data-hasta="20"><span class="considerar__etiqueta">8 a 20 por invitado</span> <span class="considerar__texto">Serán la comida principal.</span></li>
                   <li class="considerar__item"><span class="considerar__etiqueta">Paquetes de 25, 50, 100 y más</span> <span class="considerar__texto">Se combinan para llegar a tu cantidad; lo que sobre queda de reserva y te avisamos.</span></li>
                 </ul>
               </div>
@@ -190,7 +190,7 @@
                 <div class="campo">
                   <label for="bocaditos-por-invitado">Bocaditos por invitado</label>
                   <input type="text" id="bocaditos-por-invitado" name="bocaditos-por-invitado" required inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off" aria-describedby="ayuda-bocaditos">
-                  <p class="campo__ayuda" id="ayuda-bocaditos">De 3 a 10.</p>
+                  <p class="campo__ayuda" id="ayuda-bocaditos">De 3 a 20.</p>
                 </div>
               </div>
               <button type="submit" class="boton boton--principal">Calcular</button>
