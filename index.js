@@ -100,7 +100,7 @@ const DURACION_CONTEO_MS = 500;
 // Zona superior activa del subrayado del menú: el encabezado y estos píxeles debajo.
 const MARGEN_ZONA_MENU_PX = 48;
 
-// GitHub Pages cachea toda la página (HTML incluido) 10 minutos sin que se pueda cambiar desde el hosting; una
+// El hosting puede cachear la página (HTML incluido) durante un rato sin que se pueda cambiar desde aquí; una
 // pestaña que quedó abierta antes de publicar una actualización no la vería sola. Cada tanto se revisa
 // version.json (pedido siempre sin caché) y, si cambió frente a data-version del <html>, se avisa para recargar.
 const INTERVALO_VERSION_MS = 5 * 60 * 1000;
@@ -1101,7 +1101,7 @@ function iniciar() {
   let plan = normalizarPlan(null);
   try { window.localStorage.removeItem(CLAVE_PLAN); } catch (error) { /* almacenamiento bloqueado: se ignora */ }
   let temporizadorRebote = 0;
-  // Falso hasta terminar el arranque: así lo restaurado (lista, filtro guardado) aparece sin animaciones.
+  // Falso hasta terminar el arranque: así lo restaurado (la lista guardada) aparece sin animaciones.
   let arrancado = false;
 
   // Escritorio y tablet (desde 62,5em): panel que se desliza desde "Mi lista". Móvil: barra inferior con panel.
@@ -1157,10 +1157,10 @@ function iniciar() {
       enlace.href = construirEnlaceWhatsApp(construirMensajeReserva(cantidad, nombre, precioReserva, tarjeta.dataset.salida || "próximo jueves", NEGOCIO, origenVisita));
       return;
     }
-    enlace.href = construirEnlaceWhatsApp(construirMensajeCotizacion(tamanoElegido(tarjeta), nombre, NEGOCIO, origenVisita));
+    enlace.href = construirEnlaceWhatsApp(construirMensajeCotizacion(cantidad, nombre, NEGOCIO, origenVisita));
   }
 
-  // "medir" es falso cuando el filtro se sincroniza solo (al elegir un camino o al restaurar el plan).
+  // "medir" es falso cuando el filtro se sincroniza solo (al elegir un camino).
   function aplicarFiltro(categoria, medir = true) {
     if (medir) registrar("filtrar_catalogo", { filtro: categoria });
     document.querySelectorAll(".filtro").forEach((boton) => {
@@ -1240,7 +1240,7 @@ function iniciar() {
     contenedor.toggleAttribute("data-en-lista", esta);
     contenedor.querySelector(".tarjeta__aviso").textContent = esta ? "En tu lista" : "";
     sello.classList.remove("tarjeta__sello--nuevo");
-    // Pop de aparición solo al agregar (no al restaurar la lista guardada) y con movimiento permitido.
+    // Pop de aparición solo al agregar (no al restaurar la lista guardada de una visita anterior) y con movimiento permitido.
     if (esta && arrancado && !consultaMovimiento.matches) {
       void sello.offsetWidth; // Reinicia la animación.
       sello.classList.add("tarjeta__sello--nuevo");
@@ -1512,8 +1512,8 @@ function iniciar() {
       .catch(() => {});
   }
 
-  // Recarga con una URL que nunca estuvo en caché (ni la del navegador ni la de GitHub Pages), así trae de una
-  // vez la versión nueva en lugar de esperar a que venza el cacheo de 10 minutos.
+  // Recarga con una URL que nunca estuvo en caché (ni la del navegador ni la del hosting), así trae de una
+  // vez la versión nueva en lugar de esperar a que venza el cacheo del hosting.
   function recargarConVersionNueva() {
     const separador = window.location.search ? "&" : "?";
     window.location.href = `${window.location.pathname}${window.location.search}${separador}_=${Date.now()}`;
@@ -1646,7 +1646,7 @@ function iniciar() {
     setTimeout(terminar, DURACION_CONTEO_MS + 250);
   }
 
-  // Muestra la frase, el reparto y los tres caminos; "contar" anima las cifras (no al restaurar el plan guardado).
+  // Muestra la frase, el reparto y los tres caminos; "contar" anima las cifras.
   function mostrarResultado(invitados, porInvitado, contar = false) {
     const modelo = describirResultado(invitados, catalogo, porInvitado);
     resultadoCalculadora.classList.remove("calculadora__frase--error");
@@ -1680,7 +1680,7 @@ function iniciar() {
   // Vacío, decimal o fuera de 3 a 20: ninguno. No cambia ni rellena el campo.
   const itemsConsiderar = [...document.querySelectorAll(".considerar__item[data-desde]")];
   function resaltarTramo() {
-    const texto = campoBocaditos.validity.badInput ? "" : campoBocaditos.value.trim();
+    const texto = campoBocaditos.value.trim();
     const valor = texto === "" ? NaN : Number(texto);
     itemsConsiderar.forEach((item) => {
       const dentro = Number.isInteger(valor) && valor >= Number(item.dataset.desde) && valor <= Number(item.dataset.hasta);
@@ -1691,9 +1691,7 @@ function iniciar() {
 
   function calcularInvitados(evento) {
     evento.preventDefault();
-    // Un número escrito a medias (por ejemplo "6e") llega vacío; se trata como inválido, no como dato que falta.
-    const textoBocaditosCampo = campoBocaditos.validity.badInput ? "!" : campoBocaditos.value;
-    const validacion = validarEntradaCalculadora(campoInvitados.value, textoBocaditosCampo);
+    const validacion = validarEntradaCalculadora(campoInvitados.value, campoBocaditos.value);
     campoInvitados.removeAttribute("aria-invalid");
     campoBocaditos.removeAttribute("aria-invalid");
     if (!validacion.valido) {
@@ -2479,7 +2477,7 @@ function iniciar() {
   formCalculadora.addEventListener("submit", calcularInvitados);
 
   // Campos de la calculadora: solo dígitos, tope de dígitos y de valor (invitados hasta 1000 = 4 dígitos; bocaditos por
-  // invitado hasta 10 = 2 dígitos). Son campos de texto numérico (no type="number"), así no hay flechitas, ni rueda del
+  // invitado hasta 20 = 2 dígitos). Son campos de texto numérico (no type="number"), así no hay flechitas, ni rueda del
   // ratón, ni incremento con las flechas del teclado; aun así se bloquean por si acaso.
   const limitesCalculadora = [[campoInvitados, 4, MAX_INVITADOS], [campoBocaditos, 2, MAX_BOCADITOS_POR_INVITADO]];
   for (const [campo, maxDigitos, maximo] of limitesCalculadora) {
