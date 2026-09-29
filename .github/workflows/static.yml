@@ -36,8 +36,10 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          # Ya no se publica el repositorio completo: el sitio real vive en Vercel. GitHub Pages solo sirve una página
+          # de reenvío (github-pages-redirect/) para que el QR ya impreso en los stikers, que apunta a esta dirección,
+          # siga funcionando y lleve a Vercel en vez de dar error. No mueve ni borra el código fuente de la raíz.
+          path: './github-pages-redirect'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
