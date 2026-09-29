@@ -1278,10 +1278,6 @@ function iniciar() {
     escribirAlmacenamiento(CLAVE_ALMACENAMIENTO, lineas);
   }
 
-  function guardarPlan() {
-    escribirAlmacenamiento(CLAVE_PLAN, plan);
-  }
-
   /* --- Filas de la lista --- */
 
   function rebotarContador() {
@@ -1708,7 +1704,6 @@ function iniciar() {
       return;
     }
     plan = { invitados: validacion.invitados, porInvitado: validacion.porInvitado, camino: plan.camino };
-    guardarPlan();
     resaltarTramo();
     mostrarResultado(plan.invitados, plan.porInvitado, true);
     dibujarContextoCamino();
@@ -1729,26 +1724,12 @@ function iniciar() {
   function elegirCamino(clave) {
     if (!plan.invitados || !plan.porInvitado || !esCaminoValido(clave)) return;
     plan = { invitados: plan.invitados, porInvitado: plan.porInvitado, camino: clave };
-    guardarPlan();
     marcarCaminoElegido();
     aplicarFiltro(CAMINOS[clave].filtro, false);
     dibujarContextoCamino();
     dibujarLista();
     registrar("elegir_camino", { camino: clave, invitados: plan.invitados, bocaditos_por_invitado: plan.porInvitado });
     irAlCatalogo();
-  }
-
-  // Restaura el plan guardado: el resultado, el camino elegido y el filtro del catálogo.
-  // Si falta alguno de los dos datos, se rellena el que hay y no se calcula nada.
-  function restaurarPlan() {
-    if (!plan.invitados) return;
-    campoInvitados.value = String(plan.invitados);
-    if (!plan.porInvitado) return;
-    campoBocaditos.value = String(plan.porInvitado);
-    resaltarTramo();
-    mostrarResultado(plan.invitados, plan.porInvitado);
-    if (plan.camino) aplicarFiltro(CAMINOS[plan.camino].filtro, false);
-    dibujarContextoCamino();
   }
 
   /* --- Promo para cada ocasión (combos) --- */
@@ -2635,7 +2616,6 @@ function iniciar() {
   dibujarGaleria(grupoActual);
   dibujarBotonPausaGaleria();
   actualizarMinimoFecha();
-  restaurarPlan();
   dibujarLista();
   programarAvanceGaleria();
   sincronizarSubrayadoMenu();
