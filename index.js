@@ -337,10 +337,13 @@ function esCaminoValido(clave) {
   return typeof clave === "string" && Object.prototype.hasOwnProperty.call(CAMINOS, clave);
 }
 
-// El catálogo es un Map id -> { nombre, categoria, precios: { 25, 50, 100 } en céntimos }.
+// El catálogo es un Map id -> { nombre, categoria, tamanos: [25, 50, 100], precios: { 25, 50, 100 } en céntimos }.
+// "tamanos" son los paquetes que vende ESE producto; la mayoría usa TAMANOS (25/50/100), pero alguno puede
+// declarar su propio conjunto (hoy los vasitos: 12/25/50) mediante data-tamanos en el HTML (ver leerCatalogo).
 // Un producto "por cotizar" no tiene precios: no se suma, no se sugiere y no se puede agregar a la lista.
 function tienePrecios(producto) {
-  return Boolean(producto && producto.precios && TAMANOS.every((tamano) => Number.isFinite(producto.precios[tamano])));
+  return Boolean(producto && producto.precios
+    && (producto.tamanos || TAMANOS).every((tamano) => Number.isFinite(producto.precios[tamano])));
 }
 
 function productosDeCategoria(catalogo, categoria) {
@@ -349,6 +352,8 @@ function productosDeCategoria(catalogo, categoria) {
 
 // Sugerencia concreta de una categoría: reparte los paquetes (de mayor a menor tamaño) entre productos
 // DISTINTOS, recorriéndolos en el orden del catálogo y dando la vuelta si hay más paquetes que productos.
+// Cada tamaño solo se reparte entre los productos que de verdad lo venden (producto.tamanos lo incluye);
+// así un producto sin paquete de 100 (por ejemplo los vasitos, que solo venden 12/25/50) nunca recibe uno.
 // Un mismo producto con el mismo tamaño se agrupa sumando unidades. El total sale de los precios reales.
 // Devuelve { lineas: [{ nombre, tamano, unidades }], total } (total en céntimos; null sin productos).
 function sugerirProductos(paquetes, productos) {
@@ -357,12 +362,14 @@ function sugerirProductos(paquetes, productos) {
   let total = 0;
   let turno = 0;
   for (const tamano of [100, 50, 25]) {
+    const productosDelTamano = productos.filter((producto) => (producto.tamanos || TAMANOS).includes(tamano));
+    if (productosDelTamano.length === 0) continue; // ningún producto de esta categoría vende este tamaño
     for (let i = 0; i < paquetes[tamano]; i++) {
-      const posicion = turno % productos.length;
+      const posicion = turno % productosDelTamano.length;
       turno += 1;
-      const producto = productos[posicion];
+      const producto = productosDelTamano[posicion];
       total += producto.precios[tamano];
-      const clave = `${posicion}|${tamano}`;
+      const clave = `${producto.nombre}|${tamano}`;
       const grupo = grupos.get(clave) || { nombre: producto.nombre, tamano, unidades: 0 };
       grupo.unidades += tamano;
       grupos.set(clave, grupo);
@@ -792,7 +799,8 @@ function normalizarLineas(crudo, catalogo) {
       continue;
     }
     const id = ALIAS_IDS[item.id] || item.id;
-    if (!tienePrecios(catalogo.get(id)) || !TAMANOS.includes(item.tamano)) continue;
+    const producto = catalogo.get(id);
+    if (!tienePrecios(producto) || !(producto.tamanos || TAMANOS).includes(item.tamano)) continue;
     if (!Number.isInteger(item.packs) || item.packs < 1) continue;
     const linea = { id, tamano: item.tamano, packs: Math.min(item.packs, MAX_PACKS_POR_LINEA) };
     if (vistas.has(claveLinea(linea))) continue;
@@ -1116,15 +1124,20 @@ function iniciar() {
 
   /* --- Catálogo --- */
 
-  // Solo entran al catálogo los productos con los tres precios; uno "por cotizar" (sin data-precio-*) se omite.
+  // Solo entran al catálogo los productos con precio en todos sus tamaños; uno "por cotizar" (sin data-precio-*) se omite.
+  // "data-tamanos" (opcional, por ejemplo "12,25,50") da los tamaños propios de ese producto; sin ese atributo
+  // se usan los tamaños globales (TAMANOS = 25/50/100), igual que siempre.
   function leerCatalogo(contenedor) {
     const mapa = new Map();
     contenedor.querySelectorAll(".tarjeta").forEach((tarjeta) => {
+      const tamanosPropios = tarjeta.getAttribute("data-tamanos");
+      const tamanos = tamanosPropios ? tamanosPropios.split(",").map(Number) : TAMANOS;
       const precios = {};
-      TAMANOS.forEach((tamano) => { precios[tamano] = aCentimos(tarjeta.getAttribute(`data-precio-${tamano}`)); });
+      tamanos.forEach((tamano) => { precios[tamano] = aCentimos(tarjeta.getAttribute(`data-precio-${tamano}`)); });
       const producto = {
         nombre: tarjeta.querySelector(".tarjeta__nombre").textContent.trim(),
         categoria: tarjeta.dataset.categoria,
+        tamanos,
         precios
       };
       if (tienePrecios(producto)) mapa.set(tarjeta.dataset.id, producto);
