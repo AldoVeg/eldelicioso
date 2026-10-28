@@ -2,8 +2,7 @@
 import { NEGOCIO } from "./config.js";
 import { formatearMoneda } from "./dinero.js";
 import { textoEventoPedido } from "./plan.js";
-import { aISO, formatearFechaLarga } from "./fechas.js";
-import { agregarLinea } from "./carrito.js";
+import { formatearFechaLarga } from "./fechas.js";
 import { agregarLineaOrigen } from "./origen.js";
 
 /* ===== Funciones puras: mensaje de WhatsApp ===== */

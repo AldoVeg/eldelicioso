@@ -1,7 +1,7 @@
 // Guardianes contra duplicados y restos sin uso: si algo se acumula, npm test falla y dice qué.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { selectoresRepetidos, cuerposIdenticos, clasesCssSinUso, declaracionesSinUso, recursosHuerfanos } from "../tools/auditoria.js";
+import { selectoresRepetidos, cuerposIdenticos, clasesCssSinUso, declaracionesSinUso, importacionesIncorrectas, recursosHuerfanos } from "../tools/auditoria.js";
 
 // Clases que el JS arma por plantilla (`avance avance--${estado}`, `lista__estado--${tipo}`): no se ven escritas completas.
 const DINAMICAS = ["avance--", "lista__estado--"];
@@ -20,6 +20,10 @@ test("no hay clases CSS sin uso", () => {
 
 test("no hay funciones ni constantes sin uso en src/", () => {
   assert.deepEqual(declaracionesSinUso(), []);
+});
+
+test("cada módulo importa exactamente lo que usa", () => {
+  assert.deepEqual(importacionesIncorrectas(), []);
 });
 
 test("no hay imágenes ni fuentes huérfanas", () => {

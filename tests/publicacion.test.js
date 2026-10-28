@@ -4,13 +4,14 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { fuentesJs } from "../tools/auditoria.js";
 
 const raiz = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const leer = (f) => fs.readFileSync(path.join(raiz, f), "utf8");
 
 test("todo recurso local referenciado en HTML, CSS y JS existe", () => {
   const faltan = [];
-  for (const archivo of ["index.html", "index.css", "manifest.webmanifest", ...fs.readdirSync(path.join(raiz, "src")).map((f) => `src/${f}`)]) {
+  for (const archivo of ["index.html", "index.css", "manifest.webmanifest", ...fuentesJs()]) {
     for (const [, ruta] of leer(archivo).matchAll(/(?:img|fonts)\/[A-Za-z0-9_\-/.]+\.(?:webp|jpg|png|ico|woff2)/g).map((m) => [m[0], m[0]])) {
       if (!fs.existsSync(path.join(raiz, ruta))) faltan.push(`${archivo}: ${ruta}`);
     }
@@ -32,7 +33,7 @@ test("la política de seguridad ya no depende de Google Fonts", () => {
   assert.ok(!csp.includes("fonts.googleapis.com") && !csp.includes("fonts.gstatic.com"));
 });
 
-test("todo id que main.js busca con $(...) existe en index.html", () => {
+test("todo id que busca la interfaz con $(...) existe en index.html", () => {
   const html = leer("index.html");
   const ids = new Set([...leer("src/main.js").matchAll(/\$\("([\w-]+)"\)/g)].map((m) => m[1]));
   const faltan = [...ids].filter((id) => !html.includes(`id="${id}"`));

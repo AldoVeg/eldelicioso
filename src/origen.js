@@ -1,6 +1,5 @@
 // El Delicioso (origen): parte del código dividido en módulos.
 import { ALIAS_ORIGEN, ORIGENES_PERMITIDOS } from "./config.js";
-import { agregarLinea } from "./carrito.js";
 
 /* ===== Funciones puras: origen de la visita ===== */
 

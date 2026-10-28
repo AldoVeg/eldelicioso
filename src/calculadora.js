@@ -1,6 +1,6 @@
 // El Delicioso (calculadora): parte del código dividido en módulos.
 import { MAX_BOCADITOS_POR_INVITADO, MAX_INVITADOS, MAX_UNIDADES, MIN_BOCADITOS_POR_INVITADO, TAMANOS } from "./config.js";
-import { formatearEntero, formatearNumero } from "./dinero.js";
+import { formatearEntero } from "./dinero.js";
 
 /* ===== Funciones puras: calculadora de invitados ===== */
 

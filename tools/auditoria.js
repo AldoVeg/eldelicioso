@@ -8,8 +8,10 @@ export const raiz = path.join(path.dirname(fileURLToPath(import.meta.url)), ".."
 const leer = (ruta) => fs.readFileSync(path.join(raiz, ruta), "utf8");
 const listar = (carpeta) => fs.readdirSync(path.join(raiz, carpeta)).map((f) => `${carpeta}/${f}`);
 
-export function fuentesJs() {
-  return listar("src").filter((f) => f.endsWith(".js"));
+// Todos los .js de src/ y de sus subcarpetas (src/ui/).
+export function fuentesJs(carpeta = "src") {
+  return fs.readdirSync(path.join(raiz, carpeta), { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? fuentesJs(`${carpeta}/${e.name}`) : e.name.endsWith(".js") ? [`${carpeta}/${e.name}`] : []);
 }
 
 function sinComentarios(css) {
@@ -88,6 +90,34 @@ export function declaracionesSinUso() {
   return [...nombres].filter((n) => (codigo.match(new RegExp(`\\b${n}\\b`, "g")) || []).length < 2);
 }
 
+// Importaciones de más (un nombre importado que el archivo no usa) o de menos (usa algo exportado por otro módulo sin importarlo).
+export function importacionesIncorrectas() {
+  const archivos = fuentesJs().filter((f) => !f.endsWith("indice.js"));
+  const exportados = new Map();
+  for (const f of archivos) for (const m of leer(f).matchAll(/^export (?:function|const|let) ([A-Za-z_]\w*)/gm)) exportados.set(m[1], f);
+  const problemas = [];
+  for (const f of archivos) {
+    const importados = [];
+    const cuerpo = leer(f).replace(/^import \{([^}]*)\} from "[^"]*";\n/gm, (s, lista) => {
+      lista.split(",").map((x) => x.trim()).filter(Boolean).forEach((n) => importados.push(n));
+      return "";
+    });
+    // Sin comentarios ni textos entre comillas simples o dobles (una palabra dentro de un texto no cuenta como uso).
+    const codigo = cuerpo
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/(^|[^:])\/\/[^\n]*/g, "$1")
+      .replace(/"(?:[^"\\\n]|\\.)*"/g, '""')
+      .replace(/`((?:[^`\\]|\\.)*)`/g, (s, texto) => [...texto.matchAll(/\$\{([^}]*)\}/g)].map((m) => m[1]).join(" ; "));
+    const usa = (n) => new RegExp(`(?<![\\w$.])${n}(?![\\w$])`).test(codigo);
+    const locales = new Set([...codigo.matchAll(/(?:function|const|let)\s+([A-Za-z_]\w*)/g)].map((m) => m[1]));
+    importados.filter((n) => !usa(n)).forEach((n) => problemas.push(`${f}: importa ${n} y no lo usa`));
+    for (const [n, dueno] of exportados) {
+      if (dueno !== f && !importados.includes(n) && !locales.has(n) && usa(n)) problemas.push(`${f}: usa ${n} sin importarlo de ${dueno}`);
+    }
+  }
+  return problemas;
+}
+
 // Imágenes y fuentes de las carpetas img/ y fonts/ que nadie referencia (HTML, CSS, JS, manifiesto, sitemap).
 export function recursosHuerfanos() {
   const uso = [leer("index.html"), leer("index.css"), leer("manifest.webmanifest"), leer("sitemap.xml"), leer("github-pages-redirect/index.html"), ...fuentesJs().map(leer)].join("\n");
@@ -111,6 +141,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     "Cuerpos CSS idénticos (agrupar)": cuerposIdenticos(),
     "Clases CSS sin uso": clasesCssSinUso(),
     "Declaraciones JS sin uso": declaracionesSinUso(),
+    "Importaciones incorrectas": importacionesIncorrectas(),
     "Recursos huérfanos": recursosHuerfanos()
   };
   for (const [titulo, lista] of Object.entries(informe)) {
