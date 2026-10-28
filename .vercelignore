@@ -10,3 +10,6 @@ img/marca-eldelicioso-original.png
 img/qr-eldelicioso.png
 img/qr-eldelicioso-github-viejo.png
 propuestas/
+tools/
+tests/
+package.json

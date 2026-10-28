@@ -95,10 +95,14 @@ body {
   font-size: var(--t-base);
   line-height: 1.6;
   overflow-x: clip;
+  /* Protección contra copia (disuasión; ver comentario en src/main.js): sin selección de texto ni menú táctil */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 img, svg { display: block; max-width: 100%; }
-img { height: auto; }
+img { height: auto; -webkit-user-drag: none; user-drag: none; } /* sin arrastrar imágenes (protección contra copia) */
 
 h1, h2, h3 {
   margin: 0;
@@ -237,7 +241,7 @@ button { cursor: pointer; }
 .boton--whatsapp { background: var(--whatsapp); color: #fff; box-shadow: 0 6px 18px rgba(15, 122, 62, .28); }
 .boton--whatsapp:hover { background: var(--whatsapp-hover); color: #fff; }
 .boton--secundario { background: var(--superficie); border-color: var(--borde-campo); color: var(--texto); }
-.boton--secundario:hover { background: var(--fondo-rosado); border-color: var(--acento); color: var(--acento-hover); }
+.boton--secundario:hover, .galeria__pausa:hover { background: var(--fondo-rosado); border-color: var(--acento); color: var(--acento-hover); }
 .boton:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
 .boton--bloque { width: 100%; }
 
@@ -281,6 +285,7 @@ button { cursor: pointer; }
   overflow-x: auto;
   scrollbar-width: none;
   white-space: nowrap;
+  position: relative;
 }
 .menu::-webkit-scrollbar { display: none; }
 .menu a {
@@ -311,7 +316,7 @@ button { cursor: pointer; }
   font-weight: 600;
   transition: background-color .2s, border-color .2s;
 }
-.boton-lista:hover { background: var(--fondo-rosado); border-color: var(--acento); }
+.boton-lista:hover, .lista__paso:hover:not(:disabled) { background: var(--fondo-rosado); border-color: var(--acento); }
 
 .contador-lista {
   display: inline-grid;
@@ -477,7 +482,7 @@ button { cursor: pointer; }
   border-color: var(--texto);
   color: var(--fondo);
 }
-.filtro[data-filtro="dulce"][aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: #fff; }
+.filtro[data-filtro="dulce"][aria-pressed="true"], .evento[aria-pressed="true"], .galeria__boton:hover, .galeria__pausa[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: #fff; }
 .filtro[data-filtro="salado"][aria-pressed="true"] { background: var(--acento-2); border-color: var(--acento-2); color: var(--texto); }
 
 .catalogo__rejilla {
@@ -500,13 +505,14 @@ button { cursor: pointer; }
 .tarjeta:hover, .tarjeta:focus-within { box-shadow: var(--sombra); }
 
 .tarjeta__foto {
+  position: relative;
   aspect-ratio: 4 / 5;
   overflow: hidden;
   background: var(--fondo-rosado);
   border-bottom: 4px solid var(--acento-2);
 }
 .tarjeta[data-categoria="dulce"] .tarjeta__foto { border-bottom-color: var(--rosa-fresa); }
-.tarjeta__foto img {
+.tarjeta__foto img, .galeria__diapo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -556,7 +562,6 @@ button { cursor: pointer; }
 .tarjeta--especial .selector { margin-bottom: var(--e-3); }
 .tarjeta--especial [data-solicitar] { margin-top: auto; }
 
-.tarjeta__nombre { font-size: var(--t-lg); font-weight: 700; }
 .tarjeta__frase { color: var(--texto-suave); font-size: var(--t-sm); }
 
 .selector { min-width: 0; margin: var(--e-2) 0 0; padding: 0; border: 0; }
@@ -619,7 +624,7 @@ button { cursor: pointer; }
   gap: var(--e-1) var(--e-3);
   margin-top: auto;
 }
-.precio__total {
+.precio__total, .promo__ahora {
   font-family: var(--fuente-titulo);
   font-size: var(--t-xl);
   font-weight: 800;
@@ -656,7 +661,7 @@ button { cursor: pointer; }
 /* Planificador en tres etapas, panel en vivo: a la izquierda los pasos 1 y 2 (formulario); a la derecha el resultado y el paso 3. */
 .calculadora__pasos { display: grid; gap: var(--e-6); align-items: start; }
 .calculadora__formulario { display: grid; gap: var(--e-5); align-content: start; min-width: 0; }
-.etapa { display: grid; gap: var(--e-3); align-content: start; min-width: 0; }
+.etapa, .calculadora__caminos { display: grid; gap: var(--e-3); align-content: start; min-width: 0; }
 .etapa__titulo { display: flex; align-items: center; gap: var(--e-3); font-size: var(--t-md); font-weight: 700; line-height: 1.2; }
 .etapa__num {
   display: inline-grid;
@@ -700,7 +705,6 @@ button { cursor: pointer; }
 }
 .evento small { font-size: var(--t-xs); font-weight: 400; color: var(--texto-suave); }
 .evento:hover { border-color: var(--acento); }
-.evento[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: #fff; }
 .evento[aria-pressed="true"] small { color: rgba(255, 255, 255, .88); }
 
 /* Resultado: aviso inicial, frase (o error), reparto y caminos */
@@ -730,7 +734,6 @@ button { cursor: pointer; }
 .calculadora__cifra small { margin-left: .25em; font-size: .35em; font-weight: 700; letter-spacing: 0; color: var(--texto-suave); }
 .cifra-conteo { display: inline-block; text-align: right; }
 .calculadora__sugerencia { font-size: var(--t-sm); color: var(--texto-suave); }
-.calculadora__caminos { display: grid; gap: var(--e-3); align-content: start; min-width: 0; }
 
 /* Los tres caminos: tres opciones de radio en fila (en celular, apiladas); el detalle del marcado va debajo y un único botón al pie */
 .calculadora__opciones { display: grid; gap: var(--e-2); }
@@ -977,7 +980,7 @@ button { cursor: pointer; }
 
   /* 5. Aparición suave al desplazar (solo navegadores con animaciones por scroll) */
   @supports (animation-timeline: view()) {
-    .tarjeta, .promo, .calculadora, .datos__item {
+    .tarjeta, .promo, .calculadora, .datos__item, .paso {
       animation: aparecer linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 35%;
@@ -1205,7 +1208,6 @@ button { cursor: pointer; }
   line-height: 1;
   transition: background-color .2s, border-color .2s;
 }
-.lista__paso:hover:not(:disabled) { background: var(--fondo-rosado); border-color: var(--acento); }
 .lista__paso:disabled { opacity: .4; cursor: not-allowed; }
 .lista__packs-numero { min-width: 2ch; text-align: center; font-weight: 600; }
 .lista__quitar {
@@ -1388,12 +1390,6 @@ button { cursor: pointer; }
   scroll-snap-align: start;
   cursor: pointer;
 }
-.galeria__diapo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: saturate(1.04) contrast(1.02);
-}
 .galeria__diapo:focus-visible { outline-offset: 3px; }
 
 /* Botones circulares anterior/siguiente, sobre los bordes de la pista */
@@ -1416,7 +1412,6 @@ button { cursor: pointer; }
 .galeria__boton--anterior { left: .75rem; }
 .galeria__boton--siguiente { right: .75rem; }
 .galeria__boton--anterior .icono { rotate: 180deg; }
-.galeria__boton:hover { background: var(--acento); border-color: var(--acento); color: #fff; }
 
 @media (min-width: 48em) {
   .galeria__pista { --diapo: 22rem; gap: var(--e-5); }
@@ -1439,7 +1434,6 @@ button { cursor: pointer; }
 }
 
 /* ===== Sello de la marca: "ya agregado" en la esquina de la foto ===== */
-.tarjeta__foto { position: relative; }
 .tarjeta__sello {
   position: absolute;
   top: .625rem;
@@ -1471,6 +1465,8 @@ button { cursor: pointer; }
 /* ===== Nombre del producto: cambia de color al acercar el cursor o con el foco del teclado ===== */
 /* El relleno vertical (con margen negativo, para no mover nada) hace más cómodo "acercarse" al nombre */
 .tarjeta__nombre {
+  font-size: var(--t-lg);
+  font-weight: 700;
   padding-block: .5rem;
   margin-block: -.5rem;
   transition: color .2s ease;
@@ -1481,7 +1477,6 @@ button { cursor: pointer; }
 .tarjeta:has(:focus-visible) .tarjeta__nombre { color: var(--acento); }
 
 /* ===== Subrayado del menú que sigue al cursor (solo escritorio con puntero fino) ===== */
-.menu { position: relative; }
 .menu__indicador { display: none; }
 @media (min-width: 48em) and (hover: hover) and (pointer: fine) {
   .menu__indicador {
@@ -1556,11 +1551,9 @@ button { cursor: pointer; }
   color: var(--texto);
   transition: background-color .2s, color .2s, border-color .2s;
 }
-.galeria__pausa:hover { background: var(--fondo-rosado); border-color: var(--acento); color: var(--acento-hover); }
 .galeria__pausa .galeria__icono-reproducir,
 .galeria__pausa[aria-pressed="true"] .galeria__icono-pausa { display: none; }
 .galeria__pausa[aria-pressed="true"] .galeria__icono-reproducir { display: block; }
-.galeria__pausa[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: #fff; }
 .galeria__pausa[aria-pressed="true"]:hover { background: var(--acento-hover); border-color: var(--acento-hover); color: #fff; }
 
 /* ===== Cómo pedir en 3 pasos ===== */
@@ -1697,13 +1690,6 @@ button { cursor: pointer; }
   padding-top: var(--e-2);
 }
 .promo__antes { color: var(--texto-suave); font-size: var(--t-md); }
-.promo__ahora {
-  font-family: var(--fuente-titulo);
-  font-size: var(--t-xl);
-  font-weight: 800;
-  line-height: 1.1;
-  color: var(--acento);
-}
 .promo__ahorro {
   padding: 2px 10px;
   background: #FFF1D6;
@@ -1760,21 +1746,8 @@ button { cursor: pointer; }
   .pasos__lista { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-5); }
 }
 
-/* Aparición suave al desplazar (misma que las demás tarjetas) */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .paso, .promo {
-      animation: aparecer linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 35%;
-    }
-  }
-}
-
-/* ===== Protección contra copia (disuasión; ver comentario en index.js) ===== */
-body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+/* ===== Protección contra copia (disuasión; ver comentario en src/main.js) ===== */
 input, textarea, select { -webkit-user-select: text; user-select: text; }
-img { -webkit-user-drag: none; user-drag: none; }
 /* Contenido oculto mientras la ventana no tiene el foco (frena algunas capturas de escritorio) */
 html.protegido body { visibility: hidden; }
 /* Impresión y "guardar como PDF": página vacía con aviso */
