@@ -17,7 +17,7 @@ import { iniciarAvisoVersion } from "./ui/version.js";
 import { iniciarGaleria } from "./ui/galeria.js";
 import { iniciarPlanificador } from "./ui/planificador.js";
 import { iniciarCombos } from "./ui/combos.js";
-import { iniciarKekes } from "./ui/kekes.js";
+import { iniciarQueques } from "./ui/queques.js";
 import { sesion } from "./ui/sesion.js";
 import { $, crear, consultaMovimiento, ponerTexto } from "./ui/utiles.js";
 import { construirEnlaceWhatsApp, construirMensajeCotizacion, construirMensajePedido, construirMensajeReserva } from "./mensajes.js";
@@ -572,7 +572,7 @@ function iniciar() {
   combos = iniciarCombos({ catalogo, guardarLineas, mostrarListaTrasAgregar, dibujarLista, rebotarContador, marcarAgregado, actualizarSello });
   iniciarPlanificador({ aplicarFiltro, dibujarLista });
   aplicarOrigenAEnlaces();
-  iniciarKekes(origenVisita); // después de aplicarOrigenAEnlaces: sus enlaces ya llevan el origen en el mensaje
+  iniciarQueques(origenVisita); // después de aplicarOrigenAEnlaces: sus enlaces ya llevan el origen en el mensaje
   escribirCantidadSabores();
   actualizarMinimoFecha();
   dibujarLista();

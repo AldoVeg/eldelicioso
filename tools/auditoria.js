@@ -131,8 +131,8 @@ export function recursosHuerfanos() {
   recorrer("fonts");
   const ignorados = leer(".vercelignore").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   // Lo que ya no se publica (.vercelignore) es material de marca guardado a propósito: no cuenta como huérfano.
-  // La miniatura img/KEKES/min/x.webp se deriva de img/KEKES/x.webp (miniaturaDe en src/kekes.js): cuenta como usada si la grande lo está.
-  const referencia = (r) => (r.startsWith("img/KEKES/min/") ? r.replace("img/KEKES/min/", "img/KEKES/") : r);
+  // La miniatura img/QUEQUES/min/x.webp se deriva de img/QUEQUES/x.webp (miniaturaDe en src/queques.js): cuenta como usada si la grande lo está.
+  const referencia = (r) => (r.startsWith("img/QUEQUES/min/") ? r.replace("img/QUEQUES/min/", "img/QUEQUES/") : r);
   return todos.filter((r) => !uso.includes(referencia(r)) && !ignorados.includes(r));
 }
 

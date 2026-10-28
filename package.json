@@ -2,12 +2,12 @@
   "name": "el-delicioso",
   "private": true,
   "type": "module",
-  "description": "Sitio estático de El Delicioso. npm se usa para las pruebas, la auditoría, el sello de versión y las fotos de los kekes.",
+  "description": "Sitio estático de El Delicioso. npm se usa para las pruebas, la auditoría, el sello de versión y las fotos de los queques.",
   "scripts": {
     "test": "node --test",
     "auditar": "node tools/auditoria.js",
     "sellar": "node tools/sellar.js",
-    "fotos": "node tools/fotos-kekes.js",
+    "fotos": "node tools/fotos-queques.js",
     "lint": "eslint ."
   },
   "devDependencies": {

@@ -1,10 +1,10 @@
-# Fotos de los kekes
+# Fotos de los queques
 
-Deja aquí las fotos de cada versión. El resto lo hace `npm run fotos`: las convierte a WebP liviano en `img/KEKES/`
+Deja aquí las fotos de cada versión. El resto lo hace `npm run fotos`: las convierte a WebP liviano en `img/QUEQUES/`
 y las conecta con la web (cuando la franja de ese sabor se abre, la foto aparece de fondo).
 
 ## Cómo nombrar cada foto
-Usa el nombre del sabor, con o sin tildes y en mayúsculas o minúsculas; también sirven "keke piña", "keke de piña" o "piña (2)". Todos estos sirven:
+Usa el nombre del sabor, con o sin tildes y en mayúsculas o minúsculas; también sirven "queque piña", "keke piña", "queque de piña" o "piña (2)". Todos estos sirven:
 
 | Sabor | Nombre de archivo (cualquiera de estos) |
 |---|---|

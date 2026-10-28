@@ -3,7 +3,7 @@ import js from "@eslint/js";
 import globals from "globals";
 
 export default [
-  { ignores: ["node_modules/", "propuestas/", "archivo/", "fotos-kekes/", "img/", "fonts/"] },
+  { ignores: ["node_modules/", "propuestas/", "archivo/", "fotos-queques/", "img/", "fonts/"] },
   js.configs.recommended,
   {
     // La página: módulos de navegador (src/ y src/ui/)
