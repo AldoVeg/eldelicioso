@@ -32,6 +32,8 @@ function iniciar() {
   const caminosCalculadora = $("calculadora-caminos");
   const opcionesCalculadora = $("calculadora-opciones");
   const vacioCalculadora = $("calculadora-vacio");
+  const heroCalculadora = $("calculadora-hero");
+  const detalleCalculadora = $("calculadora-detalle");
   const botonElegirCamino = $("elegir-camino");
 
   // Lista de compras: lista, total y último paso del pedido (panel horizontal en escritorio, barra en móvil)
@@ -550,48 +552,30 @@ function iniciar() {
     return bloque;
   }
 
-  // "150 unidades": la cifra va en su propio tramo para poder contarla de 0 al valor. Lo animado queda oculto
-  // para lectores de pantalla, que leen el texto final una sola vez.
-  function crearUnidades(texto) {
-    const parte = /^(\d+)(.*)$/.exec(texto);
-    const p = crear("span", "opcion__unidades");
-    if (!parte) {
-      p.textContent = texto;
-      return p;
-    }
-    const visible = crear("span");
-    visible.setAttribute("aria-hidden", "true");
-    const cifra = crear("span", "opcion__cifra", parte[1]);
-    cifra.dataset.valor = parte[1];
-    visible.append(cifra, parte[2]);
-    p.append(visible, crear("span", "solo-lectores", texto));
-    return p;
-  }
-
-  // Cada camino es una opción de radio: cabeza (marca, título, reparto y unidades) y, solo en la elegida, el detalle
-  // (sobrantes y sugerencia por grupo). Un único botón al pie lleva al catálogo con el camino marcado.
+  // Cada camino es una opción de radio (marca, título y reparto). El detalle del camino marcado (sobrantes y sugerencia por
+  // grupo) se muestra debajo de las tres opciones; un único botón al pie lleva al catálogo con ese camino.
   function crearFilaOpcion(opcion, indice) {
-    const fila = crear("article", `opcion opcion--${opcion.clave}`);
-    const cabeza = crear("label", "opcion__cabeza");
+    const fila = crear("label", `opcion opcion--${opcion.clave}`);
     const radio = crear("input", "opcion__radio");
     radio.type = "radio";
     radio.name = "camino";
     radio.value = opcion.clave;
     radio.checked = plan.camino ? plan.camino === opcion.clave : indice === 0;
-    radio.dataset.titulo = opcion.titulo;
     const marca = crear("span", "opcion__marca");
     marca.setAttribute("aria-hidden", "true");
     const texto = crear("span", "opcion__texto");
-    texto.append(crear("span", "opcion__titulo", opcion.titulo));
-    if (opcion.reparto) texto.append(crear("span", "opcion__reparto", opcion.reparto));
+    texto.append(crear("span", "opcion__titulo", opcion.titulo), crear("span", "opcion__reparto", opcion.reparto || opcion.unidades));
     texto.append(crear("span", "opcion__elegido", "Elegido para tu lista"));
-    cabeza.append(radio, marca, texto, crearUnidades(opcion.unidades));
+    fila.append(radio, marca, texto);
+    return fila;
+  }
 
+  function crearDetalleOpcion(opcion) {
     const detalle = crear("div", "opcion__detalle");
+    detalle.dataset.camino = opcion.clave;
     detalle.append(crear("p", "opcion__sobrantes", opcion.sobrantes));
     opcion.grupos.forEach((grupo) => detalle.append(crearGrupoSugerencia(grupo)));
-    fila.append(cabeza, detalle);
-    return fila;
+    return detalle;
   }
 
   function caminoMarcado() {
@@ -599,11 +583,11 @@ function iniciar() {
     return radio ? radio.value : null;
   }
 
-  // El botón único dice qué camino llevará; las opciones muestran con "Elegido para tu lista" el que ya está en el plan.
+  // Muestra solo el detalle del camino marcado y marca con "Elegido para tu lista" el que ya está en el plan.
   function actualizarBotonCamino() {
-    const radio = opcionesCalculadora.querySelector(".opcion__radio:checked");
-    botonElegirCamino.textContent = radio ? `Armar mi lista con ${radio.dataset.titulo}` : "";
-    botonElegirCamino.disabled = !radio;
+    const clave = caminoMarcado();
+    botonElegirCamino.disabled = !clave;
+    detalleCalculadora.querySelectorAll(".opcion__detalle").forEach((detalle) => { detalle.hidden = detalle.dataset.camino !== clave; });
     opcionesCalculadora.querySelectorAll(".opcion").forEach((fila) => {
       fila.classList.toggle("opcion--elegida", Boolean(plan.camino) && fila.querySelector(".opcion__radio").value === plan.camino);
     });
@@ -613,7 +597,7 @@ function iniciar() {
   // el ancho de la cifra final, así nada se mueve.
   function contarCifras(raiz) {
     if (consultaMovimiento.matches) return;
-    const cifras = [...raiz.querySelectorAll(".opcion__cifra")];
+    const cifras = [...raiz.querySelectorAll(".cifra-conteo")];
     cifras.forEach((cifra) => { cifra.style.minWidth = `${cifra.getBoundingClientRect().width}px`; });
     let inicio = null;
     let terminado = false;
@@ -645,21 +629,31 @@ function iniciar() {
   function mostrarResultado(invitados, porInvitado, contar = false) {
     const modelo = describirResultado(invitados, catalogo, porInvitado);
     resultadoCalculadora.classList.remove("calculadora__frase--error");
+    resultadoCalculadora.classList.add("solo-lectores");
     resultadoCalculadora.textContent = modelo.frase;
+    const cifra = $("calculadora-cifra");
+    cifra.textContent = String(modelo.necesarias);
+    cifra.dataset.valor = String(modelo.necesarias);
+    $("calculadora-sugerencia").textContent = modelo.sugerencia;
+    heroCalculadora.hidden = false;
     ponerTexto(sobrantesCalculadora, modelo.sobrantes);
     opcionesCalculadora.replaceChildren(...modelo.opciones.map(crearFilaOpcion));
+    detalleCalculadora.replaceChildren(...modelo.opciones.map(crearDetalleOpcion));
     vacioCalculadora.hidden = true;
     caminosCalculadora.hidden = false;
     actualizarBotonCamino();
-    if (contar) contarCifras(opcionesCalculadora);
+    if (contar) contarCifras(heroCalculadora);
   }
 
   // Un dato inválido reemplaza el resultado anterior por el aviso.
   function mostrarErrorCalculadora(mensaje) {
     resultadoCalculadora.classList.add("calculadora__frase--error");
+    resultadoCalculadora.classList.remove("solo-lectores");
     resultadoCalculadora.textContent = mensaje;
+    heroCalculadora.hidden = true;
     ponerTexto(sobrantesCalculadora, "");
     opcionesCalculadora.replaceChildren();
+    detalleCalculadora.replaceChildren();
     vacioCalculadora.hidden = true;
     caminosCalculadora.hidden = true;
   }

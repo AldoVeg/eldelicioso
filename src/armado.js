@@ -1,6 +1,6 @@
 // El Delicioso (armado): parte del código dividido en módulos.
 import { MAX_LINEAS_SUGERENCIA, TAMANOS } from "./config.js";
-import { calcularCombinacion, combinarPaquetes, textoResultadoCalculadora, textoSobran, textoSobrantesEquidad, unirLista } from "./calculadora.js";
+import { calcularCombinacion, combinarPaquetes, textoResultadoCalculadora, textoSobran, textoSobrantesEquidad, textoSugerenciaPaquetes, unirLista } from "./calculadora.js";
 
 /* ===== Funciones puras: tres formas de armar el pedido ===== */
 
@@ -182,6 +182,8 @@ export function describirResultado(invitados, catalogo, porInvitado) {
   }));
   return {
     frase: textoResultadoCalculadora(invitados, porInvitado),
+    necesarias: calcularCombinacion(invitados, porInvitado).necesarias,
+    sugerencia: textoSugerenciaPaquetes(invitados, porInvitado),
     sobrantes: textoSobrantesEquidad(invitados, porInvitado),
     tituloCaminos: "Elige tu camino",
     opciones

@@ -672,6 +672,15 @@ button { cursor: pointer; }
   font-weight: 800;
 }
 
+.calculadora__formulario .campo label {
+  font-family: var(--fuente-mono);
+  font-size: var(--t-mono);
+  font-weight: 400;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
 /* Tipo de evento: botones que rellenan "Bocaditos por invitado" (el que contiene el valor queda marcado) */
 .calculadora__eventos { display: flex; flex-wrap: wrap; gap: var(--e-2); }
 .evento {
@@ -714,55 +723,51 @@ button { cursor: pointer; }
 }
 .calculadora__frase:empty { display: none; }
 .calculadora__frase--error { font-family: var(--fuente-texto); font-size: var(--t-sm); font-weight: 600; color: var(--acento); }
+/* Resultado grande: lo primero que se ve al calcular */
+.calculadora__hero { display: grid; gap: .25rem; padding: var(--e-4) var(--e-5); background: var(--fondo-rosado); border-radius: var(--r-md); }
+.calculadora__etq { font-family: var(--fuente-mono); font-size: var(--t-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--texto-suave); }
+.calculadora__cifra { font-family: var(--fuente-titulo); font-size: clamp(2.6rem, 8vw, 3.75rem); font-weight: 800; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.calculadora__cifra small { margin-left: .25em; font-size: .35em; font-weight: 700; letter-spacing: 0; color: var(--texto-suave); }
+.cifra-conteo { display: inline-block; text-align: right; }
+.calculadora__sugerencia { font-size: var(--t-sm); color: var(--texto-suave); }
 .calculadora__caminos { display: grid; gap: var(--e-3); align-content: start; min-width: 0; }
 /* Reparto: lo que sobra del total sugerido y cuánto tocaría a cada invitado */
 .calculadora__sobrantes { font-size: var(--t-sm); line-height: 1.45; color: var(--texto-suave); }
 
-/* Los tres caminos: opciones de radio (solo la elegida muestra su detalle) y un único botón debajo */
+/* Los tres caminos: tres opciones de radio en fila (en celular, apiladas); el detalle del marcado va debajo y un único botón al pie */
 .calculadora__opciones { display: grid; gap: var(--e-2); }
 .opcion {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--e-3);
   min-width: 0;
+  padding: var(--e-3) var(--e-4);
   background: var(--superficie);
   border: 1.5px solid var(--borde);
   border-radius: var(--r-md);
   overflow-wrap: anywhere;
+  cursor: pointer;
   transition: border-color .2s, box-shadow .2s, background-color .2s;
 }
 .opcion:hover { border-color: var(--acento); }
 .opcion:has(.opcion__radio:checked) { background: #FFF7F8; border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento); }
 .opcion:has(.opcion__radio:focus-visible) { outline: 3px solid var(--foco); outline-offset: 2px; }
-.opcion__cabeza {
-  position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--e-3);
-  padding: var(--e-3) var(--e-4);
-  cursor: pointer;
-}
 .opcion__radio { position: absolute; opacity: 0; pointer-events: none; }
 .opcion__marca { display: grid; place-items: center; width: 1.375rem; height: 1.375rem; border: 2px solid var(--borde-campo); border-radius: 50%; }
 .opcion:has(.opcion__radio:checked) .opcion__marca { border-color: var(--acento); }
 .opcion:has(.opcion__radio:checked) .opcion__marca::after { content: ""; width: .625rem; height: .625rem; background: var(--acento); border-radius: 50%; }
 .opcion__texto { display: grid; gap: .1rem; min-width: 0; }
 .opcion__titulo { font-family: var(--fuente-titulo); font-size: var(--t-md); font-weight: 700; line-height: 1.2; }
-.opcion__reparto { font-size: var(--t-sm); color: var(--texto-suave); }
+.opcion__reparto { font-size: var(--t-sm); line-height: 1.3; color: var(--texto-suave); }
 .opcion__elegido { display: none; font-size: var(--t-xs); font-weight: 700; color: var(--acento); }
 .opcion--elegida .opcion__elegido { display: block; }
 .opcion__elegido::before { content: "\2713\00a0"; content: "\2713\00a0" / ""; }
-.opcion__unidades {
-  font-family: var(--fuente-titulo);
-  font-size: 1.25rem;
-  font-weight: 800;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-}
-/* Cifra que cuenta de 0 al valor: el script reserva su ancho final para que el resto no se mueva */
-.opcion__cifra { display: inline-block; text-align: right; }
-.opcion__detalle { display: grid; gap: var(--e-3); padding: 0 var(--e-4) var(--e-4); }
-.opcion:not(:has(.opcion__radio:checked)) .opcion__detalle { display: none; }
-.opcion__sobrantes { padding-top: var(--e-3); border-top: 1px solid var(--borde); font-size: var(--t-xs); line-height: 1.4; color: var(--texto-suave); }
-/* Sugerencia concreta: productos con su cantidad, agrupados por categoría en el mixto */
+/* Detalle del camino marcado: sobrantes y productos con su cantidad (agrupados por categoría en el mixto) */
+.calculadora__detalle { min-width: 0; }
+.opcion__detalle { display: grid; gap: var(--e-3); padding: var(--e-3) var(--e-4); border-left: 3px solid var(--acento-2); background: var(--fondo); border-radius: 0 var(--r-sm) var(--r-sm) 0; }
+.opcion__sobrantes { font-size: var(--t-xs); line-height: 1.4; color: var(--texto-suave); }
 .opcion__grupo { display: grid; gap: var(--e-1); }
 .opcion__grupo-titulo {
   font-family: var(--fuente-mono);
@@ -784,8 +789,11 @@ button { cursor: pointer; }
 @media (min-width: 48em) {
   .calculadora__pasos { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--e-7); }
 }
+@media (min-width: 62.5em) {
+  .calculadora__opciones { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 @media (prefers-reduced-motion: no-preference) {
-  .opcion:has(.opcion__radio:checked) .opcion__detalle { animation: entrada-suave .35s var(--curva-suave) both; }
+  .opcion__detalle:not([hidden]) { animation: entrada-suave .35s var(--curva-suave) both; }
 }
 
 /* ===== Campos ===== */

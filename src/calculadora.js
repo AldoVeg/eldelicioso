@@ -143,7 +143,12 @@ function describirCombinacion({ paquetes, total }) {
 export function textoResultadoCalculadora(invitados, porInvitado) {
   const combinacion = calcularCombinacion(invitados, porInvitado);
   return `Para ${invitados} ${invitados === 1 ? "invitado" : "invitados"} necesitas unas ${combinacion.necesarias} unidades. ` +
-    `Te sugerimos ${describirCombinacion(combinacion)}.`;
+    textoSugerenciaPaquetes(invitados, porInvitado);
+}
+
+// "Te sugerimos 2 paquetes de 100 (200 unidades en total)."
+export function textoSugerenciaPaquetes(invitados, porInvitado) {
+  return `Te sugerimos ${describirCombinacion(calcularCombinacion(invitados, porInvitado))}.`;
 }
 
 // "Sobra 1 bocadito" / "Sobran 5 bocaditos"; "sustantivo" es [singular, plural].
