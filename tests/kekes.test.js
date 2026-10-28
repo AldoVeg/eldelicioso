@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { KEKES, construirMensajeKeke, contrasteDeTexto, esTonoClaro, textoPrecioKeke } from "../src/kekes.js";
+import { FAMILIAS, KEKES, construirMensajeKeke, miniaturaDe, rotuloFamilia, textoPrecioKeke } from "../src/kekes.js";
 
 const html = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "index.html"), "utf8");
 
@@ -31,13 +31,19 @@ test("el HTML no escribe la cantidad de versiones a mano: la pone el script al d
   assert.ok(html.includes('id="kekes-cantidad"'));
 });
 
-test("los colores claros llevan texto oscuro y los oscuros texto blanco", () => {
-  assert.equal(esTonoClaro("#E6D3A3"), true); // vainilla
-  assert.equal(esTonoClaro("#F2C94C"), true); // piña
-  assert.equal(esTonoClaro("#3B3B3B"), false); // oreo
-  assert.equal(esTonoClaro("#5C5AA7"), false); // arándano
+test("cada sabor tiene una familia de la guía y las familias van seguidas en la lista", () => {
+  assert.ok(KEKES.every((k) => FAMILIAS.includes(k.familia)), "hay un sabor sin familia válida");
+  const orden = KEKES.map((k) => k.familia).filter((f, i, todas) => f !== todas[i - 1]);
+  assert.deepEqual(orden, FAMILIAS.filter((f) => KEKES.some((k) => k.familia === f)), "las familias no van agrupadas ni en el orden de la guía");
 });
 
-test("todo sabor se lee bien: el texto elegido llega al menos a 4,5 de contraste sobre su color", () => {
-  for (const k of KEKES) assert.ok(contrasteDeTexto(k.tono) >= 4.5, `${k.nombre} (${k.tono}): contraste ${contrasteDeTexto(k.tono).toFixed(1)}`);
+test("el rótulo de la guía cuenta los sabores y omite el número si hay uno solo", () => {
+  assert.equal(rotuloFamilia("Novia"), "Novia");
+  assert.equal(rotuloFamilia("Chocolate"), "Chocolate · 3");
+  assert.equal(rotuloFamilia("Frutales"), `Frutales · ${KEKES.filter((k) => k.familia === "Frutales").length}`);
+});
+
+test("la miniatura sale de la ruta de la foto y solo existe si hay foto", () => {
+  assert.equal(miniaturaDe({ foto: "img/KEKES/pina.webp" }), "img/KEKES/min/pina.webp");
+  assert.equal(miniaturaDe({}), null);
 });

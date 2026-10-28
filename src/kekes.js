@@ -5,58 +5,44 @@ import { formatearMoneda } from "./dinero.js";
 import { agregarLineaOrigen } from "./origen.js";
 
 // "nombre" es el sabor real (va en el mensaje de WhatsApp); "matiz" es el apodo sutil que se ve junto al nombre y se puede
-// afinar sin tocar nada más. "tono" es el color del sabor (la franja lo usa de fondo) y "precioCentimos" queda en null
-// hasta tener el precio de cada versión: mientras tanto la franja dice "Consultar precio".
-// "foto" (opcional) la agrega `npm run fotos` al convertir las fotos de fotos-kekes/: al abrirse la franja, la foto va de fondo.
+// afinar sin tocar nada más. "familia" es su grupo en la guía y "tono" el color del sabor (acento del escenario y punto de la cinta) y "precioCentimos" queda en null
+// hasta tener el precio de cada versión: mientras tanto dice "Consultar precio".
+// "foto" (opcional) la agrega `npm run fotos` al convertir las fotos de fotos-kekes/: es la foto grande del escenario.
 export const KEKES = [
-  { id: "novia", nombre: "Novia", matiz: "edición especial", tono: "#C9A227", precioCentimos: null },
-  { id: "pina", nombre: "Piña", matiz: "soleada", tono: "#F2C94C", precioCentimos: null, foto: "img/KEKES/pina.webp" },
-  { id: "durazno", nombre: "Durazno", matiz: "jugoso", tono: "#F4A582", precioCentimos: null, foto: "img/KEKES/durazno.webp" },
-  { id: "arandano", nombre: "Arándano", matiz: "silvestre", tono: "#5C5AA7", precioCentimos: null, foto: "img/KEKES/arandano.webp" },
-  { id: "platano", nombre: "Plátano", matiz: "maduro", tono: "#D8B56A", precioCentimos: null },
-  { id: "maracuya", nombre: "Maracuyá", matiz: "vibrante", tono: "#F59E0B", precioCentimos: null },
-  { id: "fresa-arandano", nombre: "Fresa con arándano", matiz: "frutos rojos", tono: "#C2416C", precioCentimos: null },
-  { id: "zanahoria", nombre: "Zanahoria", matiz: "casero", tono: "#D9742C", precioCentimos: null },
-  { id: "naranja", nombre: "Naranja", matiz: "fresco", tono: "#FB8C3A", precioCentimos: null },
-  { id: "chocolate", nombre: "Chocolate", matiz: "profundo", tono: "#6B3E2A", precioCentimos: null },
-  { id: "marmoleado", nombre: "Marmoleado", matiz: "a dos tonos", tono: "#8C6A55", precioCentimos: null },
-  { id: "chispas-chocolate", nombre: "Chispas de chocolate", matiz: "en cada bocado", tono: "#4A2C23", precioCentimos: null },
-  { id: "vainilla", nombre: "Vainilla", matiz: "clásico", tono: "#E6D3A3", precioCentimos: null },
-  { id: "oreo", nombre: "Oreo", matiz: "cremoso", tono: "#3B3B3B", precioCentimos: null },
-  { id: "coco", nombre: "Coco", matiz: "tropical", tono: "#D8D0BE", precioCentimos: null },
-  { id: "frutos-secos", nombre: "Frutos secos", matiz: "crocante", tono: "#B88A5B", precioCentimos: null },
-  { id: "higo", nombre: "Higo", matiz: "meloso", tono: "#7A4B6B", precioCentimos: null },
-  { id: "manzana", nombre: "Manzana", matiz: "tierna", tono: "#8DB255", precioCentimos: null },
-  { id: "limon", nombre: "Limón", matiz: "cítrico", tono: "#E6E34A", precioCentimos: null },
-  { id: "lucuma", nombre: "Lúcuma", matiz: "andina", tono: "#DDAA3A", precioCentimos: null }
+  { id: "novia", nombre: "Novia", matiz: "edición especial", familia: "Novia", tono: "#C9A227", precioCentimos: null },
+  { id: "pina", nombre: "Piña", matiz: "soleada", familia: "Frutales", tono: "#F2C94C", precioCentimos: null, foto: "img/KEKES/pina.webp" },
+  { id: "durazno", nombre: "Durazno", matiz: "jugoso", familia: "Frutales", tono: "#F4A582", precioCentimos: null, foto: "img/KEKES/durazno.webp" },
+  { id: "arandano", nombre: "Arándano", matiz: "silvestre", familia: "Frutales", tono: "#5C5AA7", precioCentimos: null, foto: "img/KEKES/arandano.webp" },
+  { id: "platano", nombre: "Plátano", matiz: "maduro", familia: "Frutales", tono: "#D8B56A", precioCentimos: null },
+  { id: "maracuya", nombre: "Maracuyá", matiz: "vibrante", familia: "Frutales", tono: "#F59E0B", precioCentimos: null },
+  { id: "fresa-arandano", nombre: "Fresa con arándano", matiz: "frutos rojos", familia: "Frutales", tono: "#C2416C", precioCentimos: null },
+  { id: "naranja", nombre: "Naranja", matiz: "fresco", familia: "Frutales", tono: "#FB8C3A", precioCentimos: null },
+  { id: "coco", nombre: "Coco", matiz: "tropical", familia: "Frutales", tono: "#D8D0BE", precioCentimos: null },
+  { id: "higo", nombre: "Higo", matiz: "meloso", familia: "Frutales", tono: "#7A4B6B", precioCentimos: null },
+  { id: "manzana", nombre: "Manzana", matiz: "tierna", familia: "Frutales", tono: "#8DB255", precioCentimos: null },
+  { id: "limon", nombre: "Limón", matiz: "cítrico", familia: "Frutales", tono: "#E6E34A", precioCentimos: null },
+  { id: "lucuma", nombre: "Lúcuma", matiz: "andina", familia: "Frutales", tono: "#DDAA3A", precioCentimos: null },
+  { id: "zanahoria", nombre: "Zanahoria", matiz: "casero", familia: "Clásicos", tono: "#D9742C", precioCentimos: null },
+  { id: "marmoleado", nombre: "Marmoleado", matiz: "a dos tonos", familia: "Clásicos", tono: "#8C6A55", precioCentimos: null },
+  { id: "vainilla", nombre: "Vainilla", matiz: "clásico", familia: "Clásicos", tono: "#E6D3A3", precioCentimos: null },
+  { id: "frutos-secos", nombre: "Frutos secos", matiz: "crocante", familia: "Clásicos", tono: "#B88A5B", precioCentimos: null },
+  { id: "chocolate", nombre: "Chocolate", matiz: "profundo", familia: "Chocolate", tono: "#6B3E2A", precioCentimos: null },
+  { id: "chispas-chocolate", nombre: "Chispas de chocolate", matiz: "en cada bocado", familia: "Chocolate", tono: "#4A2C23", precioCentimos: null },
+  { id: "oreo", nombre: "Oreo", matiz: "cremoso", familia: "Chocolate", tono: "#3B3B3B", precioCentimos: null }
 ];
 
-// Texto sobre la franja: oscuro (el de la página) o blanco, el que dé más contraste con el color del sabor (WCAG).
-const TEXTO_OSCURO = "#2E1B1B";
-const TEXTO_BLANCO = "#FFFFFF";
+// Las familias agrupan los sabores en la guía de la sección; en KEKES cada familia va seguida (así la cinta y las flechas las recorren en orden).
+export const FAMILIAS = ["Novia", "Frutales", "Clásicos", "Chocolate"];
 
-function luminancia(color) {
-  const n = parseInt(color.slice(1), 16);
-  const [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255].map((v) => {
-    const c = v / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+// Rótulo de la guía: "Frutales · 12", o solo el nombre si la familia tiene un único sabor ("Novia").
+export function rotuloFamilia(familia) {
+  const cantidad = KEKES.filter((keke) => keke.familia === familia).length;
+  return cantidad > 1 ? `${familia} · ${cantidad}` : familia;
 }
 
-function contraste(a, b) {
-  const [claro, oscuro] = [luminancia(a), luminancia(b)].sort((x, y) => y - x);
-  return (claro + 0.05) / (oscuro + 0.05);
-}
-
-// Verdadero si el texto oscuro se lee mejor que el blanco sobre ese color.
-export function esTonoClaro(tono) {
-  return contraste(tono, TEXTO_OSCURO) >= contraste(tono, TEXTO_BLANCO);
-}
-
-// Contraste (de 1 a 21) del texto elegido sobre el color; las pruebas exigen al menos 4,5 para toda versión nueva.
-export function contrasteDeTexto(tono) {
-  return Math.max(contraste(tono, TEXTO_OSCURO), contraste(tono, TEXTO_BLANCO));
+// Miniatura de la foto (la cinta usa la chica y el escenario la grande): img/KEKES/pina.webp -> img/KEKES/min/pina.webp
+export function miniaturaDe(keke) {
+  return keke.foto ? keke.foto.replace("img/KEKES/", "img/KEKES/min/") : null;
 }
 
 // Precio a mostrar: "S/ 35,00" o, sin precio todavía, "Consultar precio".

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Kekes: la carta + el escenario, 5 mezclas</title>
+<style>
+@font-face { font-family: 'Baloo 2'; font-weight: 400 800; font-display: swap; src: url(../fonts/baloo-2.woff2) format('woff2'); }
+@font-face { font-family: 'Work Sans'; font-weight: 100 900; font-display: swap; src: url(../fonts/work-sans.woff2) format('woff2'); }
+@font-face { font-family: 'Space Mono'; font-weight: 400; font-display: swap; src: url(../fonts/space-mono-400.woff2) format('woff2'); }
+:root { --fondo: #FFFBF6; --rosado: #FCEDEA; --texto: #2E1B1B; --suave: #6B5253; --acento: #BE1E3C; --dorado: #E0A24A; --dorado-t: #8A5A0F; --borde: #F0DDD3; --campo: #957B78; --wsp: #0F7A3E;
+  --titulo: 'Baloo 2', system-ui, sans-serif; --cuerpo: 'Work Sans', system-ui, sans-serif; --mono: 'Space Mono', monospace; --curva: cubic-bezier(.3, .7, .2, 1); --sombra-s: 0 4px 14px rgba(120, 50, 30, .07); }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--texto); font: 16px/1.5 var(--cuerpo); }
+h1, h2, h3, h4, p, ul { margin: 0; padding: 0; } button { font: inherit; color: inherit; } ul { list-style: none; }
+.pagina { width: min(1120px, 100% - 32px); margin-inline: auto; padding: 32px 0 80px; }
+.pagina > header { display: grid; gap: 8px; margin-bottom: 18px; }
+.pagina > header h1 { font: 800 clamp(1.7rem, 5vw, 2.4rem)/1.1 var(--titulo); } .pagina > header p { color: var(--suave); max-width: 74ch; }
+.indice { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 34px; }
+.indice a { display: inline-block; padding: 8px 14px; border: 1px solid var(--borde); border-radius: 99px; background: #fff; color: var(--texto); text-decoration: none; font-weight: 600; font-size: .9rem; }
+.indice a:hover { border-color: var(--acento); color: var(--acento); }
+.alt { margin-bottom: 64px; scroll-margin-top: 16px; }
+.alt__cab { display: grid; gap: 4px; margin-bottom: 14px; }
+.alt__etq { font: 400 .75rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--dorado-t); }
+.alt__cab h2 { font: 800 1.5rem/1.15 var(--titulo); } .alt__cab p { color: var(--suave); max-width: 76ch; }
+.alt__nota { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 8px; font-size: .85rem; }
+.alt__nota span::before { content: "+ "; color: var(--wsp); font-weight: 700; } .alt__nota span.menos::before { content: "– "; color: var(--acento); }
+.marco { background: var(--rosado); border: 1px solid var(--borde); border-radius: 22px; padding: clamp(16px, 3vw, 30px); box-shadow: 0 10px 30px rgba(120, 50, 30, .12); }
+.marco > h3 { font: 800 clamp(1.5rem, 4vw, 2rem)/1.1 var(--titulo); margin-bottom: 18px; }
+.marco > h3 em { font-style: normal; color: var(--acento); font-size: 1.35em; line-height: 1; text-decoration: underline; text-decoration-color: var(--dorado); text-decoration-thickness: .085em; text-underline-offset: .1em; text-decoration-skip-ink: none; }
+
+/* La guía sutil */
+.rail { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font: 400 .72rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--suave); white-space: nowrap; }
+.rail::after { content: ""; flex: 1; height: 1px; background: #E3C9BD; }
+.rail-tabs { display: flex; gap: 14px; align-items: center; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; }
+.rail-tabs::after { content: ""; flex: 1; min-width: 20px; height: 1px; background: #E3C9BD; }
+.tab { background: none; border: 0; padding: 8px 2px; font: 400 .72rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--suave); cursor: pointer; white-space: nowrap; position: relative; }
+.tab[aria-selected="true"] { color: var(--acento); } .tab[aria-selected="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--acento); }
+
+/* Piezas comunes */
+.forma { position: relative; display: grid; place-items: center; background: color-mix(in srgb, var(--tono) 18%, #fff); overflow: hidden; }
+.forma::before { content: ""; width: 56%; height: 50%; border-radius: .7rem .7rem .4rem .4rem; background: linear-gradient(to bottom, color-mix(in srgb, var(--tono) 72%, #000) 0 30%, var(--tono) 30% 100%); box-shadow: 0 .7rem 1rem -.6rem rgba(46, 27, 27, .45); }
+.forma--foto { background: var(--foto) center / cover, var(--tono); } .forma--foto::before { display: none; }
+.nombre { font: 700 1rem/1.2 var(--titulo); } .matiz { font: italic 400 .8rem var(--cuerpo); color: var(--suave); }
+.btn { display: inline-flex; justify-content: center; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 99px; border: 1.5px solid var(--campo); background: #fff; font: 700 .92rem var(--titulo); text-decoration: none; color: var(--texto); transition: background-color .2s, border-color .2s, color .2s; }
+.btn--rojo { background: var(--acento); border-color: var(--acento); color: #fff; } .btn--rojo:hover { background: #9E1630; color: #fff; }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--texto); outline-offset: 2px; }
+.escenario { display: grid; background: #fff; border: 1px solid var(--borde); border-radius: 20px; overflow: hidden; box-shadow: var(--sombra-s); }
+.escenario .forma { aspect-ratio: 16 / 10; border-bottom: 5px solid var(--tono); }
+.escenario .info { display: grid; gap: 6px; padding: 16px 18px 20px; align-content: start; } .escenario .info .nombre { font-size: 1.9rem; }
+.escenario .acciones { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
+@media (prefers-reduced-motion: no-preference) { .anima { animation: entra .35s var(--curva) both; } @keyframes entra { from { opacity: .4; } to { opacity: 1; } } }
+
+/* La carta (opción 3): filas con punto de color */
+.item { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 2px 12px; width: 100%; padding: 10px 6px; border: 0; border-bottom: 1px solid var(--borde); background: none; text-align: left; cursor: pointer; border-radius: 8px; transition: background-color .2s; }
+.item:hover { background: rgba(255, 255, 255, .7); }
+.item .punto { width: .8rem; height: .8rem; border-radius: 50%; background: var(--tono); align-self: center; box-shadow: 0 0 0 3px color-mix(in srgb, var(--tono) 25%, transparent); }
+.item .matiz { grid-column: 2; margin-top: -2px; }
+.item[aria-pressed="true"] { background: #fff; box-shadow: inset 3px 0 0 var(--acento); }
+.item[aria-pressed="true"] .nombre { color: var(--acento); }
+.grupo + .grupo { margin-top: 18px; }
+
+/* ===== A · Carta a la izquierda, escenario fijo a la derecha ===== */
+.mA .caja { display: grid; gap: 22px; }
+.mA .items { display: grid; gap: 0 14px; grid-template-columns: 1fr 1fr; }
+@media (min-width: 860px) { .mA .caja { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); align-items: start; } .mA .escena { position: sticky; top: 16px; } }
+
+/* ===== B · Pestañas + carta de la familia + escenario ===== */
+.mB .caja { display: grid; gap: 18px; }
+@media (min-width: 860px) { .mB .caja { grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); align-items: start; } }
+
+/* ===== C · Escenario ancho arriba, carta de 4 columnas debajo ===== */
+.mC .escenario { grid-template-columns: 1fr; margin-bottom: 24px; }
+.mC .columnas { display: grid; gap: 20px 32px; }
+@media (min-width: 760px) { .mC .escenario { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); } .mC .escenario .forma { aspect-ratio: auto; min-height: 20rem; border-bottom: 0; border-right: 5px solid var(--tono); } .mC .columnas { grid-template-columns: .8fr 1.7fr 1fr .9fr; } .mC .dos { column-count: 2; column-gap: 24px; } .mC .dos .item { break-inside: avoid; } }
+
+/* ===== D · Carta con la fila que se abre en el lugar ===== */
+.mD .columnas { display: grid; gap: 20px 32px; }
+.mD .detalle { display: none; grid-column: 1 / -1; gap: 8px; padding: 6px 0 12px; }
+.mD .detalle .forma { aspect-ratio: 16 / 9; border-radius: 12px; }
+.mD .fila[data-abierta="true"] .detalle { display: grid; }
+.mD .fila { border-bottom: 1px solid var(--borde); } .mD .fila .item { border-bottom: 0; }
+@media (min-width: 760px) { .mD .columnas { grid-template-columns: .9fr 1.7fr 1fr 1fr; align-items: start; } .mD .dos { column-count: 2; column-gap: 24px; } .mD .dos .fila { break-inside: avoid; } }
+
+/* ===== E · Escenario con anterior/siguiente y una cinta con la guía en línea ===== */
+.mE .escenario { position: relative; }
+.mE .nav { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; font: 400 .72rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--suave); }
+.mE .nav button { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--campo); background: #fff; font-size: 1.2rem; cursor: pointer; }
+.mE .nav button:hover { border-color: var(--acento); color: var(--acento); }
+.mE .cinta { display: flex; align-items: center; gap: 8px; margin-top: 14px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
+.mE .cinta .rail { margin: 0 6px 0 14px; flex: none; } .mE .cinta .rail::after { width: 28px; flex: none; }
+.mE .cinta .rail:first-child { margin-left: 0; }
+.mE .chip { flex: none; width: 4.4rem; display: grid; gap: 3px; justify-items: center; padding: 6px 4px; background: #fff; border: 1.5px solid var(--borde); border-radius: 12px; cursor: pointer; }
+.mE .chip .forma { width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; } .mE .chip .forma::before { width: 62%; height: 44%; }
+.mE .chip .nombre { font-size: .68rem; text-align: center; line-height: 1.1; }
+.mE .chip[aria-pressed="true"] { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento); }
+@media (min-width: 760px) { .mE .escenario { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); } .mE .escenario .forma { aspect-ratio: auto; min-height: 19rem; border-bottom: 0; border-right: 5px solid var(--tono); } }
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header>
+    <span class="alt__etq">Propuestas para evaluar · no están en la web</span>
+    <h1>La carta + el escenario: 5 mezclas</h1>
+    <p>Todas unen lo mejor de la <strong>carta en columnas</strong> (orden, rapidez, sobriedad) con el <strong>escenario</strong> (el keke grande con foto o color) y conservan la guía sutil NOVIA · FRUTALES · CLÁSICOS · CHOCOLATE. Cambia cómo conviven los dos. Toca cualquier sabor.</p>
+  </header>
+  <ul class="indice"><li><a href="#x1">A · Carta + escenario fijo</a></li><li><a href="#x2">B · Pestañas + carta + escenario</a></li><li><a href="#x3">C · Escenario arriba, carta abajo</a></li><li><a href="#x4">D · Carta que se abre en su fila</a></li><li><a href="#x5">E · Escenario con cinta y flechas</a></li></ul>
+
+  <section class="alt" id="x1"><div class="alt__cab"><span class="alt__etq">Mezcla A</span><h2>Carta + escenario fijo</h2>
+    <p>La carta completa a la izquierda, con las cuatro familias a la vista, y a la derecha un escenario que se queda fijo mientras bajas por la lista y cambia al tocar un sabor. Todo a la vez: lo ves todo y miras de cerca.</p>
+    <div class="alt__nota"><span>Se ven los 20 nombres y el keke grande al mismo tiempo</span><span>Muy directa: un toque y listo</span><span class="menos">En celular el escenario baja debajo de la carta</span></div></div>
+    <div class="marco mA" id="mA"><h3>El <em>pecado</em> más vendido</h3></div></section>
+
+  <section class="alt" id="x2"><div class="alt__cab"><span class="alt__etq">Mezcla B</span><h2>Pestañas + carta + escenario</h2>
+    <p>La guía es una barra de pestañas; al elegir una familia aparece solo su carta (lista corta y cómoda) y el escenario del keke elegido. Menos información a la vez, más calma.</p>
+    <div class="alt__nota"><span>Muy ordenada: nunca hay más de 12 filas</span><span>La guía se vuelve navegación</span><span class="menos">Para ver todo hay que ir cambiando de familia</span></div></div>
+    <div class="marco mB" id="mB"><h3>El <em>pecado</em> más vendido</h3></div></section>
+
+  <section class="alt" id="x3"><div class="alt__cab"><span class="alt__etq">Mezcla C</span><h2>Escenario arriba, carta abajo</h2>
+    <p>Un escenario ancho abre la sección (el keke elegido, grande) y debajo la carta de cuatro columnas funciona como menú. Primero impresiona, luego se elige.</p>
+    <div class="alt__nota"><span>La más vistosa al entrar a la sección</span><span>La carta completa siempre queda a la vista</span><span class="menos">Ocupa más alto que las demás</span></div></div>
+    <div class="marco mC" id="mC"><h3>El <em>pecado</em> más vendido</h3></div></section>
+
+  <section class="alt" id="x4"><div class="alt__cab"><span class="alt__etq">Mezcla D</span><h2>Carta que se abre en su fila</h2>
+    <p>Solo la carta, con sus cuatro columnas. Al tocar un sabor, su fila se abre en el mismo lugar mostrando la foto o el keke y el botón de pedir; las demás se mantienen en orden. Sin escenario aparte.</p>
+    <div class="alt__nota"><span>La más compacta y liviana; ideal en celular</span><span>No hay que mirar a otro lado: todo ocurre en la fila</span><span class="menos">El keke se ve más pequeño que en las otras</span></div></div>
+    <div class="marco mD" id="mD"><h3>El <em>pecado</em> más vendido</h3></div></section>
+
+  <section class="alt" id="x5"><div class="alt__cab"><span class="alt__etq">Mezcla E</span><h2>Escenario con cinta y flechas</h2>
+    <p>Un escenario grande con flechas para recorrer los 20 sabores en orden, y debajo una cinta deslizable con miniaturas donde la guía aparece en línea (NOVIA · FRUTALES · CLÁSICOS · CHOCOLATE) separando los grupos. Como un reproductor.</p>
+    <div class="alt__nota"><span>Muy visual y táctil: se recorre con un dedo</span><span>La guía acompaña sin ocupar espacio</span><span class="menos">No se leen los 20 nombres de golpe</span></div></div>
+    <div class="marco mE" id="mE"><h3>El <em>pecado</em> más vendido</h3></div></section>
+</div>
+
+<script>
+const K = [
+  { id: "novia", n: "Novia", m: "edición especial", t: "#C9A227", f: "Novia" },
+  { id: "pina", n: "Piña", m: "soleada", t: "#F2C94C", f: "Frutales", foto: "../img/KEKES/pina.webp" },
+  { id: "durazno", n: "Durazno", m: "jugoso", t: "#F4A582", f: "Frutales", foto: "../img/KEKES/durazno.webp" },
+  { id: "arandano", n: "Arándano", m: "silvestre", t: "#5C5AA7", f: "Frutales", foto: "../img/KEKES/arandano.webp" },
+  { id: "platano", n: "Plátano", m: "maduro", t: "#D8B56A", f: "Frutales" },
+  { id: "maracuya", n: "Maracuyá", m: "vibrante", t: "#F59E0B", f: "Frutales" },
+  { id: "fresa", n: "Fresa con arándano", m: "frutos rojos", t: "#C2416C", f: "Frutales" },
+  { id: "naranja", n: "Naranja", m: "fresco", t: "#FB8C3A", f: "Frutales" },
+  { id: "coco", n: "Coco", m: "tropical", t: "#D8D0BE", f: "Frutales" },
+  { id: "higo", n: "Higo", m: "meloso", t: "#7A4B6B", f: "Frutales" },
+  { id: "manzana", n: "Manzana", m: "tierna", t: "#8DB255", f: "Frutales" },
+  { id: "limon", n: "Limón", m: "cítrico", t: "#E6E34A", f: "Frutales" },
+  { id: "lucuma", n: "Lúcuma", m: "andina", t: "#DDAA3A", f: "Frutales" },
+  { id: "zanahoria", n: "Zanahoria", m: "casero", t: "#D9742C", f: "Clásicos" },
+  { id: "marmoleado", n: "Marmoleado", m: "a dos tonos", t: "#8C6A55", f: "Clásicos" },
+  { id: "vainilla", n: "Vainilla", m: "clásico", t: "#E6D3A3", f: "Clásicos" },
+  { id: "frutos", n: "Frutos secos", m: "crocante", t: "#B88A5B", f: "Clásicos" },
+  { id: "chocolate", n: "Chocolate", m: "profundo", t: "#6B3E2A", f: "Chocolate" },
+  { id: "chispas", n: "Chispas de chocolate", m: "en cada bocado", t: "#4A2C23", f: "Chocolate" },
+  { id: "oreo", n: "Oreo", m: "cremoso", t: "#3B3B3B", f: "Chocolate" }
+];
+const FAM = ["Novia", "Frutales", "Clásicos", "Chocolate"];
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; };
+const enGrupo = (f) => K.filter((k) => k.f === f);
+const rotulo = (f) => (enGrupo(f).length > 1 ? `${f} · ${enGrupo(f).length}` : f);
+const wa = (k) => "https://wa.me/51980592747?text=" + encodeURIComponent("Hola, El Delicioso. Quisiera pedir el keke rectangular de " + k.n.toLowerCase() + ".");
+const pedir = (k) => { const a = el("a", "btn btn--rojo", "Pedir este"); a.href = wa(k); a.target = "_blank"; a.rel = "noopener"; return a; };
+const forma = (k) => { const f = el("div", "forma" + (k.foto ? " forma--foto" : "")); f.style.setProperty("--tono", k.t); if (k.foto) f.style.setProperty("--foto", `url("${k.foto}")`); f.setAttribute("aria-hidden", "true"); return f; };
+const escenario = (k) => { const e = el("div", "escenario anima"); e.style.setProperty("--tono", k.t); const i = el("div", "info"); const a = el("div", "acciones"); a.append(pedir(k), el("span", "matiz", "Consultar precio")); i.append(el("span", "alt__etq", k.f === "Novia" ? "Edición especial" : k.f), el("h4", "nombre", k.n), el("span", "matiz", k.m), a); e.append(forma(k), i); return e; };
+const item = (k, activo, alElegir) => { const b = el("button", "item"); b.type = "button"; b.style.setProperty("--tono", k.t); b.setAttribute("aria-pressed", String(k === activo)); b.append(el("span", "punto"), el("span", "nombre", k.n), el("span", "matiz", k.m)); b.onclick = () => alElegir(k); return b; };
+const inicial = K.find((k) => k.id === "pina");
+
+// A
+(() => { const c = document.getElementById("mA"); const caja = el("div", "caja"); const carta = el("div"); const ph = el("div", "escena"); caja.append(carta, ph); c.append(caja); let sel = inicial;
+  const pintar = () => { carta.replaceChildren(); FAM.forEach((f) => { const g = el("section", "grupo"); g.append(el("div", "rail", rotulo(f))); const l = el("div", "items"); enGrupo(f).forEach((k) => l.append(item(k, sel, (x) => { sel = x; pintar(); }))); g.append(l); carta.append(g); }); ph.replaceChildren(escenario(sel)); }; pintar(); })();
+
+// B
+(() => { const c = document.getElementById("mB"); const tabs = el("div", "rail-tabs"); tabs.setAttribute("role", "tablist"); const caja = el("div", "caja"); const carta = el("div"); const ph = el("div"); caja.append(carta, ph); c.append(tabs, caja); let fam = "Frutales", sel = inicial;
+  const pintar = () => { [...tabs.children].forEach((t) => t.setAttribute("aria-selected", String(t.dataset.f === fam))); carta.replaceChildren(); enGrupo(fam).forEach((k) => carta.append(item(k, sel, (x) => { sel = x; pintar(); }))); ph.replaceChildren(escenario(sel)); };
+  FAM.forEach((f) => { const t = el("button", "tab", rotulo(f)); t.type = "button"; t.dataset.f = f; t.setAttribute("role", "tab"); t.onclick = () => { fam = f; sel = enGrupo(f)[0]; pintar(); }; tabs.append(t); }); pintar(); })();
+
+// C
+(() => { const c = document.getElementById("mC"); const ph = el("div"); const col = el("div", "columnas"); c.append(ph, col); let sel = inicial;
+  const pintar = () => { col.replaceChildren(); FAM.forEach((f) => { const g = el("section", "grupo"); g.append(el("div", "rail", rotulo(f))); const l = el("div", f === "Frutales" ? "dos" : ""); enGrupo(f).forEach((k) => l.append(item(k, sel, (x) => { sel = x; pintar(); }))); g.append(l); col.append(g); }); ph.replaceChildren(escenario(sel)); }; pintar(); })();
+
+// D
+(() => { const c = document.getElementById("mD"); const col = el("div", "columnas"); c.append(col); let sel = inicial;
+  const pintar = () => { col.replaceChildren(); FAM.forEach((f) => { const g = el("section", "grupo"); g.append(el("div", "rail", rotulo(f))); const l = el("div", f === "Frutales" ? "dos" : ""); enGrupo(f).forEach((k) => { const fi = el("div", "fila"); fi.dataset.abierta = String(k === sel); fi.append(item(k, sel, (x) => { sel = x; pintar(); }));
+    const d = el("div", "detalle anima"); d.style.setProperty("--tono", k.t); const ac = el("div", "acciones"); ac.style.cssText = "display:flex;gap:10px;align-items:center;flex-wrap:wrap"; ac.append(pedir(k), el("span", "matiz", "Consultar precio")); d.append(forma(k), ac); fi.append(d); l.append(fi); }); g.append(l); col.append(g); }); }; pintar(); })();
+
+// E
+(() => { const c = document.getElementById("mE"); const nav = el("div", "nav"); const ph = el("div"); const cinta = el("div", "cinta"); const ant = el("button", "", "‹"), sig = el("button", "", "›"); ant.setAttribute("aria-label", "Anterior"); sig.setAttribute("aria-label", "Siguiente"); ant.type = sig.type = "button"; const cont = el("span", ""); nav.append(ant, cont, sig); c.append(nav, ph, cinta);
+  let i = K.indexOf(inicial); const chips = [];
+  const pintar = () => { const k = K[i]; cont.textContent = `${rotulo(k.f)} · ${i + 1} de ${K.length}`; ph.replaceChildren(escenario(k)); chips.forEach(({ b, k: x }) => b.setAttribute("aria-pressed", String(x === k))); chips[i].b.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" }); };
+  FAM.forEach((f) => { cinta.append(el("div", "rail", rotulo(f))); enGrupo(f).forEach((k) => { const b = el("button", "chip"); b.type = "button"; b.style.setProperty("--tono", k.t); b.append(forma(k), el("span", "nombre", k.n)); b.onclick = () => { i = K.indexOf(k); pintar(); }; chips.push({ b, k }); cinta.append(b); }); });
+  ant.onclick = () => { i = (i - 1 + K.length) % K.length; pintar(); }; sig.onclick = () => { i = (i + 1) % K.length; pintar(); }; pintar(); })();
+</script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Muestrario de kekes: 4 ajustes</title>
+<style>
+@font-face { font-family: 'Baloo 2'; font-weight: 400 800; font-display: swap; src: url(../fonts/baloo-2.woff2) format('woff2'); }
+@font-face { font-family: 'Work Sans'; font-weight: 100 900; font-display: swap; src: url(../fonts/work-sans.woff2) format('woff2'); }
+@font-face { font-family: 'Space Mono'; font-weight: 400; font-display: swap; src: url(../fonts/space-mono-400.woff2) format('woff2'); }
+:root { --fondo: #FFFBF6; --rosado: #FCEDEA; --texto: #2E1B1B; --suave: #6B5253; --acento: #BE1E3C; --dorado: #E0A24A; --dorado-t: #8A5A0F; --borde: #F0DDD3; --wsp: #0F7A3E; --choco: #6B3E2A;
+  --titulo: 'Baloo 2', system-ui, sans-serif; --cuerpo: 'Work Sans', system-ui, sans-serif; --mono: 'Space Mono', monospace; --curva: cubic-bezier(.3, .7, .2, 1); }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--texto); font: 16px/1.5 var(--cuerpo); }
+h1, h2, h3, p, ul { margin: 0; padding: 0; }
+button { font: inherit; color: inherit; }
+.pagina { width: min(1120px, 100% - 32px); margin-inline: auto; padding: 32px 0 80px; }
+.pagina > header { display: grid; gap: 8px; margin-bottom: 18px; }
+.pagina > header h1 { font: 800 clamp(1.7rem, 5vw, 2.4rem)/1.1 var(--titulo); }
+.pagina > header p { color: var(--suave); max-width: 70ch; }
+.diag { background: var(--rosado); border-radius: 16px; padding: 14px 18px; margin: 10px 0 18px; display: grid; gap: 4px; }
+.diag h2 { font: 700 1.05rem var(--titulo); } .diag ul { padding-left: 1.1rem; color: var(--suave); font-size: .93rem; }
+.indice { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 34px; list-style: none; }
+.indice a { display: inline-block; padding: 8px 14px; border: 1px solid var(--borde); border-radius: 99px; background: #fff; color: var(--texto); text-decoration: none; font-weight: 600; font-size: .9rem; }
+.indice a:hover { border-color: var(--acento); color: var(--acento); }
+.alt { margin-bottom: 64px; scroll-margin-top: 16px; }
+.alt__cab { display: grid; gap: 4px; margin-bottom: 14px; }
+.alt__etq { font: 400 .75rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--dorado-t); }
+.alt__cab h2 { font: 800 1.5rem/1.15 var(--titulo); } .alt__cab p { color: var(--suave); max-width: 74ch; }
+.alt__nota { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 8px; font-size: .85rem; }
+.alt__nota span::before { content: "+ "; color: var(--wsp); font-weight: 700; } .alt__nota span.menos::before { content: "– "; color: var(--acento); }
+.marco { background: var(--rosado); border: 1px solid var(--borde); border-radius: 22px; padding: clamp(16px, 3vw, 30px); box-shadow: 0 10px 30px rgba(120, 50, 30, .12); }
+.marco h3 { font: 800 clamp(1.5rem, 4vw, 2rem)/1.1 var(--titulo); margin-bottom: 16px; }
+.marco h3 em { font-style: normal; color: var(--acento); font-size: 1.35em; line-height: 1; text-decoration: underline; text-decoration-color: var(--dorado); text-decoration-thickness: .085em; text-underline-offset: .1em; text-decoration-skip-ink: none; }
+
+/* ----- Base común del muestrario (igual al de la web) ----- */
+.tiras { display: flex; flex-direction: column; gap: 8px; }
+.tira { display: flex; align-items: center; gap: 14px; min-height: 3.2rem; padding: 0 16px; border-radius: 14px; background: var(--fondo-tira, var(--tono)); color: var(--color-tira, #fff); cursor: pointer; overflow: hidden; position: relative; }
+.tira--clara { --color-tira: var(--texto); }
+.tira__nombre { background: none; border: 0; padding: 8px 0; font: 700 1rem var(--titulo); text-align: left; cursor: pointer; color: inherit; }
+.tira__nombre small { display: block; font: italic 400 .8rem var(--cuerpo); opacity: .9; }
+.tira__detalle { display: none; gap: 8px; padding: 12px 0; font-size: .9rem; }
+.btn { display: inline-flex; justify-content: center; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 99px; border: 1.5px solid #957B78; background: #fff; font: 700 .95rem var(--titulo); text-decoration: none; color: var(--texto); justify-self: start; }
+.tira.abierta { flex-direction: column; align-items: flex-start; justify-content: center; min-height: 11rem; padding: 16px; }
+.tira.abierta .tira__detalle { display: grid; }
+.tira--foto.abierta { background: linear-gradient(to top, rgba(46,27,27,.85), rgba(46,27,27,.15) 65%), linear-gradient(rgba(46,27,27,.3), rgba(46,27,27,.3)), var(--foto) center / cover, var(--tono); color: #fff; min-height: 15rem; }
+@media (min-width: 860px) {
+  .tiras { flex-direction: row; height: 26rem; }
+  .tira { flex: 1 1 0; flex-direction: column; align-items: center; justify-content: flex-end; min-width: 0; min-height: 0; padding: 16px 4px; }
+  .tira__nombre { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+  .tira__nombre small { display: none; }
+  .tira.abierta { flex: 6 1 0; align-items: flex-start; justify-content: flex-end; padding: 22px; min-height: 0; }
+  .tira.abierta .tira__nombre { writing-mode: horizontal-tb; transform: none; font-size: 1.7rem; white-space: normal; }
+  .tira.abierta .tira__nombre small { display: block; font-size: .9rem; }
+  .tira--foto.abierta { min-height: 0; }
+}
+@media (prefers-reduced-motion: no-preference) { .tira { transition: flex-grow .45s var(--curva), min-height .45s var(--curva); } }
+
+/* ----- 1 · Armonizado: colores atenuados a una misma familia suave, ordenados por tono ----- */
+.v1 .tira { --fondo-tira: color-mix(in srgb, var(--tono) 58%, #F6E7DC); --color-tira: var(--texto); }
+.v1 .tira--foto.abierta { color: #fff; }
+
+/* ----- 2 · Neutro con acento: franjas crema y el color solo como una banda ----- */
+.v2 .tira { --fondo-tira: #FFFFFF; --color-tira: var(--texto); border: 1px solid #E3C9BD; }
+.v2 .tira::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 7px; background: var(--tono); }
+@media (max-width: 859px) { .v2 .tira::after { inset: 0 auto 0 0; width: 7px; height: auto; } }
+.v2 .tira.abierta:not(.tira--foto) { --fondo-tira: color-mix(in srgb, var(--tono) 20%, #fff); }
+.v2 .tira--foto.abierta { border-color: transparent; }
+
+/* ----- 3 · Por familias: grupos con rótulo y colores atenuados ----- */
+.v3 .grupos { display: flex; flex-direction: column; gap: 16px; }
+.v3 .grupo { display: grid; gap: 6px; }
+.v3 .grupo__rotulo { white-space: nowrap; overflow: hidden; font: 400 .72rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--suave); display: flex; align-items: center; gap: 8px; }
+.v3 .grupo__rotulo::after { content: ""; flex: 1; height: 1px; background: var(--borde); }
+.v3 .tira { --fondo-tira: color-mix(in srgb, var(--tono) 70%, #F6E7DC); --color-tira: var(--texto); }
+.v3 .tiras { height: auto; }
+@media (min-width: 860px) { .v3 .grupos { flex-direction: row; align-items: stretch; } .v3 .grupo { grid-template-rows: auto 1fr; } .v3 .grupo { flex-basis: 0; min-width: 0; } .v3 .tiras { height: 24rem; } .v3 .grupo:not(.abierto) .tira__nombre { font-size: .85rem; } }
+
+/* ----- 4 · Pastelería oscura: franjas en chocolate y el sabor como punto de color ----- */
+.v4 .tira { --fondo-tira: var(--choco); --color-tira: #FFF4EA; }
+.v4 .tira:not(.tira--foto) { background-image: linear-gradient(rgba(255,255,255,.04), rgba(0,0,0,.12)); }
+.v4 .tira::after { content: ""; width: .8rem; height: .8rem; border-radius: 50%; background: var(--tono); box-shadow: 0 0 0 3px rgba(255, 244, 234, .25); }
+@media (min-width: 860px) { .v4 .tira::after { position: absolute; top: 16px; left: 50%; translate: -50% 0; } .v4 .tira.abierta::after { left: 22px; translate: 0 0; top: 24px; } }
+@media (max-width: 859px) { .v4 .tira::after { margin-left: auto; } .v4 .tira.abierta::after { position: absolute; top: 18px; right: 18px; margin: 0; } }
+.v4 .tira.abierta:not(.tira--foto) { --fondo-tira: #2E1B1B; }
+.v4 .tira--foto.abierta { color: #fff; }
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header>
+    <span class="alt__etq">Propuestas para evaluar · no están en la web</span>
+    <h1>Muestrario de kekes: 4 ajustes para darle solidez</h1>
+    <p>Mismas 20 versiones y misma interacción (toca una franja y se abre). Cambia solo cómo se reparte el color. Piña, Durazno y Arándano ya llevan su foto al abrirse.</p>
+  </header>
+  <div class="diag"><h2>Por qué hoy se siente poco sólido</h2><ul>
+    <li>Veinte colores saturados distintos, uno al lado del otro, compiten entre sí: no hay una familia que ordene la mirada.</li>
+    <li>Los colores no siguen ningún orden (por tono, por sabor o por tipo), así que la fila parece al azar.</li>
+    <li>El color mismo del sabor es lo único que muestra cada franja, y pesa más que la marca (crema, chocolate, rojo y dorado).</li>
+  </ul></div>
+  <ul class="indice">
+    <li><a href="#a1">1 · Armonizado</a></li><li><a href="#a2">2 · Neutro con acento</a></li><li><a href="#a3">3 · Por familias</a></li><li><a href="#a4">4 · Pastelería oscura</a></li>
+  </ul>
+
+  <section class="alt" id="a1"><div class="alt__cab"><span class="alt__etq">Ajuste 1</span><h2>Armonizado</h2>
+    <p>Se conserva el color de cada sabor, pero atenuado hacia una misma base cálida (todos con la misma luminosidad) y ordenado por tono, del dorado al morado. La fila se lee como un degradado intencional, no como un confeti.</p>
+    <div class="alt__nota"><span>Cambia muy poco: mantiene la identidad de cada sabor</span><span>Texto siempre oscuro: legibilidad pareja</span><span class="menos">Sigue siendo una fila de muchos colores</span></div></div>
+    <div class="marco v1"><h3>El <em>pecado</em> más vendido</h3><div class="tiras" data-orden="tono"></div></div></section>
+
+  <section class="alt" id="a2"><div class="alt__cab"><span class="alt__etq">Ajuste 2</span><h2>Neutro con acento</h2>
+    <p>Las franjas son crema, como la marca; el color del sabor es solo una banda en el borde. Al abrirse, la franja se tiñe suavemente con su color. Calma total y el color aparece cuando importa.</p>
+    <div class="alt__nota"><span>La más sólida y limpia; encaja con la web</span><span>El color guía sin gritar</span><span class="menos">Menos impacto visual a primera vista</span></div></div>
+    <div class="marco v2"><h3>El <em>pecado</em> más vendido</h3><div class="tiras" data-orden="lista"></div></div></section>
+
+  <section class="alt" id="a3"><div class="alt__cab"><span class="alt__etq">Ajuste 3</span><h2>Por familias</h2>
+    <p>Las franjas se agrupan en Novia, Frutales, Clásicos y Chocolate, cada grupo con su rótulo, y los colores se atenúan. En escritorio, al tocar una franja el grupo entero se ensancha; en celular los grupos se apilan.</p>
+    <div class="alt__nota"><span>Ordena 20 sabores en 4 bloques fáciles de leer</span><span>Ayuda a decidir: primero el gusto, luego la versión</span><span class="menos">Es la que más cambia la estructura</span></div></div>
+    <div class="marco v3"><h3>El <em>pecado</em> más vendido</h3><div class="grupos"></div></div></section>
+
+  <section class="alt" id="a4"><div class="alt__cab"><span class="alt__etq">Ajuste 4</span><h2>Pastelería oscura</h2>
+    <p>Todas las franjas en chocolate (el color de la marca) y el sabor se indica con un punto de color. Una sola tonalidad base da solidez y elegancia; al abrir una franja, se ve su foto o un fondo cacao profundo.</p>
+    <div class="alt__nota"><span>Muy sobria y premium; una sola paleta</span><span>Las fotos resaltan sobre el cacao</span><span class="menos">Se pierde el color del sabor como protagonista</span></div></div>
+    <div class="marco v4"><h3>El <em>pecado</em> más vendido</h3><div class="tiras" data-orden="lista"></div></div></section>
+</div>
+
+<script>
+const K = [
+  { id: "novia", n: "Novia", m: "edición especial", t: "#C9A227", f: "Novia" },
+  { id: "pina", n: "Piña", m: "soleada", t: "#F2C94C", f: "Frutales", foto: "../img/KEKES/pina.webp" },
+  { id: "durazno", n: "Durazno", m: "jugoso", t: "#F4A582", f: "Frutales", foto: "../img/KEKES/durazno.webp" },
+  { id: "arandano", n: "Arándano", m: "silvestre", t: "#5C5AA7", f: "Frutales", foto: "../img/KEKES/arandano.webp" },
+  { id: "platano", n: "Plátano", m: "maduro", t: "#D8B56A", f: "Frutales" },
+  { id: "maracuya", n: "Maracuyá", m: "vibrante", t: "#F59E0B", f: "Frutales" },
+  { id: "fresa", n: "Fresa con arándano", m: "frutos rojos", t: "#C2416C", f: "Frutales" },
+  { id: "zanahoria", n: "Zanahoria", m: "casero", t: "#D9742C", f: "Clásicos" },
+  { id: "naranja", n: "Naranja", m: "fresco", t: "#FB8C3A", f: "Frutales" },
+  { id: "chocolate", n: "Chocolate", m: "profundo", t: "#6B3E2A", f: "Chocolate" },
+  { id: "marmoleado", n: "Marmoleado", m: "a dos tonos", t: "#8C6A55", f: "Clásicos" },
+  { id: "chispas", n: "Chispas de chocolate", m: "en cada bocado", t: "#4A2C23", f: "Chocolate" },
+  { id: "vainilla", n: "Vainilla", m: "clásico", t: "#E6D3A3", f: "Clásicos" },
+  { id: "oreo", n: "Oreo", m: "cremoso", t: "#3B3B3B", f: "Chocolate" },
+  { id: "coco", n: "Coco", m: "tropical", t: "#D8D0BE", f: "Frutales" },
+  { id: "frutos", n: "Frutos secos", m: "crocante", t: "#B88A5B", f: "Clásicos" },
+  { id: "higo", n: "Higo", m: "meloso", t: "#7A4B6B", f: "Frutales" },
+  { id: "manzana", n: "Manzana", m: "tierna", t: "#8DB255", f: "Frutales" },
+  { id: "limon", n: "Limón", m: "cítrico", t: "#E6E34A", f: "Frutales" },
+  { id: "lucuma", n: "Lúcuma", m: "andina", t: "#DDAA3A", f: "Frutales" }
+];
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x) e.textContent = x; return e; };
+const claro = (h) => { const n = parseInt(h.slice(1), 16); return 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 150; };
+const tono = (h) => { const n = parseInt(h.slice(1), 16); const r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b); if (mx === mn) return 360; const d = mx - mn; let hh = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return (hh * 60 + 360) % 360; };
+function tira(k) { const t = el("div", "tira" + (claro(k.t) ? " tira--clara" : "") + (k.foto ? " tira--foto" : "")); t.dataset.id = k.id; t.style.setProperty("--tono", k.t); if (k.foto) t.style.setProperty("--foto", `url("${k.foto}")`);
+  const b = el("button", "tira__nombre", k.n); b.type = "button"; b.append(el("small", "", k.m));
+  const d = el("div", "tira__detalle"); const a = el("a", "btn", "Pedir este"); a.href = "https://wa.me/51980592747?text=" + encodeURIComponent("Hola, El Delicioso. Quisiera pedir el keke rectangular de " + k.n.toLowerCase() + "."); a.target = "_blank"; a.rel = "noopener";
+  d.append(el("span", "", "Consultar precio"), a); t.append(b, d); return t; }
+function activar(tiras, extra) { const abrir = (x) => { tiras.forEach((t) => t.classList.toggle("abierta", t === x)); if (extra) extra(x); };
+  tiras.forEach((t) => t.addEventListener("click", (e) => { if (!e.target.closest("a")) abrir(t); })); return abrir; }
+// 1 y 2 y 4: una fila
+document.querySelectorAll('.tiras[data-orden]').forEach((cont) => { let lista = K.slice();
+  if (cont.dataset.orden === "tono") { const [nov, ...resto] = lista; lista = [nov, ...resto.sort((a, b) => tono(a.t) - tono(b.t))]; }
+  const tiras = lista.map(tira); cont.append(...tiras); activar(tiras)(tiras.find((t) => t.dataset.id === "pina")); });
+// 3: por familias
+(() => { const cont = document.querySelector(".v3 .grupos"); const todas = []; const grupos = [];
+  ["Novia", "Frutales", "Clásicos", "Chocolate"].forEach((nombre) => { const lista = K.filter((k) => k.f === nombre); const g = el("div", "grupo"); g.style.flexGrow = lista.length; g.append(el("div", "grupo__rotulo", lista.length > 1 ? nombre + " · " + lista.length : nombre));
+    const tiras = el("div", "tiras"); const ts = lista.map(tira); tiras.append(...ts); g.append(tiras); cont.append(g); todas.push(...ts); grupos.push({ g, ts }); });
+  const abrir = activar(todas, (x) => grupos.forEach(({ g, ts }) => { const a = ts.includes(x); g.classList.toggle("abierto", a); g.style.flexGrow = ts.length + (a ? 6 : 0); }));
+  abrir(todas.find((t) => t.dataset.id === "pina")); })();
+</script>
+</body>
+</html>

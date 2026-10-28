@@ -1,4 +1,4 @@
-// Convierte las fotos de fotos-kekes/ en WebP liviano dentro de img/KEKES/ y las conecta con src/kekes.js (campo "foto").
+// Convierte las fotos de fotos-kekes/ en WebP liviano dentro de img/KEKES/ (y una miniatura cuadrada en img/KEKES/min/) y las conecta con src/kekes.js (campo "foto").
 // Uso:  npm run fotos             procesa lo que haya y termina
 //       npm run fotos -- --vigilar espera fotos nuevas, las procesa en lote y termina (así quien lo lanzó puede publicar)
 import fs from "node:fs";
@@ -8,9 +8,11 @@ import { raiz } from "./auditoria.js";
 
 const CARPETA = path.join(raiz, "fotos-kekes");
 const SALIDA = path.join(raiz, "img", "KEKES");
+const SALIDA_MIN = path.join(SALIDA, "min");
 const RUTA_DATOS = path.join(raiz, "src", "kekes.js");
 const EXTENSIONES = /\.(jpe?g|png|webp|avif|tiff?)$/i;
 const LADO_MAXIMO = 1400;
+const LADO_MINIATURA = 240;
 
 // Sin tildes, en minúscula y con guiones: "Fresa con Arándano.JPG" -> "fresa-con-arandano".
 export function normalizarNombre(nombreArchivo) {
@@ -49,7 +51,7 @@ async function cargarKekes() {
 export async function procesar() {
   const { default: sharp } = await import("sharp");
   const kekes = await cargarKekes();
-  fs.mkdirSync(SALIDA, { recursive: true });
+  fs.mkdirSync(SALIDA_MIN, { recursive: true });
   const archivos = fs.readdirSync(CARPETA).filter((f) => EXTENSIONES.test(f))
     .map((f) => ({ f, t: fs.statSync(path.join(CARPETA, f)).mtimeMs }))
     .sort((a, b) => a.t - b.t); // la más reciente va al final: si se repite un sabor, gana
@@ -59,12 +61,14 @@ export async function procesar() {
     const keke = buscarKeke(f, kekes);
     if (!keke) { resultado.sinCoincidencia.push(f); continue; }
     const destino = path.join(SALIDA, `${keke.id}.webp`);
-    if (fs.existsSync(destino) && fs.statSync(destino).mtimeMs >= t && keke.foto) { resultado.sinCambios++; continue; }
+    const miniatura = path.join(SALIDA_MIN, `${keke.id}.webp`);
+    if (fs.existsSync(destino) && fs.existsSync(miniatura) && fs.statSync(destino).mtimeMs >= t && keke.foto) { resultado.sinCambios++; continue; }
     await sharp(path.join(CARPETA, f))
       .rotate()
       .resize({ width: LADO_MAXIMO, height: LADO_MAXIMO, fit: "inside", withoutEnlargement: true })
       .webp({ quality: 80, effort: 5 })
       .toFile(destino);
+    await sharp(path.join(CARPETA, f)).rotate().resize({ width: LADO_MINIATURA, height: LADO_MINIATURA, fit: "cover" }).webp({ quality: 75, effort: 5 }).toFile(miniatura);
     datos = conFoto(datos, keke.id, `img/KEKES/${keke.id}.webp`);
     resultado.nuevas.push(`${keke.nombre} (${Math.round(fs.statSync(destino).size / 1024)} KB)`);
   }

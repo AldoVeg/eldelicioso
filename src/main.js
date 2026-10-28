@@ -571,8 +571,8 @@ function iniciar() {
   prepararSellos();
   combos = iniciarCombos({ catalogo, guardarLineas, mostrarListaTrasAgregar, dibujarLista, rebotarContador, marcarAgregado, actualizarSello });
   iniciarPlanificador({ aplicarFiltro, dibujarLista });
-  iniciarKekes();
   aplicarOrigenAEnlaces();
+  iniciarKekes(origenVisita); // después de aplicarOrigenAEnlaces: sus enlaces ya llevan el origen en el mensaje
   escribirCantidadSabores();
   actualizarMinimoFecha();
   dibujarLista();

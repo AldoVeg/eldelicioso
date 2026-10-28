@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Kekes: 5 bases con la guía de familias</title>
+<style>
+@font-face { font-family: 'Baloo 2'; font-weight: 400 800; font-display: swap; src: url(../fonts/baloo-2.woff2) format('woff2'); }
+@font-face { font-family: 'Work Sans'; font-weight: 100 900; font-display: swap; src: url(../fonts/work-sans.woff2) format('woff2'); }
+@font-face { font-family: 'Space Mono'; font-weight: 400; font-display: swap; src: url(../fonts/space-mono-400.woff2) format('woff2'); }
+:root { --fondo: #FFFBF6; --rosado: #FCEDEA; --texto: #2E1B1B; --suave: #6B5253; --acento: #BE1E3C; --dorado: #E0A24A; --dorado-t: #8A5A0F; --borde: #F0DDD3; --campo: #957B78; --wsp: #0F7A3E;
+  --titulo: 'Baloo 2', system-ui, sans-serif; --cuerpo: 'Work Sans', system-ui, sans-serif; --mono: 'Space Mono', monospace; --curva: cubic-bezier(.3, .7, .2, 1); --sombra-s: 0 4px 14px rgba(120, 50, 30, .07); }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--texto); font: 16px/1.5 var(--cuerpo); }
+h1, h2, h3, h4, p, ul { margin: 0; padding: 0; } button { font: inherit; color: inherit; } ul { list-style: none; }
+.pagina { width: min(1120px, 100% - 32px); margin-inline: auto; padding: 32px 0 80px; }
+.pagina > header { display: grid; gap: 8px; margin-bottom: 18px; }
+.pagina > header h1 { font: 800 clamp(1.7rem, 5vw, 2.4rem)/1.1 var(--titulo); } .pagina > header p { color: var(--suave); max-width: 72ch; }
+.indice { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 34px; }
+.indice a { display: inline-block; padding: 8px 14px; border: 1px solid var(--borde); border-radius: 99px; background: #fff; color: var(--texto); text-decoration: none; font-weight: 600; font-size: .9rem; }
+.indice a:hover { border-color: var(--acento); color: var(--acento); }
+.alt { margin-bottom: 64px; scroll-margin-top: 16px; }
+.alt__cab { display: grid; gap: 4px; margin-bottom: 14px; }
+.alt__etq { font: 400 .75rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--dorado-t); }
+.alt__cab h2 { font: 800 1.5rem/1.15 var(--titulo); } .alt__cab p { color: var(--suave); max-width: 74ch; }
+.alt__nota { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 8px; font-size: .85rem; }
+.alt__nota span::before { content: "+ "; color: var(--wsp); font-weight: 700; } .alt__nota span.menos::before { content: "– "; color: var(--acento); }
+.marco { background: var(--rosado); border: 1px solid var(--borde); border-radius: 22px; padding: clamp(16px, 3vw, 30px); box-shadow: 0 10px 30px rgba(120, 50, 30, .12); }
+.marco > h3 { font: 800 clamp(1.5rem, 4vw, 2rem)/1.1 var(--titulo); margin-bottom: 18px; }
+.marco > h3 em { font-style: normal; color: var(--acento); font-size: 1.35em; line-height: 1; text-decoration: underline; text-decoration-color: var(--dorado); text-decoration-thickness: .085em; text-underline-offset: .1em; text-decoration-skip-ink: none; }
+
+/* ===== La guía sutil (la del Ajuste 3): rótulo en mono con una línea fina ===== */
+.rail { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font: 400 .72rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--suave); white-space: nowrap; }
+.rail::after { content: ""; flex: 1; height: 1px; background: #E3C9BD; }
+.grupo + .grupo { margin-top: 22px; }
+
+/* ===== Piezas comunes ===== */
+.forma { position: relative; display: grid; place-items: center; background: color-mix(in srgb, var(--tono) 18%, #fff); overflow: hidden; }
+.forma::before { content: ""; width: 60%; height: 46%; border-radius: .6rem .6rem .35rem .35rem; background: linear-gradient(to bottom, color-mix(in srgb, var(--tono) 72%, #000) 0 30%, var(--tono) 30% 100%); box-shadow: 0 .6rem 1rem -.6rem rgba(46, 27, 27, .45); }
+.forma--foto { background: var(--foto) center / cover, var(--tono); } .forma--foto::before { display: none; }
+.nombre { font: 700 1rem/1.2 var(--titulo); } .matiz { font: italic 400 .8rem var(--cuerpo); color: var(--suave); }
+.btn { display: inline-flex; justify-content: center; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 99px; border: 1.5px solid var(--campo); background: #fff; font: 700 .88rem var(--titulo); text-decoration: none; color: var(--texto); transition: background-color .2s, border-color .2s, color .2s; }
+.btn:hover { background: var(--rosado); border-color: var(--acento); color: var(--acento); }
+.btn--rojo { background: var(--acento); border-color: var(--acento); color: #fff; } .btn--rojo:hover { background: #9E1630; color: #fff; }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--texto); outline-offset: 2px; }
+
+/* ===== 1 · Mosaico de fichas por grupo ===== */
+.m1 .rejilla { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr)); }
+.m1 .ficha { display: grid; background: #fff; border: 1px solid var(--borde); border-radius: 14px; overflow: hidden; box-shadow: var(--sombra-s); }
+.m1 .ficha .forma { aspect-ratio: 1 / 1; border-bottom: 3px solid var(--tono); }
+.m1 .ficha .cuerpo { display: grid; gap: 2px; padding: 10px 12px 12px; align-content: start; }
+.m1 .ficha .btn { margin-top: 6px; min-height: 34px; font-size: .82rem; }
+
+/* ===== 2 · Una fila deslizable por grupo ===== */
+.m2 .fila { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 2px 2px 12px; scrollbar-width: thin; }
+.m2 .ficha { flex: 0 0 11.5rem; scroll-snap-align: start; display: grid; background: #fff; border: 1px solid var(--borde); border-radius: 16px; overflow: hidden; box-shadow: var(--sombra-s); }
+.m2 .ficha .forma { aspect-ratio: 4 / 3; border-bottom: 4px solid var(--tono); }
+.m2 .ficha .cuerpo { display: grid; gap: 2px; padding: 12px 14px 14px; }
+.m2 .ficha .btn { margin-top: 6px; }
+.m2 .fila::after { content: ""; flex: 0 0 1px; }
+
+/* ===== 3 · Carta en columnas ===== */
+.m3 .columnas { display: grid; gap: 26px 36px; }
+.m3 .grupo + .grupo { margin-top: 0; }
+.m3 .item { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 4px 12px; padding: 11px 2px; border-bottom: 1px solid var(--borde); text-decoration: none; color: inherit; transition: background-color .2s; }
+.m3 .item:hover { background: rgba(255, 255, 255, .7); }
+.m3 .item .punto { width: .8rem; height: .8rem; border-radius: 50%; background: var(--tono); align-self: center; box-shadow: 0 0 0 3px color-mix(in srgb, var(--tono) 25%, transparent); }
+.m3 .item .matiz { grid-column: 2; margin-top: -2px; }
+.m3 .doble { column-count: 1; }
+@media (min-width: 760px) { .m3 .columnas { grid-template-columns: .8fr 1.7fr 1fr .9fr; } .m3 .doble { column-count: 2; column-gap: 28px; } .m3 .doble .item { break-inside: avoid; } }
+
+/* ===== 4 · Bento: una ficha grande por grupo y las demás pequeñas ===== */
+.m4 .bento { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr)); grid-auto-flow: dense; }
+.m4 .t { position: relative; display: grid; align-content: end; gap: 2px; min-height: 8.5rem; padding: 12px; border-radius: 16px; overflow: hidden; background: color-mix(in srgb, var(--tono) 22%, #fff); border: 1px solid var(--borde); text-decoration: none; color: var(--texto); transition: transform .25s var(--curva); }
+.m4 .t:hover { transform: translateY(-3px); }
+.m4 .t::before { content: ""; position: absolute; left: 12px; top: 12px; width: .9rem; height: .9rem; border-radius: 50%; background: var(--tono); box-shadow: 0 0 0 3px rgba(255, 255, 255, .7); }
+.m4 .t--grande { grid-column: span 2; grid-row: span 2; min-height: 17.5rem; }
+.m4 .t--foto { background: linear-gradient(to top, rgba(46,27,27,.85), rgba(46,27,27,.1) 65%), var(--foto) center / cover, var(--tono); color: #fff; }
+.m4 .t--grande .nombre { font-size: 1.5rem; } .m4 .t--foto .matiz { color: rgba(255,255,255,.9); }
+.m4 .t--grande .btn { justify-self: start; margin-top: 8px; }
+
+/* ===== 5 · La guía como selector + escenario ===== */
+.m5 .rail-tabs { display: flex; gap: 14px; align-items: center; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; }
+.m5 .rail-tabs::after { content: ""; flex: 1; min-width: 20px; height: 1px; background: #E3C9BD; }
+.m5 .tab { background: none; border: 0; padding: 8px 2px; font: 400 .72rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--suave); cursor: pointer; white-space: nowrap; position: relative; }
+.m5 .tab[aria-selected="true"] { color: var(--acento); }
+.m5 .tab[aria-selected="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--acento); }
+.m5 .escena { display: grid; gap: 16px; }
+.m5 .escenario { display: grid; background: #fff; border: 1px solid var(--borde); border-radius: 20px; overflow: hidden; box-shadow: var(--sombra-s); }
+.m5 .escenario .forma { aspect-ratio: 16 / 10; border-bottom: 5px solid var(--tono); }
+.m5 .escenario .forma::before { width: 54%; height: 54%; }
+.m5 .info { display: grid; gap: 6px; padding: 16px 18px 20px; align-content: start; } .m5 .info .nombre { font-size: 1.9rem; }
+.m5 .info .acciones { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
+.m5 .miniaturas { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 7.2rem), 1fr)); align-content: start; }
+.m5 .mini { display: grid; gap: 4px; padding: 6px; background: #fff; border: 1.5px solid var(--borde); border-radius: 12px; cursor: pointer; text-align: left; }
+.m5 .mini .forma { aspect-ratio: 3 / 2; border-radius: 8px; } .m5 .mini .nombre { font-size: .82rem; padding: 0 2px 2px; }
+.m5 .mini[aria-pressed="true"] { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento); }
+@media (min-width: 860px) { .m5 .escena { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; } }
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header>
+    <span class="alt__etq">Propuestas para evaluar · no están en la web</span>
+    <h1>Kekes: 5 bases distintas con la guía de familias</h1>
+    <p>Todas conservan la guía sutil del Ajuste 3 (NOVIA · FRUTALES · CLÁSICOS · CHOCOLATE, en letra pequeña con una línea fina) y cambian la <strong>base</strong> sobre la que se muestran las 20 versiones. Ninguna usa las franjas verticales de colores. Piña, Durazno y Arándano muestran su foto.</p>
+  </header>
+  <ul class="indice"><li><a href="#b1">1 · Mosaico</a></li><li><a href="#b2">2 · Filas deslizables</a></li><li><a href="#b3">3 · Carta en columnas</a></li><li><a href="#b4">4 · Bento</a></li><li><a href="#b5">5 · Guía + escenario</a></li></ul>
+
+  <section class="alt" id="b1"><div class="alt__cab"><span class="alt__etq">Base 1</span><h2>Mosaico de fichas</h2>
+    <p>Cada grupo bajo su guía, con una rejilla de fichas cuadradas: foto (o el keke dibujado en su color), nombre, matiz y botón. Es lo más parecido a un catálogo y lo más fácil de reconocer.</p>
+    <div class="alt__nota"><span>Se ven todos de una vez, sin tocar nada</span><span>Funciona igual con fotos o sin ellas</span><span class="menos">Es larga: ocupa bastante alto en la página</span></div></div>
+    <div class="marco m1" id="m1"><h3>El <em>pecado</em> más vendido</h3></div></section>
+
+  <section class="alt" id="b2"><div class="alt__cab"><span class="alt__etq">Base 2</span><h2>Una fila deslizable por grupo</h2>
+    <p>Cada guía introduce su propia fila horizontal de fichas grandes que se desliza, como las filas de un catálogo de series. Se ve poco alto y se entiende de inmediato qué hay en cada familia.</p>
+    <div class="alt__nota"><span>Compacta: cuatro filas y listo</span><span>La guía separa las familias con elegancia</span><span class="menos">Hay que deslizar para ver todos los frutales</span></div></div>
+    <div class="marco m2" id="m2"><h3>El <em>pecado</em> más vendido</h3></div></section>
+
+  <section class="alt" id="b3"><div class="alt__cab"><span class="alt__etq">Base 3</span><h2>Carta en columnas</h2>
+    <p>Una carta tipográfica: cada familia es una columna con su guía arriba y debajo una lista con punto de color, nombre y matiz. Ocupa muy poco, es la más sobria y no necesita fotos.</p>
+    <div class="alt__nota"><span>La más ordenada y liviana; se lee como carta de pastelería</span><span>Muy buena en celular (se apila)</span><span class="menos">Es la menos visual: las fotos no protagonizan</span></div></div>
+    <div class="marco m3" id="m3"><h3>El <em>pecado</em> más vendido</h3></div></section>
+
+  <section class="alt" id="b4"><div class="alt__cab"><span class="alt__etq">Base 4</span><h2>Bento</h2>
+    <p>En cada familia, una ficha grande (con foto cuando hay) y las demás pequeñas alrededor. El tamaño marca jerarquía: quien tiene foto o es destacado se ve primero.</p>
+    <div class="alt__nota"><span>Jerarquía visual clara y moderna</span><span>Premia los sabores que ya tienen foto</span><span class="menos">Hay que decidir cuál es la ficha grande de cada familia</span></div></div>
+    <div class="marco m4" id="m4"><h3>El <em>pecado</em> más vendido</h3></div></section>
+
+  <section class="alt" id="b5"><div class="alt__cab"><span class="alt__etq">Base 5</span><h2>La guía como selector + escenario</h2>
+    <p>La guía deja de ser solo un rótulo: sus cuatro palabras son pestañas. Al elegir una familia aparece un escenario grande con un keke y, al lado, miniaturas de los demás de esa familia.</p>
+    <div class="alt__nota"><span>La más interactiva y la que mejor luce las fotos</span><span>Una sola vitrina: mucho orden y poco alto</span><span class="menos">Para ver todo hay que ir cambiando de familia</span></div></div>
+    <div class="marco m5" id="m5"><h3>El <em>pecado</em> más vendido</h3></div></section>
+</div>
+
+<script>
+const K = [
+  { id: "novia", n: "Novia", m: "edición especial", t: "#C9A227", f: "Novia" },
+  { id: "pina", n: "Piña", m: "soleada", t: "#F2C94C", f: "Frutales", foto: "../img/KEKES/pina.webp" },
+  { id: "durazno", n: "Durazno", m: "jugoso", t: "#F4A582", f: "Frutales", foto: "../img/KEKES/durazno.webp" },
+  { id: "arandano", n: "Arándano", m: "silvestre", t: "#5C5AA7", f: "Frutales", foto: "../img/KEKES/arandano.webp" },
+  { id: "platano", n: "Plátano", m: "maduro", t: "#D8B56A", f: "Frutales" },
+  { id: "maracuya", n: "Maracuyá", m: "vibrante", t: "#F59E0B", f: "Frutales" },
+  { id: "fresa", n: "Fresa con arándano", m: "frutos rojos", t: "#C2416C", f: "Frutales" },
+  { id: "naranja", n: "Naranja", m: "fresco", t: "#FB8C3A", f: "Frutales" },
+  { id: "coco", n: "Coco", m: "tropical", t: "#D8D0BE", f: "Frutales" },
+  { id: "higo", n: "Higo", m: "meloso", t: "#7A4B6B", f: "Frutales" },
+  { id: "manzana", n: "Manzana", m: "tierna", t: "#8DB255", f: "Frutales" },
+  { id: "limon", n: "Limón", m: "cítrico", t: "#E6E34A", f: "Frutales" },
+  { id: "lucuma", n: "Lúcuma", m: "andina", t: "#DDAA3A", f: "Frutales" },
+  { id: "zanahoria", n: "Zanahoria", m: "casero", t: "#D9742C", f: "Clásicos" },
+  { id: "marmoleado", n: "Marmoleado", m: "a dos tonos", t: "#8C6A55", f: "Clásicos" },
+  { id: "vainilla", n: "Vainilla", m: "clásico", t: "#E6D3A3", f: "Clásicos" },
+  { id: "frutos", n: "Frutos secos", m: "crocante", t: "#B88A5B", f: "Clásicos" },
+  { id: "chocolate", n: "Chocolate", m: "profundo", t: "#6B3E2A", f: "Chocolate" },
+  { id: "chispas", n: "Chispas de chocolate", m: "en cada bocado", t: "#4A2C23", f: "Chocolate" },
+  { id: "oreo", n: "Oreo", m: "cremoso", t: "#3B3B3B", f: "Chocolate" }
+];
+const FAM = ["Novia", "Frutales", "Clásicos", "Chocolate"];
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x !== undefined) e.textContent = x; return e; };
+const enGrupo = (f) => K.filter((k) => k.f === f);
+const rotulo = (f) => (enGrupo(f).length > 1 ? `${f} · ${enGrupo(f).length}` : f);
+const wa = (k) => "https://wa.me/51980592747?text=" + encodeURIComponent("Hola, El Delicioso. Quisiera pedir el keke rectangular de " + k.n.toLowerCase() + ".");
+const pedir = (k, c = "btn", txt = "Pedir este") => { const a = el("a", c, txt); a.href = wa(k); a.target = "_blank"; a.rel = "noopener"; return a; };
+const forma = (k, extra = "") => { const f = el("div", "forma" + (k.foto ? " forma--foto" : "") + extra); f.style.setProperty("--tono", k.t); if (k.foto) f.style.setProperty("--foto", `url("${k.foto}")`); f.setAttribute("aria-hidden", "true"); return f; };
+const grupo = (f, cont) => { const g = el("section", "grupo"); g.append(el("div", "rail", rotulo(f))); cont.append(g); return g; };
+
+// 1 · Mosaico
+(() => { const c = document.getElementById("m1"); FAM.forEach((f) => { const g = grupo(f, c); const r = el("div", "rejilla"); enGrupo(f).forEach((k) => { const fi = el("article", "ficha"); fi.style.setProperty("--tono", k.t); const cu = el("div", "cuerpo"); cu.append(el("h4", "nombre", k.n), el("span", "matiz", k.m), pedir(k)); fi.append(forma(k), cu); r.append(fi); }); g.append(r); }); })();
+
+// 2 · Filas deslizables
+(() => { const c = document.getElementById("m2"); FAM.forEach((f) => { const g = grupo(f, c); const r = el("div", "fila"); r.tabIndex = 0; r.setAttribute("aria-label", rotulo(f)); enGrupo(f).forEach((k) => { const fi = el("article", "ficha"); fi.style.setProperty("--tono", k.t); const cu = el("div", "cuerpo"); cu.append(el("h4", "nombre", k.n), el("span", "matiz", k.m), pedir(k)); fi.append(forma(k), cu); r.append(fi); }); g.append(r); }); })();
+
+// 3 · Carta en columnas
+(() => { const c = document.getElementById("m3"); const cols = el("div", "columnas"); c.append(cols); FAM.forEach((f) => { const g = grupo(f, cols); const l = el("div", f === "Frutales" ? "doble" : ""); enGrupo(f).forEach((k) => { const a = el("a", "item"); a.href = wa(k); a.target = "_blank"; a.rel = "noopener"; a.style.setProperty("--tono", k.t); a.append(el("span", "punto"), el("span", "nombre", k.n), el("span", "matiz", k.m)); l.append(a); }); g.append(l); }); })();
+
+// 4 · Bento
+(() => { const c = document.getElementById("m4"); FAM.forEach((f) => { const g = grupo(f, c); const b = el("div", "bento"); const ks = enGrupo(f); const destacado = ks.find((k) => k.foto) || ks[0];
+  [destacado, ...ks.filter((k) => k !== destacado)].forEach((k, i) => { const t = el("a", "t" + (i === 0 ? " t--grande" : "") + (k.foto ? " t--foto" : "")); t.href = wa(k); t.target = "_blank"; t.rel = "noopener"; t.style.setProperty("--tono", k.t); if (k.foto) t.style.setProperty("--foto", `url("${k.foto}")`);
+    t.append(el("span", "nombre", k.n), el("span", "matiz", k.m)); if (i === 0) { const bt = el("span", "btn btn--rojo", "Pedir este"); t.append(bt); } b.append(t); }); g.append(b); }); })();
+
+// 5 · Guía como selector + escenario
+(() => { const c = document.getElementById("m5"); const tabs = el("div", "rail-tabs"); tabs.setAttribute("role", "tablist"); const escena = el("div", "escena"); c.append(tabs, escena);
+  let fam = "Frutales", elegido = K.find((k) => k.id === "pina");
+  const pintar = () => { [...tabs.children].forEach((t) => t.setAttribute("aria-selected", String(t.dataset.f === fam))); escena.replaceChildren();
+    const e = el("div", "escenario"); e.style.setProperty("--tono", elegido.t); const info = el("div", "info"); const ac = el("div", "acciones"); ac.append(pedir(elegido, "btn btn--rojo"), el("span", "matiz", "Consultar precio"));
+    info.append(el("span", "alt__etq", elegido.f), el("h4", "nombre", elegido.n), el("span", "matiz", elegido.m), ac); e.append(forma(elegido), info);
+    const mins = el("div", "miniaturas"); enGrupo(fam).forEach((k) => { const m = el("button", "mini"); m.type = "button"; m.setAttribute("aria-pressed", String(k === elegido)); m.style.setProperty("--tono", k.t); m.append(forma(k), el("span", "nombre", k.n)); m.onclick = () => { elegido = k; pintar(); }; mins.append(m); });
+    escena.append(e, mins); };
+  FAM.forEach((f) => { const t = el("button", "tab", rotulo(f)); t.type = "button"; t.dataset.f = f; t.setAttribute("role", "tab"); t.onclick = () => { fam = f; elegido = enGrupo(f)[0]; pintar(); }; tabs.append(t); });
+  pintar(); })();
+</script>
+</body>
+</html>
