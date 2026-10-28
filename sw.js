@@ -2,7 +2,7 @@
 // - Páginas, scripts, estilos y datos: primero la red; el caché solo responde si no hay conexión.
 // - Fotos y fuentes (no cambian de contenido a menudo): primero el caché y se refrescan en segundo plano.
 // - version.json y todo lo que no sea GET del mismo sitio: siempre la red, sin tocarlo.
-const CACHE = "el-delicioso-v1";
+const CACHE = "el-delicioso-202610281621"; // el número lo cambia `npm run sellar`: cada versión estrena caché y borra las anteriores
 const BASICOS = ["./", "index.html", "index.css", "manifest.webmanifest"];
 
 self.addEventListener("install", (evento) => {

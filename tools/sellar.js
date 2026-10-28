@@ -1,4 +1,4 @@
-// Sube el sello de versión en los cuatro lugares a la vez (data-version, ?v= de index.css, ?v= de src/main.js y version.json).
+// Sube el sello de versión en todos los lugares a la vez (data-version, ?v= de index.css, ?v= de src/main.js, version.json y el nombre de la caché de sw.js).
 // Uso: npm run sellar   (después de cambiar index.html, index.css o cualquier archivo de src/ y antes de publicar)
 import fs from "node:fs";
 import path from "node:path";
@@ -17,5 +17,9 @@ html = html
   .replace(/src\/main\.js\?v=\d{12}/, `src/main.js?v=${sello}`);
 if (html === antes && !antes.includes(sello)) throw new Error("No encontré los sellos en index.html");
 fs.writeFileSync(rutaHtml, html);
+const rutaSw = path.join(raiz, "sw.js");
+const sw = fs.readFileSync(rutaSw, "utf8");
+if (!/const CACHE = "el-delicioso-\d{12}";/.test(sw)) throw new Error("No encontré el nombre de la caché en sw.js");
+fs.writeFileSync(rutaSw, sw.replace(/const CACHE = "el-delicioso-\d{12}";/, `const CACHE = "el-delicioso-${sello}";`));
 fs.writeFileSync(path.join(raiz, "version.json"), `{"v": "${sello}"}\n`);
 console.log(`Sello de versión: ${sello}`);

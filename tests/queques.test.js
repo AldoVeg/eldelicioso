@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { DETALLES_QUEQUE, FAMILIAS, QUEQUES, construirMensajeQueque, miniaturaDe, rotuloFamilia, textoPrecioDolares, textoPrecioQueque } from "../src/queques.js";
+import { DETALLES_QUEQUE, FAMILIAS, QUEQUES, datosEstructurados, construirMensajeQueque, miniaturaDe, rotuloFamilia, textoPrecioDolares, textoPrecioQueque } from "../src/queques.js";
 
 const html = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "index.html"), "utf8");
 
@@ -65,4 +65,20 @@ test("la referencia en dólares redondea al medio dólar y no aparece sin precio
   assert.equal(textoPrecioDolares(por("pina")), "≈ US$ 4,00"); // S/ 13 a 3,45 = 3,77
   assert.equal(textoPrecioDolares(por("arandano")), "≈ US$ 4,50"); // S/ 15 a 3,45 = 4,35
   assert.equal(textoPrecioDolares(por("oreo")), null);
+});
+
+test("los datos estructurados incluyen solo los queques con precio, en soles y con su foto", () => {
+  const datos = datosEstructurados(QUEQUES, "https://eldelicioso.vercel.app");
+  const items = datos.itemListElement.map((e) => e.item);
+  assert.equal(items.length, QUEQUES.filter((q) => q.precioCentimos !== null).length);
+  assert.ok(items.every((i) => i.offers.priceCurrency === "PEN" && /^\d+\.\d{2}$/.test(i.offers.price)));
+  const pina = items.find((i) => i.name === "Queque rectangular de piña");
+  assert.equal(pina.offers.price, "13.00");
+  assert.equal(pina.image, "https://eldelicioso.vercel.app/img/QUEQUES/pina.webp");
+  assert.ok(!JSON.stringify(datos).includes("aggregateRating"), "no se inventan valoraciones");
+});
+
+test("el HTML anuncia los queques en el título y en el rango de precios", () => {
+  assert.match(html, /<title>[^<]*queques[^<]*<\/title>/i);
+  assert.ok(html.includes('"priceRange": "S/ 13 - S/ 255"'));
 });

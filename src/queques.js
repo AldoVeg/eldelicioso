@@ -65,6 +65,29 @@ export function textoPrecioDolares(queque) {
   return `≈ US$ ${dolares.toFixed(2).replace(".", ",")}`;
 }
 
+// Datos estructurados (schema.org) para Google: solo los queques con precio, con su foto si la tienen. "sitio" es la dirección
+// de la web sin barra final. Sin valoraciones ni reseñas inventadas.
+export function datosEstructurados(queques, sitio) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Queques rectangulares de El Delicioso",
+    itemListElement: queques
+      .filter((queque) => queque.precioCentimos !== null)
+      .map((queque, indice) => ({
+        "@type": "ListItem",
+        position: indice + 1,
+        item: {
+          "@type": "Product",
+          name: `Queque rectangular de ${queque.nombre.toLowerCase()}`,
+          description: `Queque rectangular de ${queque.nombre.toLowerCase()}, ${DETALLES_QUEQUE.datos[0]}, hecho en casa.`,
+          ...(queque.foto ? { image: `${sitio}/${queque.foto}` } : {}),
+          offers: { "@type": "Offer", price: (queque.precioCentimos / 100).toFixed(2), priceCurrency: "PEN", url: `${sitio}/#pecado` }
+        }
+      }))
+  };
+}
+
 // Pedido de un queque por WhatsApp (con el precio si ya se conoce).
 export function construirMensajeQueque(queque, negocio = NEGOCIO, origen = null) {
   const precio = queque.precioCentimos === null ? "" : ` (${formatearMoneda(queque.precioCentimos)})`;

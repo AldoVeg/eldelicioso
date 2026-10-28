@@ -28,6 +28,19 @@ test("el sello de versión coincide en index.html (3 lugares) y version.json", (
   assert.ok(html.includes(`src/main.js?v=${sello}`), "?v= de src/main.js distinto");
 });
 
+test("la caché del service worker lleva el sello de versión (así cada versión borra la anterior)", () => {
+  const sello = JSON.parse(leer("version.json")).v;
+  assert.ok(leer("sw.js").includes(`const CACHE = "el-delicioso-${sello}";`), "el nombre de la caché de sw.js no coincide con version.json");
+});
+
+test("el código y la hoja de estilos se revalidan siempre (precios nunca viejos)", () => {
+  const cabeceras = JSON.parse(leer("vercel.json")).headers;
+  for (const fuente of ["/src/(.*)", "/index.css"]) {
+    const regla = cabeceras.find((h) => h.source === fuente);
+    assert.ok(regla && regla.headers.some((c) => c.key === "Cache-Control" && c.value.includes("must-revalidate")), `falta la regla de caché para ${fuente}`);
+  }
+});
+
 test("la política de seguridad ya no depende de Google Fonts", () => {
   const csp = JSON.stringify(JSON.parse(leer("vercel.json")).headers);
   assert.ok(!csp.includes("fonts.googleapis.com") && !csp.includes("fonts.gstatic.com"));

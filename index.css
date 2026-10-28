@@ -841,7 +841,20 @@ button { cursor: pointer; }
 .escenario__datos li::before { content: "\2022\00a0"; content: "\2022\00a0" / ""; color: var(--acento-2); }
 .escenario__aviso { font-size: var(--t-xs); color: var(--texto-suave); }
 /* Cinta deslizable de miniaturas con la guía en línea (el rótulo de cada familia separa los grupos) */
-.queques__cinta { position: relative; display: flex; align-items: center; gap: var(--e-2); margin-top: var(--e-4); padding-bottom: var(--e-2); overflow-x: auto; scrollbar-width: thin; }
+.queques__cinta {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--e-2);
+  margin-top: var(--e-4);
+  padding-bottom: var(--e-2);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  /* Bordes que se desvanecen: avisan de que la cinta sigue a ambos lados */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 1rem, #000 calc(100% - 1rem), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 1rem, #000 calc(100% - 1rem), transparent);
+}
 .guia {
   display: flex;
   flex: none;
@@ -856,14 +869,16 @@ button { cursor: pointer; }
   color: var(--texto-suave);
 }
 .guia:first-child { margin-left: 0; }
+.guia--activa { color: var(--acento); }
 .guia::after { content: ""; width: 1.75rem; height: 1px; background: var(--borde-campo); opacity: .55; }
 .queque-chip {
   display: grid;
   flex: none;
   gap: .2rem;
   justify-items: center;
-  width: 4.5rem;
+  width: 4.75rem;
   padding: .4rem .25rem;
+  scroll-snap-align: center;
   background: var(--superficie);
   border: 1.5px solid var(--borde);
   border-radius: var(--r-md);
@@ -873,13 +888,13 @@ button { cursor: pointer; }
 .queque-chip[aria-pressed="true"] { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento); }
 .queque-chip__imagen { width: 100%; aspect-ratio: 1 / 1; border-radius: var(--r-sm); }
 .queque-chip__imagen.imagen-dibujo::before { width: 62%; height: 44%; }
-.queque-chip__nombre { font-family: var(--fuente-titulo); font-size: .6875rem; font-weight: 700; line-height: 1.1; text-align: center; }
+.queque-chip__nombre { font-family: var(--fuente-titulo); font-size: .75rem; font-weight: 700; line-height: 1.1; text-align: center; }
 @media (min-width: 47.5em) {
   .escenario { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
   .escenario__imagen { aspect-ratio: auto; min-height: 19rem; border-right: 5px solid var(--tono); border-bottom: 0; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .escenario { animation: entrada-suave .35s var(--curva-suave) both; }
+  .escenario__imagen { animation: entrada-suave .35s var(--curva-suave) both; } /* solo la foto se funde: el resto no parpadea al cambiar */
 }
 
 /* Cinta de la portada hacia la sección de queques */
