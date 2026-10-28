@@ -10,9 +10,9 @@ import { agregarLineaOrigen } from "./origen.js";
 // "foto" (opcional) la agrega `npm run fotos` al convertir las fotos de fotos-kekes/: es la foto grande del escenario.
 export const KEKES = [
   { id: "novia", nombre: "Novia", matiz: "edición especial", familia: "Novia", tono: "#C9A227", precioCentimos: null },
-  { id: "pina", nombre: "Piña", matiz: "soleada", familia: "Frutales", tono: "#F2C94C", precioCentimos: null, foto: "img/KEKES/pina.webp" },
-  { id: "durazno", nombre: "Durazno", matiz: "jugoso", familia: "Frutales", tono: "#F4A582", precioCentimos: null, foto: "img/KEKES/durazno.webp" },
-  { id: "arandano", nombre: "Arándano", matiz: "silvestre", familia: "Frutales", tono: "#5C5AA7", precioCentimos: null, foto: "img/KEKES/arandano.webp" },
+  { id: "pina", nombre: "Piña", matiz: "soleada", familia: "Frutales", tono: "#F2C94C", precioCentimos: 1300, foto: "img/KEKES/pina.webp" },
+  { id: "durazno", nombre: "Durazno", matiz: "jugoso", familia: "Frutales", tono: "#F4A582", precioCentimos: 1300, foto: "img/KEKES/durazno.webp" },
+  { id: "arandano", nombre: "Arándano", matiz: "silvestre", familia: "Frutales", tono: "#5C5AA7", precioCentimos: 1500, foto: "img/KEKES/arandano.webp" },
   { id: "platano", nombre: "Plátano", matiz: "maduro", familia: "Frutales", tono: "#D8B56A", precioCentimos: null },
   { id: "maracuya", nombre: "Maracuyá", matiz: "vibrante", familia: "Frutales", tono: "#F59E0B", precioCentimos: null },
   { id: "fresa-arandano", nombre: "Fresa con arándano", matiz: "frutos rojos", familia: "Frutales", tono: "#C2416C", precioCentimos: null },
@@ -30,6 +30,12 @@ export const KEKES = [
   { id: "chispas-chocolate", nombre: "Chispas de chocolate", matiz: "en cada bocado", familia: "Chocolate", tono: "#4A2C23", precioCentimos: null },
   { id: "oreo", nombre: "Oreo", matiz: "cremoso", familia: "Chocolate", tono: "#3B3B3B", precioCentimos: null }
 ];
+
+// Lo que es igual para todos los kekes (lo dijo el dueño): se muestra bajo el precio en el escenario.
+export const DETALLES_KEKE = {
+  datos: ["20 cm × 12 cm", "100 % casero y natural"],
+  aviso: "No incluye delivery."
+};
 
 // Las familias agrupan los sabores en la guía de la sección; en KEKES cada familia va seguida (así la cinta y las flechas las recorren en orden).
 export const FAMILIAS = ["Novia", "Frutales", "Clásicos", "Chocolate"];

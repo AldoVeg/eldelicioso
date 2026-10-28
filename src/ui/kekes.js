@@ -1,6 +1,6 @@
 // "El pecado más vendido": un escenario grande con el keke elegido, flechas para recorrer los sabores en orden y una cinta
 // deslizable de miniaturas donde la guía de familias (Novia, Frutales, Clásicos, Chocolate) separa los grupos.
-import { FAMILIAS, KEKES, construirMensajeKeke, miniaturaDe, rotuloFamilia, textoPrecioKeke } from "../kekes.js";
+import { DETALLES_KEKE, FAMILIAS, KEKES, construirMensajeKeke, miniaturaDe, rotuloFamilia, textoPrecioKeke } from "../kekes.js";
 import { construirEnlaceWhatsApp } from "../mensajes.js";
 import { $, crear } from "./utiles.js";
 
@@ -21,6 +21,15 @@ function crearImagen(keke, claseBase, foto) {
   return imagen;
 }
 
+// Datos iguales para todos los kekes (medidas y sello casero) y el aviso de que no incluye delivery.
+function crearDetalles() {
+  const detalles = crear("div", "escenario__detalles");
+  const datos = crear("ul", "escenario__datos");
+  DETALLES_KEKE.datos.forEach((dato) => datos.append(crear("li", "", dato)));
+  detalles.append(datos, crear("p", "escenario__aviso", DETALLES_KEKE.aviso));
+  return detalles;
+}
+
 // El escenario: imagen grande y, al lado (o debajo en celular), familia, nombre, matiz, precio y botón de WhatsApp. El enlace se
 // crea cada vez que cambia el keke, así que lleva el origen de la visita en el mensaje (aplicarOrigenAEnlaces solo ve los fijos).
 function crearEscenario(keke, origen) {
@@ -34,8 +43,8 @@ function crearEscenario(keke, origen) {
   pedir.rel = "noopener noreferrer";
   pedir.setAttribute("aria-label", `Pedir el keke de ${keke.nombre.toLowerCase()} por WhatsApp`);
   const acciones = crear("div", "escenario__acciones");
-  acciones.append(pedir, crear("span", "escenario__precio", textoPrecioKeke(keke)));
-  info.append(crear("p", "escenario__familia", keke.familia === "Novia" ? "Edición especial" : keke.familia), crear("h3", "escenario__nombre", keke.nombre), crear("p", "escenario__matiz", keke.matiz), acciones);
+  acciones.append(pedir, crear("span", keke.precioCentimos === null ? "escenario__precio escenario__precio--consultar" : "escenario__precio", textoPrecioKeke(keke)));
+  info.append(crear("p", "escenario__familia", keke.familia === "Novia" ? "Edición especial" : keke.familia), crear("h3", "escenario__nombre", keke.nombre), crear("p", "escenario__matiz", keke.matiz), acciones, crearDetalles());
   escenario.append(crearImagen(keke, "escenario__imagen", keke.foto), info);
   return escenario;
 }

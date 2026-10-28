@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { FAMILIAS, KEKES, construirMensajeKeke, miniaturaDe, rotuloFamilia, textoPrecioKeke } from "../src/kekes.js";
+import { DETALLES_KEKE, FAMILIAS, KEKES, construirMensajeKeke, miniaturaDe, rotuloFamilia, textoPrecioKeke } from "../src/kekes.js";
 
 const html = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "index.html"), "utf8");
 
@@ -18,12 +18,24 @@ test("las versiones de keke tienen id único, nombre, matiz y color válido", ()
 });
 
 test("el precio muestra 'Consultar precio' mientras no se conoce y el mensaje incluye el sabor", () => {
-  const sinPrecio = KEKES.find((k) => k.id === "pina");
+  const sinPrecio = KEKES.find((k) => k.id === "oreo");
   assert.equal(textoPrecioKeke(sinPrecio), "Consultar precio");
-  assert.match(construirMensajeKeke(sinPrecio), /keke rectangular de piña\./);
+  assert.match(construirMensajeKeke(sinPrecio), /keke rectangular de oreo\./);
   const conPrecio = { ...sinPrecio, precioCentimos: 3500 };
   assert.equal(textoPrecioKeke(conPrecio), "S/ 35,00");
-  assert.match(construirMensajeKeke(conPrecio), /de piña \(S\/ 35,00\)/);
+  assert.match(construirMensajeKeke(conPrecio), /de oreo \(S\/ 35,00\)/);
+});
+
+test("precios confirmados por el dueño: piña y durazno S/ 13, arándano S/ 15", () => {
+  const precio = (id) => KEKES.find((k) => k.id === id).precioCentimos;
+  assert.deepEqual([precio("pina"), precio("durazno"), precio("arandano")], [1300, 1300, 1500]);
+  assert.equal(textoPrecioKeke(KEKES.find((k) => k.id === "arandano")), "S/ 15,00");
+});
+
+test("los datos comunes de los kekes incluyen medidas, sello casero y el aviso de delivery", () => {
+  assert.ok(DETALLES_KEKE.datos.includes("20 cm × 12 cm"));
+  assert.ok(DETALLES_KEKE.datos.some((d) => d.includes("casero")));
+  assert.match(DETALLES_KEKE.aviso, /No incluye delivery/);
 });
 
 test("el HTML no escribe la cantidad de versiones a mano: la pone el script al dibujar", () => {
