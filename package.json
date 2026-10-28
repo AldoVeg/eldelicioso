@@ -1,0 +1,7 @@
+{
+  "name": "el-delicioso",
+  "private": true,
+  "type": "module",
+  "description": "Sitio estático de El Delicioso. Solo se usa npm para ejecutar las pruebas.",
+  "scripts": { "test": "node --test" }
+}
