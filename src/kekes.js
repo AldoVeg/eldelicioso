@@ -21,13 +21,41 @@ export const KEKES = [
   { id: "marmoleado", nombre: "Marmoleado", matiz: "a dos tonos", tono: "#8C6A55", precioCentimos: null },
   { id: "chispas-chocolate", nombre: "Chispas de chocolate", matiz: "en cada bocado", tono: "#4A2C23", precioCentimos: null },
   { id: "vainilla", nombre: "Vainilla", matiz: "clásico", tono: "#E6D3A3", precioCentimos: null },
-  { id: "oreo", nombre: "Oreo", matiz: "cremoso", tono: "#3B3B3B", precioCentimos: null }
+  { id: "oreo", nombre: "Oreo", matiz: "cremoso", tono: "#3B3B3B", precioCentimos: null },
+  { id: "coco", nombre: "Coco", matiz: "tropical", tono: "#D8D0BE", precioCentimos: null },
+  { id: "frutos-secos", nombre: "Frutos secos", matiz: "crocante", tono: "#B88A5B", precioCentimos: null },
+  { id: "higo", nombre: "Higo", matiz: "meloso", tono: "#7A4B6B", precioCentimos: null },
+  { id: "manzana", nombre: "Manzana", matiz: "tierna", tono: "#8DB255", precioCentimos: null },
+  { id: "limon", nombre: "Limón", matiz: "cítrico", tono: "#E6E34A", precioCentimos: null },
+  { id: "lucuma", nombre: "Lúcuma", matiz: "andina", tono: "#DDAA3A", precioCentimos: null }
 ];
 
-// Colores claros llevan texto oscuro y los oscuros texto blanco (luminosidad de 0 a 255; el corte en 150 se eligió a ojo).
+// Texto sobre la franja: oscuro (el de la página) o blanco, el que dé más contraste con el color del sabor (WCAG).
+const TEXTO_OSCURO = "#2E1B1B";
+const TEXTO_BLANCO = "#FFFFFF";
+
+function luminancia(color) {
+  const n = parseInt(color.slice(1), 16);
+  const [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255].map((v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contraste(a, b) {
+  const [claro, oscuro] = [luminancia(a), luminancia(b)].sort((x, y) => y - x);
+  return (claro + 0.05) / (oscuro + 0.05);
+}
+
+// Verdadero si el texto oscuro se lee mejor que el blanco sobre ese color.
 export function esTonoClaro(tono) {
-  const n = parseInt(tono.slice(1), 16);
-  return 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 150;
+  return contraste(tono, TEXTO_OSCURO) >= contraste(tono, TEXTO_BLANCO);
+}
+
+// Contraste (de 1 a 21) del texto elegido sobre el color; las pruebas exigen al menos 4,5 para toda versión nueva.
+export function contrasteDeTexto(tono) {
+  return Math.max(contraste(tono, TEXTO_OSCURO), contraste(tono, TEXTO_BLANCO));
 }
 
 // Precio a mostrar: "S/ 35,00" o, sin precio todavía, "Consultar precio".

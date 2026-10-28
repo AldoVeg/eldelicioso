@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { KEKES, construirMensajeKeke, esTonoClaro, textoPrecioKeke } from "../src/kekes.js";
+import { KEKES, construirMensajeKeke, contrasteDeTexto, esTonoClaro, textoPrecioKeke } from "../src/kekes.js";
 
 const html = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "index.html"), "utf8");
 
@@ -26,10 +26,9 @@ test("el precio muestra 'Consultar precio' mientras no se conoce y el mensaje in
   assert.match(construirMensajeKeke(conPrecio), /de piña \(S\/ 35,00\)/);
 });
 
-test("el HTML dice la cantidad correcta de versiones (cinta de la portada)", () => {
-  const menciones = [...html.matchAll(/(\d+) versiones/g)].map((m) => Number(m[1]));
-  assert.equal(menciones.length, 1);
-  assert.equal(menciones[0], KEKES.length, `el HTML dice ${menciones[0]} y hay ${KEKES.length}`);
+test("el HTML no escribe la cantidad de versiones a mano: la pone el script al dibujar", () => {
+  assert.doesNotMatch(html, /\d+ versiones/);
+  assert.ok(html.includes('id="kekes-cantidad"'));
 });
 
 test("los colores claros llevan texto oscuro y los oscuros texto blanco", () => {
@@ -37,4 +36,8 @@ test("los colores claros llevan texto oscuro y los oscuros texto blanco", () => 
   assert.equal(esTonoClaro("#F2C94C"), true); // piña
   assert.equal(esTonoClaro("#3B3B3B"), false); // oreo
   assert.equal(esTonoClaro("#5C5AA7"), false); // arándano
+});
+
+test("todo sabor se lee bien: el texto elegido llega al menos a 4,5 de contraste sobre su color", () => {
+  for (const k of KEKES) assert.ok(contrasteDeTexto(k.tono) >= 4.5, `${k.nombre} (${k.tono}): contraste ${contrasteDeTexto(k.tono).toFixed(1)}`);
 });

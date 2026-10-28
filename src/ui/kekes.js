@@ -37,5 +37,6 @@ export function iniciarKekes() {
   tiras.forEach((tira) => tira.addEventListener("click", (evento) => { if (!evento.target.closest("a")) abrir(tira); }));
   contenedor.replaceChildren(...tiras);
   abrir(tiras[1]); // arranca con la segunda abierta (Piña), como en el diseño elegido
+  $("kekes-cantidad").textContent = ` · ${KEKES.length} versiones`;
   $("pecado").hidden = false;
 }
