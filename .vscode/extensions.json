@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ritwickdey.liveserver",
+    "kisstkondoros.vscode-gutter-preview",
+    "pranaygp.vscode-css-peek",
+    "usernamehw.errorlens",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-spanish",
+    "github.vscode-pull-request-github",
+    "github.vscode-github-actions"
+  ]
+}

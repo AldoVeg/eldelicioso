@@ -17,3 +17,8 @@ archivo/
 node_modules/
 package-lock.json
 fotos-kekes/
+.vscode/
+.editorconfig
+.prettierrc.json
+.prettierignore
+eslint.config.js

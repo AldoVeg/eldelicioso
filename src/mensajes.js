@@ -62,7 +62,7 @@ export function construirMensajeReserva(cantidad, nombreProducto, precioCentimos
 // respeta el tope de dígitos y quita ceros a la izquierda. Si el número resultante supera el máximo, se conserva el valor
 // anterior (el último válido), así no se puede escribir ni pegar un valor mayor.
 export function filtrarEntradaNumerica(texto, maxDigitos, maximo, anterior = "") {
-  let limpio = String(texto == null ? "" : texto).replace(/\D/g, "");
+  let limpio = String(texto ?? "").replace(/\D/g, "");
   if (limpio.length > maxDigitos) limpio = limpio.slice(0, maxDigitos);
   limpio = limpio.replace(/^0+(?=\d)/, "");
   if (limpio !== "" && Number(limpio) > maximo) return anterior;

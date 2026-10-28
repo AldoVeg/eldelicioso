@@ -7,9 +7,13 @@
     "test": "node --test",
     "auditar": "node tools/auditoria.js",
     "sellar": "node tools/sellar.js",
-    "fotos": "node tools/fotos-kekes.js"
+    "fotos": "node tools/fotos-kekes.js",
+    "lint": "eslint ."
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
     "sharp": "^0.35.5"
   }
 }

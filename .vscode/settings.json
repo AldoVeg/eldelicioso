@@ -1,0 +1,16 @@
+{
+  "editor.formatOnSave": false,
+  "editor.tabSize": 2,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "eslint.useFlatConfig": true,
+  "eslint.validate": ["javascript"],
+  "cSpell.language": "es,en",
+  "cSpell.words": ["keke", "kekes", "Lúcuma", "lucuma", "WebP", "wa.me", "Vercel", "sharp", "eldelicioso", "marmoleado", "stikers", "stikers", "AVIF", "WCAG", "aria", "sellar"],
+  "cSpell.ignorePaths": ["node_modules", "package-lock.json", "archivo", "img", "fonts", ".vscode"],
+  "liveServer.settings.root": "/",
+  "liveServer.settings.donotShowInfoMsg": true,
+  "liveServer.settings.ignoreFiles": ["fotos-kekes/**", "node_modules/**", "tests/**", "tools/**"],
+  "search.exclude": { "node_modules": true, "package-lock.json": true, "archivo": true, "propuestas": true },
+  "files.watcherExclude": { "**/node_modules/**": true, "**/fotos-kekes/**": true }
+}

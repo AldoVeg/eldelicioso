@@ -25,7 +25,6 @@ export function reglasCss(css = leer("index.css")) {
   const reglas = [];
   const pila = [];
   let cabecera = "";
-  let inicioCuerpo = -1;
   for (let i = 0; i < texto.length; i++) {
     const c = texto[i];
     if (c === "{") {
@@ -34,8 +33,7 @@ export function reglasCss(css = leer("index.css")) {
         pila.push(nombre);
       } else {
         pila.push(null);
-        inicioCuerpo = i + 1;
-        reglas.push({ contexto: pila.filter(Boolean).join(" > "), selector: nombre, cuerpo: "", _i: inicioCuerpo });
+        reglas.push({ contexto: pila.filter(Boolean).join(" > "), selector: nombre, cuerpo: "", _i: i + 1 });
       }
       cabecera = "";
     } else if (c === "}") {
