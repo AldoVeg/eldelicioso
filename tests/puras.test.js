@@ -31,3 +31,14 @@ test("construirEnlaceWhatsApp codifica el mensaje y apunta a wa.me", () => {
   assert.match(url, /^https:\/\/wa\.me\/\d+\?text=/);
   assert.ok(url.includes(encodeURIComponent("Hola & ¿qué tal?")));
 });
+
+test("la sugerencia de paquetes omite el total cuando coincide con lo necesario", () => {
+  assert.equal(m.textoSugerenciaPaquetes(50, 4), "Te sugerimos 2 paquetes de 100.");
+  assert.equal(m.textoSugerenciaPaquetes(30, 4), "Te sugerimos 1 paquete de 100 y 1 paquete de 25 (125 unidades en total).");
+});
+
+test("describirResultado da el reparto de los tres caminos", () => {
+  const { necesarias, opciones } = m.describirResultado(50, 4);
+  assert.equal(necesarias, 200);
+  assert.deepEqual(opciones.map((o) => o.reparto), ["100 dulces + 100 salados", "200 dulces", "200 salados"]);
+});

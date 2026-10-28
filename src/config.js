@@ -13,8 +13,6 @@ export const MAX_BOCADITOS_POR_INVITADO = 20;
 export const MAX_INVITADOS = 1000;
 // Tope de unidades totales que se arman en línea; más allá se atiende por WhatsApp.
 export const MAX_UNIDADES = 20000;
-// Máximo de líneas de producto que muestra cada categoría en la sugerencia.
-export const MAX_LINEAS_SUGERENCIA = 6;
 export const MAX_PACKS_POR_LINEA = 99;
 // La clave conserva su nombre original para no perder las listas que los visitantes ya guardaron.
 export const CLAVE_ALMACENAMIENTO = "el-delicioso-carrito";

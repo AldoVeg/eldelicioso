@@ -119,7 +119,7 @@ export function sacarDeBaraja(baraja, elementos, ultimo, aleatorio = Math.random
 }
 
 // ["a", "b", "c"] -> "a, b y c"
-export function unirLista(partes) {
+function unirLista(partes) {
   return partes.length > 1
     ? `${partes.slice(0, -1).join(", ")} y ${partes[partes.length - 1]}`
     : (partes[0] || "");
@@ -132,11 +132,12 @@ function listarPaquetes(paquetes) {
     .map((tamano) => `${paquetes[tamano]} ${paquetes[tamano] === 1 ? "paquete" : "paquetes"} de ${tamano}`));
 }
 
-function describirCombinacion({ paquetes, total }) {
+function describirCombinacion({ paquetes, total, necesarias }) {
   const lista = listarPaquetes(paquetes);
   const tamanosUsados = TAMANOS.filter((tamano) => paquetes[tamano] > 0);
   // Un solo paquete: "1 paquete de 100 unidades" (sin repetir el total).
   if (tamanosUsados.length === 1 && paquetes[tamanosUsados[0]] === 1) return `${lista} unidades`;
+  if (total === necesarias) return lista; // reparto exacto: el total ya es la cifra principal
   return `${lista} (${total} unidades en total)`;
 }
 
@@ -149,18 +150,4 @@ export function textoResultadoCalculadora(invitados, porInvitado) {
 // "Te sugerimos 2 paquetes de 100 (200 unidades en total)."
 export function textoSugerenciaPaquetes(invitados, porInvitado) {
   return `Te sugerimos ${describirCombinacion(calcularCombinacion(invitados, porInvitado))}.`;
-}
-
-// "Sobra 1 bocadito" / "Sobran 5 bocaditos"; "sustantivo" es [singular, plural].
-export function textoSobran(cantidad, sustantivo) {
-  return cantidad === 1 ? `Sobra 1 ${sustantivo[0]}` : `Sobran ${cantidad} ${sustantivo[1]}`;
-}
-
-// Línea de equidad de la frase principal: lo que sobra del total sugerido y cuánto tocaría a cada invitado.
-export function textoSobrantesEquidad(invitados, porInvitado) {
-  const { necesarias, total } = calcularCombinacion(invitados, porInvitado);
-  const sobran = total - necesarias;
-  if (sobran === 0) return `Reparto exacto: cada invitado recibe ${textoBocaditos(porInvitado)}.`;
-  return `${textoSobran(sobran, ["bocadito", "bocaditos"])}: ` +
-    `${sobran === 1 ? "repartido" : "repartidos"} por igual, cada invitado recibiría ${formatearNumero(total / invitados)}.`;
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-version="202610280903">
+<html lang="es" data-version="202610280909">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -32,7 +32,7 @@
        cada vez que publiques un cambio en index.html, index.css o cualquier archivo de src/, hay que actualizar ESTOS TRES LUGARES
        A LA VEZ con la misma fecha y hora (AAAAMMDDHHmm): 1) el ?v= de index.css y de src/main.js aquí abajo,
        2) data-version en la etiqueta <html> de arriba, 3) el valor "v" de version.json en la raíz del repositorio. -->
-  <link rel="stylesheet" href="index.css?v=202610280903">
+  <link rel="stylesheet" href="index.css?v=202610280909">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -52,7 +52,7 @@
     "priceRange": "S/ 28 - S/ 255"
   }
   </script>
-  <script type="module" src="src/main.js?v=202610280903"></script>
+  <script type="module" src="src/main.js?v=202610280909"></script>
 </head>
 <body id="arriba">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -121,20 +121,20 @@
 
     <section id="planificador" class="planificador" aria-labelledby="titulo-planificador">
       <div class="contenedor">
+        <div class="calculadora__texto">
+          <span class="filete" aria-hidden="true"></span>
+          <h2 id="titulo-planificador" class="seccion__titulo">Planifica tu evento en un minuto</h2>
+          <p class="seccion__intro">Calcula cuántos bocaditos necesitas. Los paquetes de 25, 50, 100 y más se combinan para llegar a tu cantidad; lo que sobre queda de reserva y te avisamos.</p>
+        </div>
         <div class="calculadora" id="calculadora">
-          <div class="calculadora__texto">
-            <span class="filete" aria-hidden="true"></span>
-            <h2 id="titulo-planificador" class="seccion__titulo">Planifica tu evento en un minuto</h2>
-            <p class="seccion__intro">Calcula cuántos bocaditos necesitas. Los paquetes de 25, 50, 100 y más se combinan para llegar a tu cantidad; lo que sobre queda de reserva y te avisamos.</p>
-          </div>
           <div class="calculadora__pasos">
-            <!-- Pasos 1 y 2. Los tres botones de evento rellenan "Bocaditos por invitado" y el script marca (aria-pressed) el que
-                 contiene lo escrito (data-desde y data-hasta); también se puede escribir a mano, de 3 a 20. -->
+            <!-- Panel en vivo: no hay botón de calcular; el resultado se actualiza al escribir. Los tres botones de evento rellenan
+                 "Bocaditos por invitado" y el script marca (aria-pressed) el que contiene lo escrito (data-desde y data-hasta). -->
             <form class="calculadora__formulario" id="form-calculadora" autocomplete="off" novalidate>
               <div class="etapa">
                 <h3 class="etapa__titulo"><span class="etapa__num" aria-hidden="true">1</span>¿Cuántos invitados?</h3>
                 <div class="campo">
-                  <label for="invitados">Número de invitados (1 a 1000)</label>
+                  <label for="invitados">Número de invitados</label>
                   <input type="text" id="invitados" name="invitados" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off">
                 </div>
               </div>
@@ -146,13 +146,12 @@
                   <button type="button" class="evento" data-bocaditos="10" data-desde="8" data-hasta="20" aria-pressed="false"><span>Comida principal</span><small>8 a 20 por invitado</small></button>
                 </div>
                 <div class="campo">
-                  <label for="bocaditos-por-invitado">Bocaditos por invitado: ajusta si quieres (3 a 20)</label>
+                  <label for="bocaditos-por-invitado"><span class="solo-lectores">Bocaditos por invitado: </span>Ajusta si quieres (3 a 20)</label>
                   <input type="text" id="bocaditos-por-invitado" name="bocaditos-por-invitado" required inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off">
                 </div>
               </div>
-              <button type="submit" class="boton boton--principal">Calcular</button>
             </form>
-            <!-- Resultado y paso 3: el script escribe la frase (o el aviso de error), el reparto y los tres caminos como opciones de radio -->
+            <!-- Resultado y paso 3: el script escribe el resultado grande (o el aviso de error) y los tres caminos como opciones de radio -->
             <div class="calculadora__cuerpo" aria-live="polite">
               <p class="calculadora__vacio" id="calculadora-vacio">Completa los pasos 1 y 2 y aquí verás cuánto necesitas y tus tres caminos.</p>
               <!-- La frase completa queda solo para lectores de pantalla (y para el aviso de error); lo visible es el resultado grande. -->
@@ -162,11 +161,9 @@
                 <span class="calculadora__cifra"><span class="cifra-conteo" id="calculadora-cifra">0</span><small>unidades</small></span>
                 <span class="calculadora__sugerencia" id="calculadora-sugerencia"></span>
               </div>
-              <p class="calculadora__sobrantes" id="calculadora-sobrantes" hidden></p>
               <div class="calculadora__caminos" id="calculadora-caminos" hidden>
                 <h3 class="etapa__titulo" id="titulo-caminos"><span class="etapa__num" aria-hidden="true">3</span>Elige tu camino</h3>
                 <div class="calculadora__opciones" id="calculadora-opciones" role="radiogroup" aria-labelledby="titulo-caminos"></div>
-                <div class="calculadora__detalle" id="calculadora-detalle"></div>
                 <button type="button" class="boton boton--principal boton--bloque" id="elegir-camino">Armar mi lista con este camino</button>
               </div>
             </div>

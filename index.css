@@ -651,9 +651,9 @@ button { cursor: pointer; }
   height: 6px;
   background: var(--gradiente-pasion);
 }
-.calculadora__texto { display: grid; gap: var(--e-3); align-content: start; }
+.calculadora__texto { display: grid; gap: var(--e-3); align-content: start; margin-bottom: var(--e-6); }
 
-/* Planificador en tres etapas: a la izquierda los pasos 1 y 2 (formulario); a la derecha el resultado y el paso 3. */
+/* Planificador en tres etapas, panel en vivo: a la izquierda los pasos 1 y 2 (formulario); a la derecha el resultado y el paso 3. */
 .calculadora__pasos { display: grid; gap: var(--e-6); align-items: start; }
 .calculadora__formulario { display: grid; gap: var(--e-5); align-content: start; min-width: 0; }
 .etapa { display: grid; gap: var(--e-3); align-content: start; min-width: 0; }
@@ -674,7 +674,7 @@ button { cursor: pointer; }
 
 .calculadora__formulario .campo label {
   font-family: var(--fuente-mono);
-  font-size: var(--t-mono);
+  font-size: .875rem;
   font-weight: 400;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -731,8 +731,6 @@ button { cursor: pointer; }
 .cifra-conteo { display: inline-block; text-align: right; }
 .calculadora__sugerencia { font-size: var(--t-sm); color: var(--texto-suave); }
 .calculadora__caminos { display: grid; gap: var(--e-3); align-content: start; min-width: 0; }
-/* Reparto: lo que sobra del total sugerido y cuánto tocaría a cada invitado */
-.calculadora__sobrantes { font-size: var(--t-sm); line-height: 1.45; color: var(--texto-suave); }
 
 /* Los tres caminos: tres opciones de radio en fila (en celular, apiladas); el detalle del marcado va debajo y un único botón al pie */
 .calculadora__opciones { display: grid; gap: var(--e-2); }
@@ -764,37 +762,13 @@ button { cursor: pointer; }
 .opcion__elegido { display: none; font-size: var(--t-xs); font-weight: 700; color: var(--acento); }
 .opcion--elegida .opcion__elegido { display: block; }
 .opcion__elegido::before { content: "\2713\00a0"; content: "\2713\00a0" / ""; }
-/* Detalle del camino marcado: sobrantes y productos con su cantidad (agrupados por categoría en el mixto) */
-.calculadora__detalle { min-width: 0; }
-.opcion__detalle { display: grid; gap: var(--e-3); padding: var(--e-3) var(--e-4); border-left: 3px solid var(--acento-2); background: var(--fondo); border-radius: 0 var(--r-sm) var(--r-sm) 0; }
-.opcion__sobrantes { font-size: var(--t-xs); line-height: 1.4; color: var(--texto-suave); }
-.opcion__grupo { display: grid; gap: var(--e-1); }
-.opcion__grupo-titulo {
-  font-family: var(--fuente-mono);
-  font-size: var(--t-mono);
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  color: var(--texto-suave);
-}
-.opcion__lineas { display: grid; gap: var(--e-1); margin: 0; padding: 0; list-style: none; }
-.opcion__linea {
-  padding-left: var(--e-3);
-  border-left: 2px solid var(--borde);
-  font-size: var(--t-sm);
-  line-height: 1.35;
-}
-.opcion__linea--mas { color: var(--texto-suave); font-style: italic; }
-
 @media (min-width: 48em) {
   .calculadora__pasos { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--e-7); }
 }
 @media (min-width: 62.5em) {
   .calculadora__opciones { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-@media (prefers-reduced-motion: no-preference) {
-  .opcion__detalle:not([hidden]) { animation: entrada-suave .35s var(--curva-suave) both; }
-}
+
 
 /* ===== Campos ===== */
 .campo { display: grid; gap: var(--e-2); }

@@ -28,12 +28,10 @@ function iniciar() {
   const campoInvitados = $("invitados");
   const campoBocaditos = $("bocaditos-por-invitado");
   const resultadoCalculadora = $("resultado-calculadora");
-  const sobrantesCalculadora = $("calculadora-sobrantes");
   const caminosCalculadora = $("calculadora-caminos");
   const opcionesCalculadora = $("calculadora-opciones");
   const vacioCalculadora = $("calculadora-vacio");
   const heroCalculadora = $("calculadora-hero");
-  const detalleCalculadora = $("calculadora-detalle");
   const botonElegirCamino = $("elegir-camino");
 
   // Lista de compras: lista, total y último paso del pedido (panel horizontal en escritorio, barra en móvil)
@@ -540,42 +538,23 @@ function iniciar() {
     return elemento;
   }
 
-  // Un grupo es la lista de productos sugeridos de una categoría (con título Dulces/Salados solo en el mixto).
-  function crearGrupoSugerencia(grupo) {
-    const bloque = crear("div", "opcion__grupo");
-    if (grupo.etiqueta) bloque.append(crear("p", "opcion__grupo-titulo", grupo.etiqueta));
-    const filas = crear("ul", "opcion__lineas");
-    grupo.lineas.forEach((linea) => {
-      filas.append(crear("li", linea.extra ? "opcion__linea opcion__linea--mas" : "opcion__linea", linea.texto));
-    });
-    bloque.append(filas);
-    return bloque;
-  }
-
-  // Cada camino es una opción de radio (marca, título y reparto). El detalle del camino marcado (sobrantes y sugerencia por
-  // grupo) se muestra debajo de las tres opciones; un único botón al pie lleva al catálogo con ese camino.
-  function crearFilaOpcion(opcion, indice) {
+  // Cada camino es una opción de radio (marca, título y reparto). Un único botón al pie lleva al catálogo con el camino marcado.
+  // "previo" es el camino que el visitante tenía marcado antes de recalcular, para no perderlo.
+  function crearFilaOpcion(opcion, indice, previo) {
     const fila = crear("label", `opcion opcion--${opcion.clave}`);
     const radio = crear("input", "opcion__radio");
     radio.type = "radio";
     radio.name = "camino";
     radio.value = opcion.clave;
-    radio.checked = plan.camino ? plan.camino === opcion.clave : indice === 0;
+    const deseado = previo || plan.camino;
+    radio.checked = deseado ? deseado === opcion.clave : indice === 0;
     const marca = crear("span", "opcion__marca");
     marca.setAttribute("aria-hidden", "true");
     const texto = crear("span", "opcion__texto");
-    texto.append(crear("span", "opcion__titulo", opcion.titulo), crear("span", "opcion__reparto", opcion.reparto || opcion.unidades));
+    texto.append(crear("span", "opcion__titulo", opcion.titulo), crear("span", "opcion__reparto", opcion.reparto));
     texto.append(crear("span", "opcion__elegido", "Elegido para tu lista"));
     fila.append(radio, marca, texto);
     return fila;
-  }
-
-  function crearDetalleOpcion(opcion) {
-    const detalle = crear("div", "opcion__detalle");
-    detalle.dataset.camino = opcion.clave;
-    detalle.append(crear("p", "opcion__sobrantes", opcion.sobrantes));
-    opcion.grupos.forEach((grupo) => detalle.append(crearGrupoSugerencia(grupo)));
-    return detalle;
   }
 
   function caminoMarcado() {
@@ -583,11 +562,9 @@ function iniciar() {
     return radio ? radio.value : null;
   }
 
-  // Muestra solo el detalle del camino marcado y marca con "Elegido para tu lista" el que ya está en el plan.
+  // Marca con "Elegido para tu lista" el camino que ya está en el plan.
   function actualizarBotonCamino() {
-    const clave = caminoMarcado();
-    botonElegirCamino.disabled = !clave;
-    detalleCalculadora.querySelectorAll(".opcion__detalle").forEach((detalle) => { detalle.hidden = detalle.dataset.camino !== clave; });
+    botonElegirCamino.disabled = !caminoMarcado();
     opcionesCalculadora.querySelectorAll(".opcion").forEach((fila) => {
       fila.classList.toggle("opcion--elegida", Boolean(plan.camino) && fila.querySelector(".opcion__radio").value === plan.camino);
     });
@@ -625,23 +602,37 @@ function iniciar() {
     setTimeout(terminar, DURACION_CONTEO_MS + 250);
   }
 
-  // Muestra la frase, el reparto y los tres caminos; "contar" anima las cifras.
-  function mostrarResultado(invitados, porInvitado, contar = false) {
-    const modelo = describirResultado(invitados, catalogo, porInvitado);
+  // Estado del panel en vivo: sin resultado todavía (aviso inicial), con resultado o con un aviso de dato inválido.
+  let resultadoVisible = false;
+
+  function ocultarResultadoCalculadora() {
+    resultadoCalculadora.classList.remove("calculadora__frase--error");
+    resultadoCalculadora.textContent = "";
+    heroCalculadora.hidden = true;
+    opcionesCalculadora.replaceChildren();
+    caminosCalculadora.hidden = true;
+    vacioCalculadora.hidden = false;
+    resultadoVisible = false;
+  }
+
+  // Muestra el resultado grande y los tres caminos; "contar" anima la cifra (solo la primera vez, no en cada tecla).
+  function mostrarResultado(invitados, porInvitado, contar) {
+    const modelo = describirResultado(invitados, porInvitado);
+    const previo = caminoMarcado();
     resultadoCalculadora.classList.remove("calculadora__frase--error");
     resultadoCalculadora.classList.add("solo-lectores");
     resultadoCalculadora.textContent = modelo.frase;
     const cifra = $("calculadora-cifra");
+    cifra.style.minWidth = "";
     cifra.textContent = String(modelo.necesarias);
     cifra.dataset.valor = String(modelo.necesarias);
     $("calculadora-sugerencia").textContent = modelo.sugerencia;
     heroCalculadora.hidden = false;
-    ponerTexto(sobrantesCalculadora, modelo.sobrantes);
-    opcionesCalculadora.replaceChildren(...modelo.opciones.map(crearFilaOpcion));
-    detalleCalculadora.replaceChildren(...modelo.opciones.map(crearDetalleOpcion));
+    opcionesCalculadora.replaceChildren(...modelo.opciones.map((opcion, indice) => crearFilaOpcion(opcion, indice, previo)));
     vacioCalculadora.hidden = true;
     caminosCalculadora.hidden = false;
     actualizarBotonCamino();
+    resultadoVisible = true;
     if (contar) contarCifras(heroCalculadora);
   }
 
@@ -651,11 +642,10 @@ function iniciar() {
     resultadoCalculadora.classList.remove("solo-lectores");
     resultadoCalculadora.textContent = mensaje;
     heroCalculadora.hidden = true;
-    ponerTexto(sobrantesCalculadora, "");
     opcionesCalculadora.replaceChildren();
-    detalleCalculadora.replaceChildren();
     vacioCalculadora.hidden = true;
     caminosCalculadora.hidden = true;
+    resultadoVisible = false;
   }
 
   function marcarCaminoElegido() {
@@ -680,28 +670,40 @@ function iniciar() {
     });
   }
 
-  function calcularInvitados(evento) {
-    evento.preventDefault();
-    const validacion = validarEntradaCalculadora(campoInvitados.value, campoBocaditos.value);
+  // Panel en vivo: cada vez que cambia un campo se recalcula, sin botón. Si falta un dato se vuelve al aviso inicial; un
+  // dato fuera de rango muestra su aviso tras una pausa corta (así "1" camino a "15" no parpadea); el resultado se mide
+  // una vez que el visitante deja de escribir.
+  let temporizadorAviso = 0;
+  let temporizadorMedicion = 0;
+  function calcularEnVivo() {
+    window.clearTimeout(temporizadorAviso);
+    window.clearTimeout(temporizadorMedicion);
     campoInvitados.removeAttribute("aria-invalid");
     campoBocaditos.removeAttribute("aria-invalid");
+    if (campoInvitados.value.trim() === "" || campoBocaditos.value.trim() === "") {
+      ocultarResultadoCalculadora();
+      return;
+    }
+    const validacion = validarEntradaCalculadora(campoInvitados.value, campoBocaditos.value);
     if (!validacion.valido) {
-      if (validacion.campos.includes("invitados")) campoInvitados.setAttribute("aria-invalid", "true");
-      if (validacion.campos.includes("porInvitado")) campoBocaditos.setAttribute("aria-invalid", "true");
-      mostrarErrorCalculadora(validacion.mensaje);
-      (validacion.campos.includes("invitados") ? campoInvitados : campoBocaditos).focus();
+      temporizadorAviso = window.setTimeout(() => {
+        if (validacion.campos.includes("invitados")) campoInvitados.setAttribute("aria-invalid", "true");
+        if (validacion.campos.includes("porInvitado")) campoBocaditos.setAttribute("aria-invalid", "true");
+        mostrarErrorCalculadora(validacion.mensaje);
+      }, 700);
       return;
     }
     plan = { invitados: validacion.invitados, porInvitado: validacion.porInvitado, camino: plan.camino };
-    marcarEvento();
-    mostrarResultado(plan.invitados, plan.porInvitado, true);
+    mostrarResultado(plan.invitados, plan.porInvitado, !resultadoVisible);
     dibujarContextoCamino();
     dibujarLista();
-    registrar("usar_calculadora", {
-      invitados: plan.invitados,
-      bocaditos_por_invitado: plan.porInvitado,
-      sugerencia: codificarSugerencia(calcularCombinacion(plan.invitados, plan.porInvitado))
-    });
+    temporizadorMedicion = window.setTimeout(() => {
+      registrar("usar_calculadora", {
+        invitados: plan.invitados,
+        bocaditos_por_invitado: plan.porInvitado,
+        sugerencia: codificarSugerencia(calcularCombinacion(plan.invitados, plan.porInvitado))
+      });
+    }, 1200);
   }
 
   // Lleva al catálogo con desplazamiento suave (sin animación si el visitante prefiere menos movimiento).
@@ -1395,7 +1397,7 @@ function iniciar() {
 
   campoFecha.addEventListener("input", ocultarErrorFecha);
   formPedido.addEventListener("submit", enviarPedido);
-  formCalculadora.addEventListener("submit", calcularInvitados);
+  formCalculadora.addEventListener("submit", (evento) => evento.preventDefault()); // panel en vivo: Intro no envía nada
 
   // Campos de la calculadora: solo dígitos, tope de dígitos y de valor (invitados hasta 1000 = 4 dígitos; bocaditos por
   // invitado hasta 20 = 2 dígitos). Son campos de texto numérico (no type="number"), así no hay flechitas, ni rueda del
@@ -1421,6 +1423,7 @@ function iniciar() {
   });
   campoBocaditos.addEventListener("input", marcarEvento);
   campoBocaditos.addEventListener("change", marcarEvento);
+  [campoInvitados, campoBocaditos].forEach((campo) => campo.addEventListener("input", calcularEnVivo));
   botonesEvento.forEach((boton) => {
     boton.addEventListener("click", () => {
       campoBocaditos.value = boton.dataset.bocaditos;
