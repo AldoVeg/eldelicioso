@@ -1,35 +1,41 @@
-// "El pecado más vendido": dibuja una tarjeta por cada versión de keke rectangular y muestra la sección.
-import { KEKES, construirMensajeKeke, textoPrecioKeke } from "../kekes.js";
+// "El pecado más vendido": muestrario de colores. Una franja por versión de keke; la que se toca se abre y muestra su detalle
+// (en escritorio las franjas son verticales y se ensanchan; en celular se apilan como un acordeón).
+import { KEKES, construirMensajeKeke, esTonoClaro, textoPrecioKeke } from "../kekes.js";
 import { construirEnlaceWhatsApp } from "../mensajes.js";
 import { $, crear } from "./utiles.js";
 
-// Cada tarjeta: forma de keke con el color del sabor, nombre con su matiz, precio y botón de WhatsApp. El origen de la visita
-// lo suma después aplicarOrigenAEnlaces (como en los demás enlaces de WhatsApp de la página).
-function crearTarjetaKeke(keke) {
-  const tarjeta = crear("article", keke.especial ? "keke keke--especial" : "keke");
-  tarjeta.style.setProperty("--tono", keke.tono);
+// La franja es un contenedor con un botón (nombre y matiz: abre la franja, con aria-expanded) y el detalle (precio y enlace de
+// WhatsApp). El enlace queda fuera del botón: un enlace dentro de un botón no es válido. El origen de la visita lo suma después
+// aplicarOrigenAEnlaces, como en los demás enlaces de WhatsApp.
+function crearTira(keke) {
+  const tira = crear("div", esTonoClaro(keke.tono) ? "tira tira--clara" : "tira");
+  tira.style.setProperty("--tono", keke.tono);
 
-  const forma = crear("div", "keke__forma");
-  forma.setAttribute("aria-hidden", "true");
+  const nombre = crear("button", "tira__nombre", keke.nombre);
+  nombre.type = "button";
+  nombre.setAttribute("aria-expanded", "false");
+  nombre.append(crear("small", "", keke.matiz));
 
-  const nombre = crear("h3", "keke__nombre", keke.nombre);
-  nombre.append(" ", crear("span", "keke__matiz", keke.matiz));
-  const precio = crear("p", keke.precioCentimos === null ? "keke__precio keke__precio--consultar" : "keke__precio", textoPrecioKeke(keke));
-
-  const pedir = crear("a", "boton boton--secundario boton--bloque", "Pedir este");
+  const detalle = crear("div", "tira__detalle");
+  const pedir = crear("a", "boton boton--secundario", "Pedir este");
   pedir.href = construirEnlaceWhatsApp(construirMensajeKeke(keke));
   pedir.dataset.ubicacion = `keke_${keke.id}`;
   pedir.target = "_blank";
   pedir.rel = "noopener noreferrer";
   pedir.setAttribute("aria-label", `Pedir el keke de ${keke.nombre.toLowerCase()} por WhatsApp`);
+  detalle.append(crear("span", "", textoPrecioKeke(keke)), pedir);
 
-  const cuerpo = crear("div", "keke__cuerpo");
-  cuerpo.append(nombre, precio, pedir);
-  tarjeta.append(forma, cuerpo);
-  return tarjeta;
+  tira.append(nombre, detalle);
+  return tira;
 }
 
 export function iniciarKekes() {
-  $("kekes-rejilla").replaceChildren(...KEKES.map(crearTarjetaKeke));
+  const contenedor = $("kekes-tiras");
+  const tiras = KEKES.map(crearTira);
+  // Una sola franja abierta a la vez; tocar en cualquier parte de la franja (menos en el enlace) la abre.
+  const abrir = (elegida) => tiras.forEach((tira) => tira.querySelector(".tira__nombre").setAttribute("aria-expanded", String(tira === elegida)));
+  tiras.forEach((tira) => tira.addEventListener("click", (evento) => { if (!evento.target.closest("a")) abrir(tira); }));
+  contenedor.replaceChildren(...tiras);
+  abrir(tiras[1]); // arranca con la segunda abierta (Piña), como en el diseño elegido
   $("pecado").hidden = false;
 }

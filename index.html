@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-version="202610281326">
+<html lang="es" data-version="202610281338">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -32,7 +32,7 @@
        cada vez que publiques un cambio en index.html, index.css o cualquier archivo de src/, hay que actualizar ESTOS TRES LUGARES
        A LA VEZ con la misma fecha y hora (AAAAMMDDHHmm): 1) el ?v= de index.css y de src/main.js aquí abajo,
        2) data-version en la etiqueta <html> de arriba, 3) el valor "v" de version.json en la raíz del repositorio. -->
-  <link rel="stylesheet" href="index.css?v=202610281326">
+  <link rel="stylesheet" href="index.css?v=202610281338">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -52,7 +52,7 @@
     "priceRange": "S/ 28 - S/ 255"
   }
   </script>
-  <script type="module" src="src/main.js?v=202610281326"></script>
+  <script type="module" src="src/main.js?v=202610281338"></script>
 </head>
 <body id="arriba">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -122,16 +122,16 @@
       </div>
     </section>
 
-    <!-- El pecado más vendido: los kekes rectangulares. Las tarjetas las dibuja src/ui/kekes.js desde src/kekes.js (una sola
+    <!-- El pecado más vendido: los kekes rectangulares. Las franjas las dibuja src/ui/kekes.js desde src/kekes.js (una sola
          lista de versiones, nombres, matices, colores y precios); la sección nace oculta y se muestra al dibujarlas. -->
     <section id="pecado" class="seccion pecado" aria-labelledby="titulo-pecado" hidden>
       <div class="contenedor">
         <header class="seccion__cabecera">
           <span class="filete" aria-hidden="true"></span>
           <h2 id="titulo-pecado" class="seccion__titulo">El pecado más vendido</h2>
-          <p class="seccion__intro">Kekes rectangulares para compartir, en 14 versiones. Elige la tuya y pídela por WhatsApp.</p>
+          <p class="seccion__intro">Kekes rectangulares para compartir. Toca un color para ver su sabor y pídelo por WhatsApp.</p>
         </header>
-        <div class="pecado__rejilla" id="kekes-rejilla"></div>
+        <div class="pecado__tiras" id="kekes-tiras"></div>
       </div>
     </section>
 

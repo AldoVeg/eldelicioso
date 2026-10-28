@@ -5,10 +5,10 @@ import { formatearMoneda } from "./dinero.js";
 import { agregarLineaOrigen } from "./origen.js";
 
 // "nombre" es el sabor real (va en el mensaje de WhatsApp); "matiz" es el apodo sutil que se ve junto al nombre y se puede
-// afinar sin tocar nada más. "tono" es el color del sabor (la tarjeta lo usa de acento) y "precioCentimos" queda en null
-// hasta tener el precio de cada versión: mientras tanto la tarjeta dice "Consultar precio". El de Novia va destacado.
+// afinar sin tocar nada más. "tono" es el color del sabor (la franja lo usa de fondo) y "precioCentimos" queda en null
+// hasta tener el precio de cada versión: mientras tanto la franja dice "Consultar precio".
 export const KEKES = [
-  { id: "novia", nombre: "Novia", matiz: "edición especial", tono: "#C9A227", precioCentimos: null, especial: true },
+  { id: "novia", nombre: "Novia", matiz: "edición especial", tono: "#C9A227", precioCentimos: null },
   { id: "pina", nombre: "Piña", matiz: "soleada", tono: "#F2C94C", precioCentimos: null },
   { id: "durazno", nombre: "Durazno", matiz: "jugoso", tono: "#F4A582", precioCentimos: null },
   { id: "arandano", nombre: "Arándano", matiz: "silvestre", tono: "#5C5AA7", precioCentimos: null },
@@ -23,6 +23,12 @@ export const KEKES = [
   { id: "vainilla", nombre: "Vainilla", matiz: "clásico", tono: "#E6D3A3", precioCentimos: null },
   { id: "oreo", nombre: "Oreo", matiz: "cremoso", tono: "#3B3B3B", precioCentimos: null }
 ];
+
+// Colores claros llevan texto oscuro y los oscuros texto blanco (luminosidad de 0 a 255; el corte en 150 se eligió a ojo).
+export function esTonoClaro(tono) {
+  const n = parseInt(tono.slice(1), 16);
+  return 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) > 150;
+}
 
 // Precio a mostrar: "S/ 35,00" o, sin precio todavía, "Consultar precio".
 export function textoPrecioKeke(keke) {

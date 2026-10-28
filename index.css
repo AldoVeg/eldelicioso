@@ -774,49 +774,54 @@ button { cursor: pointer; }
 }
 
 
-/* ===== El pecado más vendido (kekes rectangulares) ===== */
+/* ===== El pecado más vendido (kekes rectangulares): muestrario de colores ===== */
 .pecado { background: var(--fondo-rosado); }
-.pecado__rejilla { display: grid; gap: var(--e-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr)); }
-.keke {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  overflow: hidden;
-  background: var(--superficie);
-  border: 1px solid var(--borde);
+/* Celular: franjas apiladas (acordeón). La abierta crece; el color de cada sabor (--tono) es el fondo. */
+.pecado__tiras { display: flex; flex-direction: column; gap: var(--e-2); }
+.tira {
+  display: flex;
+  align-items: center;
+  gap: var(--e-4);
+  min-height: 3.2rem;
+  padding: 0 var(--e-4);
+  background: var(--tono);
   border-radius: var(--r-md);
-  box-shadow: var(--sombra-suave);
-  transition: box-shadow .25s, translate .25s;
+  color: #fff;
+  cursor: pointer;
+  overflow: hidden;
 }
-.keke:hover { box-shadow: var(--sombra); }
-/* Keke dibujado con el color del sabor (--tono): fondo suave, corteza más oscura arriba y sombra bajo la pieza */
-.keke__forma {
-  position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 3 / 2;
-  background: color-mix(in srgb, var(--tono) 18%, #fff);
-  border-bottom: 4px solid var(--tono);
+.tira--clara { color: var(--texto); }
+.tira__nombre {
+  padding: var(--e-2) 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font-family: var(--fuente-titulo);
+  font-size: var(--t-base);
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
 }
-.keke__forma::before {
-  content: "";
-  width: 62%;
-  height: 48%;
-  border-radius: .7rem .7rem .4rem .4rem;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--tono) 72%, #000) 0 30%, var(--tono) 30% 100%);
-  box-shadow: 0 .7rem 1rem -.6rem rgba(46, 27, 27, .45);
+.tira__nombre small { display: block; font-family: var(--fuente-texto); font-size: var(--t-xs); font-weight: 400; font-style: italic; opacity: .9; }
+.tira__nombre:focus-visible { outline: none; } /* el foco lo muestra la franja entera */
+.tira:has(.tira__nombre:focus-visible) { outline: 3px solid var(--foco); outline-offset: 2px; }
+.tira__detalle { display: none; gap: var(--e-2); padding: var(--e-3) 0; font-size: var(--t-sm); }
+.tira__detalle .boton { justify-self: start; }
+.tira:has([aria-expanded="true"]) { flex-direction: column; align-items: flex-start; justify-content: center; min-height: 11rem; padding: var(--e-4); }
+.tira:has([aria-expanded="true"]) .tira__detalle { display: grid; }
+/* Escritorio: una fila alta de franjas verticales con el nombre de lado; la abierta se ensancha y muestra su detalle */
+@media (min-width: 53.75em) {
+  .pecado__tiras { flex-direction: row; height: 26rem; }
+  .tira { flex: 1 1 0; flex-direction: column; align-items: center; justify-content: flex-end; min-width: 0; min-height: 0; padding: var(--e-4) .4rem; }
+  .tira__nombre { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+  .tira__nombre small { display: none; }
+  .tira:has([aria-expanded="true"]) { flex: 6 1 0; align-items: flex-start; justify-content: flex-end; min-height: 0; padding: var(--e-5); }
+  .tira:has([aria-expanded="true"]) .tira__nombre { writing-mode: horizontal-tb; transform: none; font-size: var(--t-xl); }
+  .tira:has([aria-expanded="true"]) .tira__nombre small { display: block; font-size: var(--t-sm); }
 }
-.keke__cuerpo { display: grid; gap: var(--e-2); align-content: start; padding: var(--e-3) var(--e-4) var(--e-4); }
-.keke .boton { padding-inline: var(--e-2); font-size: var(--t-sm); white-space: nowrap; }
-.keke__nombre { font-size: var(--t-md); font-weight: 700; line-height: 1.2; }
-.keke__matiz { display: block; font-family: var(--fuente-texto); font-size: var(--t-xs); font-weight: 400; font-style: italic; color: var(--texto-suave); }
-.keke__precio { font-family: var(--fuente-titulo); font-size: var(--t-md); font-weight: 800; }
-.keke__precio--consultar { font-family: var(--fuente-texto); font-size: var(--t-sm); font-weight: 500; color: var(--texto-suave); }
-/* El de Novia: ocupa dos columnas y lleva el dorado de la marca */
-.keke--especial { grid-column: span 2; border: 2px solid var(--acento-2); }
-.keke--especial .keke__forma { aspect-ratio: 3 / 1; }
-.keke--especial .keke__forma::before { width: 34%; height: 56%; }
-.keke--especial .keke__cuerpo { align-content: center; }
-.keke--especial .keke__nombre::before { content: "★ "; color: var(--dorado-texto); }
+@media (prefers-reduced-motion: no-preference) {
+  .tira { transition: flex-grow .45s var(--curva-suave), min-height .45s var(--curva-suave); }
+}
 
 /* Cinta de la portada hacia la sección de kekes */
 .portada__cinta {
@@ -1015,7 +1020,7 @@ button { cursor: pointer; }
   }
 
   /* 2. Elevación al pasar el cursor (con "translate" para no chocar con la aparición) */
-  .tarjeta:hover, .keke:hover { translate: 0 -4px; }
+  .tarjeta:hover { translate: 0 -4px; }
   .boton:hover, .filtro:hover { transform: translateY(-2px); }
 
   /* 3. Zoom suave de la foto al pasar el cursor */
@@ -1040,7 +1045,7 @@ button { cursor: pointer; }
 
   /* 5. Aparición suave al desplazar (solo navegadores con animaciones por scroll) */
   @supports (animation-timeline: view()) {
-    .tarjeta, .promo, .calculadora, .datos__item, .paso, .keke {
+    .tarjeta, .promo, .calculadora, .datos__item, .paso {
       animation: aparecer linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 35%;

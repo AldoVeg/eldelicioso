@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Kekes: 5 alternativas</title>
+<style>
+@font-face { font-family: 'Baloo 2'; font-weight: 400 800; font-display: swap; src: url(../fonts/baloo-2.woff2) format('woff2'); }
+@font-face { font-family: 'Work Sans'; font-weight: 100 900; font-display: swap; src: url(../fonts/work-sans.woff2) format('woff2'); }
+@font-face { font-family: 'Space Mono'; font-weight: 400; font-display: swap; src: url(../fonts/space-mono-400.woff2) format('woff2'); }
+:root {
+  --fondo: #FFFBF6; --rosado: #FCEDEA; --sup: #fff; --texto: #2E1B1B; --suave: #6B5253;
+  --acento: #BE1E3C; --dorado: #E0A24A; --dorado-t: #8A5A0F; --borde: #F0DDD3; --campo: #957B78; --wsp: #0F7A3E;
+  --sombra: 0 10px 30px rgba(120, 50, 30, .12); --sombra-s: 0 4px 14px rgba(120, 50, 30, .07);
+  --titulo: 'Baloo 2', system-ui, sans-serif; --cuerpo: 'Work Sans', system-ui, sans-serif; --mono: 'Space Mono', monospace;
+  --curva: cubic-bezier(.3, .7, .2, 1);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fondo); color: var(--texto); font: 16px/1.5 var(--cuerpo); }
+h1, h2, h3, h4, p, ul { margin: 0; padding: 0; }
+button { font: inherit; color: inherit; }
+.pagina { width: min(1120px, 100% - 32px); margin-inline: auto; padding: 32px 0 80px; }
+.pagina > header { display: grid; gap: 8px; margin-bottom: 20px; }
+.pagina > header h1 { font: 800 clamp(1.8rem, 5vw, 2.6rem)/1.1 var(--titulo); }
+.pagina > header p { color: var(--suave); max-width: 66ch; }
+.indice { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 40px; list-style: none; }
+.indice a { display: inline-block; padding: 8px 14px; border: 1px solid var(--borde); border-radius: 99px; background: var(--sup); color: var(--texto); text-decoration: none; font-weight: 600; font-size: .9rem; }
+.indice a:hover { border-color: var(--acento); color: var(--acento); }
+.alt { margin-bottom: 72px; scroll-margin-top: 16px; }
+.alt__cab { display: grid; gap: 4px; margin-bottom: 14px; }
+.alt__etq { font: 400 .75rem var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--dorado-t); }
+.alt__cab h2 { font: 800 1.6rem/1.15 var(--titulo); }
+.alt__cab p { color: var(--suave); max-width: 72ch; }
+.alt__nota { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 8px; font-size: .85rem; }
+.alt__nota span::before { content: "+ "; color: var(--wsp); font-weight: 700; }
+.alt__nota span.menos::before { content: "– "; color: var(--acento); }
+.marco { background: var(--rosado); border: 1px solid var(--borde); border-radius: 22px; box-shadow: var(--sombra); padding: clamp(16px, 3vw, 32px); position: relative; overflow: hidden; }
+.cab-seccion { display: grid; gap: 6px; margin-bottom: 18px; }
+.filete { display: block; width: 3rem; height: 5px; border-radius: 99px; background: linear-gradient(90deg, var(--acento), var(--dorado)); }
+.cab-seccion h3 { font: 800 clamp(1.5rem, 4vw, 2rem)/1.1 var(--titulo); }
+.cab-seccion p { color: var(--suave); }
+
+/* Pieza común: keke dibujado con el color del sabor (--tono) */
+.forma { position: relative; display: grid; place-items: center; background: color-mix(in srgb, var(--tono) 18%, #fff); }
+.forma::before { content: ""; width: 62%; height: 48%; border-radius: .7rem .7rem .4rem .4rem; background: linear-gradient(to bottom, color-mix(in srgb, var(--tono) 72%, #000) 0 30%, var(--tono) 30% 100%); box-shadow: 0 .7rem 1rem -.6rem rgba(46, 27, 27, .45); }
+.matiz { font-size: .8rem; font-style: italic; color: var(--suave); font-weight: 400; }
+.precio { font-size: .85rem; color: var(--suave); }
+.btn { display: inline-flex; justify-content: center; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 99px; border: 1.5px solid var(--campo); background: #fff; font: 700 .95rem var(--titulo); text-decoration: none; color: var(--texto); cursor: pointer; transition: background-color .2s, border-color .2s, color .2s, transform .2s var(--curva); white-space: nowrap; }
+.btn:hover { background: var(--rosado); border-color: var(--acento); color: var(--acento); transform: translateY(-2px); }
+.btn--rojo { background: var(--acento); border-color: var(--acento); color: #fff; }
+.btn--rojo:hover { background: #9E1630; color: #fff; }
+.btn:focus-visible, .chip:focus-visible, .tira:focus-visible, .fila:focus-visible, .pestana:focus-visible { outline: 3px solid var(--texto); outline-offset: 2px; }
+.chip { min-height: 44px; padding: 0 14px; border: 1.5px solid var(--borde); border-radius: 99px; background: #fff; font-weight: 600; font-size: .9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background-color .2s, border-color .2s; }
+.chip::before { content: ""; width: .7rem; height: .7rem; border-radius: 50%; background: var(--tono, var(--acento)); flex: none; }
+.chip:hover { border-color: var(--acento); }
+.chip[aria-checked="true"], .chip[aria-pressed="true"] { background: var(--texto); border-color: var(--texto); color: #fff; }
+@media (prefers-reduced-motion: no-preference) { .anima { animation: entra .4s var(--curva) both; } @keyframes entra { from { opacity: 0; translate: 0 .5rem; } to { opacity: 1; translate: 0 0; } } }
+
+/* ===== 1. Estantería (carrusel) ===== */
+.e-pista { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 2px 14px; scrollbar-width: thin; }
+.e-ficha { flex: 0 0 11.5rem; scroll-snap-align: start; display: grid; background: #fff; border: 1px solid var(--borde); border-radius: 16px; overflow: hidden; box-shadow: var(--sombra-s); }
+.e-ficha .forma { aspect-ratio: 4 / 3; border-bottom: 4px solid var(--tono); }
+.e-ficha .forma::before { width: 66%; height: 52%; }
+.e-ficha div.cuerpo { display: grid; gap: 4px; padding: 12px 14px 16px; }
+.e-ficha .btn { width: 100%; padding-inline: 8px; }
+.e-ficha h4 { font: 700 1.05rem/1.2 var(--titulo); }
+.e-ficha--esp { flex-basis: 19rem; border: 2px solid var(--dorado); }
+.e-ficha--esp .forma { aspect-ratio: 16 / 9; }
+.e-ficha--esp h4::before { content: "★ "; color: var(--dorado-t); }
+.e-mando { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 8px; }
+.e-mando button { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--campo); background: #fff; font-size: 1.2rem; cursor: pointer; }
+.e-mando button:hover { border-color: var(--acento); color: var(--acento); }
+
+/* ===== 2. Escaparate con selector ===== */
+.s-caja { display: grid; gap: 18px; }
+.s-chips { display: flex; flex-wrap: wrap; gap: 8px; align-content: start; }
+.s-vitrina { display: grid; border-radius: 20px; overflow: hidden; background: #fff; border: 1px solid var(--borde); box-shadow: var(--sombra-s); }
+.s-vitrina .forma { aspect-ratio: 16 / 10; border-bottom: 5px solid var(--tono); transition: background-color .4s; }
+.s-vitrina .forma::before { width: 56%; height: 56%; transition: background .4s; }
+.s-info { display: grid; gap: 8px; padding: 18px 20px 22px; align-content: start; }
+.s-info h4 { font: 800 clamp(1.6rem, 4vw, 2.2rem)/1.1 var(--titulo); }
+.s-info .matiz { font-size: 1rem; }
+.s-info .acciones { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
+@media (min-width: 860px) { .s-caja { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; } .s-vitrina { grid-template-columns: 1fr; } }
+
+/* ===== 3. Muestrario de colores (franjas que se abren) ===== */
+.m-tiras { display: flex; flex-direction: column; gap: 8px; }
+.tira { position: relative; display: flex; align-items: center; gap: 14px; min-height: 3.2rem; padding: 0 16px; border: 0; border-radius: 14px; background: var(--tono); color: #fff; text-align: left; cursor: pointer; overflow: hidden; transition: min-height .45s var(--curva), flex-grow .45s var(--curva); }
+.tira .oscuro { color: var(--texto); }
+.tira__nombre { font: 700 1rem var(--titulo); }
+.tira__detalle { display: none; gap: 6px; padding: 14px 0; }
+.tira[aria-expanded="true"] { min-height: 11rem; align-items: flex-start; flex-direction: column; justify-content: center; padding: 16px 18px; }
+.tira[aria-expanded="true"] .tira__detalle { display: grid; }
+.tira__detalle .btn { justify-self: start; }
+.tira__nombre small { display: block; font: 400 .8rem var(--cuerpo); font-style: italic; opacity: .9; }
+@media (min-width: 860px) {
+  .m-tiras { flex-direction: row; height: 26rem; }
+  .tira { flex: 1 1 0; min-height: 0; min-width: 0; flex-direction: column; justify-content: flex-end; align-items: center; padding: 18px 6px; }
+  .tira__nombre { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+  .tira__nombre small { display: none; }
+  .tira[aria-expanded="true"] { flex: 6 1 0; min-height: 0; justify-content: flex-end; align-items: flex-start; padding: 22px; }
+  .tira[aria-expanded="true"] .tira__nombre { writing-mode: horizontal-tb; transform: none; font-size: 1.6rem; }
+  .tira[aria-expanded="true"] .tira__nombre small { display: block; }
+}
+
+/* ===== 4. Por familias (pestañas) ===== */
+.f-pestanas { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; border-bottom: 2px solid var(--borde); }
+.pestana { position: relative; padding: 12px 16px; border: 0; background: none; font: 700 1rem var(--titulo); color: var(--suave); cursor: pointer; }
+.pestana[aria-selected="true"] { color: var(--acento); }
+.pestana[aria-selected="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 3px; background: var(--acento); border-radius: 3px 3px 0 0; }
+.pestana small { font-weight: 400; color: var(--suave); margin-left: 4px; }
+.f-rejilla { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); }
+.f-fila { display: grid; grid-template-columns: 5rem 1fr; background: #fff; border: 1px solid var(--borde); border-radius: 14px; overflow: hidden; box-shadow: var(--sombra-s); }
+.f-fila .forma { border-right: 4px solid var(--tono); }
+.f-fila .forma::before { width: 62%; height: 42%; }
+.f-fila .cuerpo { display: grid; gap: 2px; padding: 10px 14px; }
+.f-fila h4 { font: 700 1rem/1.2 var(--titulo); }
+.f-fila .btn { min-height: 36px; padding: 0 12px; font-size: .85rem; margin-top: 4px; justify-self: start; }
+
+/* ===== 5. La carta (lista tipográfica) ===== */
+.c-banda { display: grid; gap: 4px; padding: 16px 20px; margin-bottom: 18px; border: 2px solid var(--dorado); border-radius: 16px; background: #fff; }
+.c-banda h4 { font: 800 1.4rem var(--titulo); }
+.c-banda h4::before { content: "★ "; color: var(--dorado-t); }
+.c-lista { display: grid; gap: 0 40px; list-style: none; }
+.fila { display: grid; grid-template-columns: auto auto 1fr auto; align-items: baseline; gap: 12px; width: 100%; padding: 14px 4px; border: 0; border-bottom: 1px solid var(--borde); background: none; text-align: left; cursor: pointer; transition: background-color .2s; }
+.fila:hover { background: rgba(255, 255, 255, .7); }
+.fila__punto { width: .8rem; height: .8rem; border-radius: 50%; background: var(--tono); align-self: center; box-shadow: 0 0 0 3px color-mix(in srgb, var(--tono) 25%, transparent); }
+.fila__nombre { font: 700 1.1rem var(--titulo); }
+.fila__guia { align-self: end; border-bottom: 2px dotted var(--campo); opacity: .55; margin-bottom: .45rem; }
+.fila__ir { font: 600 .85rem var(--cuerpo); color: var(--suave); white-space: nowrap; }
+.fila:hover .fila__ir { color: var(--acento); }
+@media (min-width: 760px) { .c-lista { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="pagina">
+  <header>
+    <span class="alt__etq">Propuestas para evaluar · no están en la web</span>
+    <h1>Kekes rectangulares: 5 formas de presentar las 14 versiones</h1>
+    <p>Todas usan los mismos datos (nombres, matices y colores de la lista) y se pueden tocar. Hoy en la web hay un muro de tarjetas iguales; aquí se prueban otras jerarquías. Sin fotos todavía, así que todo se apoya en el color de cada sabor; con fotos, las formas dibujadas se reemplazan.</p>
+  </header>
+  <ul class="indice">
+    <li><a href="#a1">1 · Estantería</a></li>
+    <li><a href="#a2">2 · Escaparate</a></li>
+    <li><a href="#a3">3 · Muestrario</a></li>
+    <li><a href="#a4">4 · Por familias</a></li>
+    <li><a href="#a5">5 · La carta</a></li>
+  </ul>
+
+  <section class="alt" id="a1">
+    <div class="alt__cab"><span class="alt__etq">Alternativa 1</span><h2>Estantería</h2>
+      <p>Fichas grandes en una fila que se desliza. El de Novia abre la fila más ancho. Se siente como mirar una vitrina.</p>
+      <div class="alt__nota"><span>Cada keke tiene protagonismo</span><span>Ocupa poco alto en la página</span><span class="menos">No se ven los 14 a la vez</span></div></div>
+    <div class="marco"><div class="cab-seccion"><span class="filete"></span><h3>El pecado más vendido</h3><p>Desliza y elige tu keke.</p></div>
+      <div class="e-mando"><button type="button" id="e-ant" aria-label="Anterior">‹</button><button type="button" id="e-sig" aria-label="Siguiente">›</button></div>
+      <div class="e-pista" id="e-pista" tabindex="0" aria-label="Versiones de keke"></div></div>
+  </section>
+
+  <section class="alt" id="a2">
+    <div class="alt__cab"><span class="alt__etq">Alternativa 2</span><h2>Escaparate con selector</h2>
+      <p>Los 14 sabores como botones con su color; al elegir uno, una vitrina grande muestra ese keke con su nombre, matiz y botón. Decide por descarte, sin mirar 14 tarjetas.</p>
+      <div class="alt__nota"><span>Se ven los 14 nombres de un vistazo</span><span>Una sola vitrina: orden total</span><span class="menos">Para comparar hay que ir cambiando</span></div></div>
+    <div class="marco"><div class="cab-seccion"><span class="filete"></span><h3>El pecado más vendido</h3><p>Elige un sabor y míralo de cerca.</p></div>
+      <div class="s-caja"><div class="s-chips" id="s-chips" role="radiogroup" aria-label="Sabor"></div>
+      <div class="s-vitrina" id="s-vitrina"></div></div></div>
+  </section>
+
+  <section class="alt" id="a3">
+    <div class="alt__cab"><span class="alt__etq">Alternativa 3</span><h2>Muestrario de colores</h2>
+      <p>Una franja por sabor, como un muestrario de pintura. Al tocar una, se abre y revela su detalle; en celular las franjas se apilan. Es la más visual y distinta.</p>
+      <div class="alt__nota"><span>Muy llamativa: el color es el protagonista</span><span>Cabe todo en una sola fila</span><span class="menos">Menos texto visible a primera vista</span></div></div>
+    <div class="marco"><div class="cab-seccion"><span class="filete"></span><h3>El pecado más vendido</h3><p>Toca un color para ver su sabor.</p></div>
+      <div class="m-tiras" id="m-tiras"></div></div>
+  </section>
+
+  <section class="alt" id="a4">
+    <div class="alt__cab"><span class="alt__etq">Alternativa 4</span><h2>Por familias</h2>
+      <p>Los sabores agrupados en Frutales, Clásicos, Chocolate y la edición de Novia, con pestañas. Ayuda a decidir cuando hay muchos: primero eliges el gusto, luego la versión.</p>
+      <div class="alt__nota"><span>Reduce la indecisión de 14 a unos pocos</span><span>Filas compactas y fáciles de leer</span><span class="menos">Hay que definir bien qué sabor va en cada familia</span></div></div>
+    <div class="marco"><div class="cab-seccion"><span class="filete"></span><h3>El pecado más vendido</h3><p>¿Qué se te antoja hoy?</p></div>
+      <div class="f-pestanas" id="f-pestanas" role="tablist" aria-label="Familias"></div>
+      <div class="f-rejilla" id="f-rejilla"></div></div>
+  </section>
+
+  <section class="alt" id="a5">
+    <div class="alt__cab"><span class="alt__etq">Alternativa 5</span><h2>La carta</h2>
+      <p>Una lista elegante, como la carta de una pastelería: punto de color, nombre con su matiz y una línea de puntos hasta el precio. La banda de Novia arriba, destacada. No necesita fotos.</p>
+      <div class="alt__nota"><span>Muy limpia y rápida de leer en celular</span><span>Funciona bien sin fotos</span><span class="menos">Es la menos "visual" de las cinco</span></div></div>
+    <div class="marco"><div class="cab-seccion"><span class="filete"></span><h3>El pecado más vendido</h3><p>Nuestra carta de kekes.</p></div>
+      <div class="c-banda" id="c-banda"></div>
+      <ul class="c-lista" id="c-lista"></ul></div>
+  </section>
+</div>
+
+<script>
+const KEKES = [
+  { id: "novia", nombre: "Novia", matiz: "edición especial", tono: "#C9A227", fam: "Novia", esp: true },
+  { id: "pina", nombre: "Piña", matiz: "soleada", tono: "#F2C94C", fam: "Frutales" },
+  { id: "durazno", nombre: "Durazno", matiz: "jugoso", tono: "#F4A582", fam: "Frutales" },
+  { id: "arandano", nombre: "Arándano", matiz: "silvestre", tono: "#5C5AA7", fam: "Frutales" },
+  { id: "platano", nombre: "Plátano", matiz: "maduro", tono: "#D8B56A", fam: "Frutales" },
+  { id: "maracuya", nombre: "Maracuyá", matiz: "vibrante", tono: "#F59E0B", fam: "Frutales" },
+  { id: "fresa", nombre: "Fresa con arándano", matiz: "frutos rojos", tono: "#C2416C", fam: "Frutales" },
+  { id: "zanahoria", nombre: "Zanahoria", matiz: "casero", tono: "#D9742C", fam: "Clásicos" },
+  { id: "naranja", nombre: "Naranja", matiz: "fresco", tono: "#FB8C3A", fam: "Frutales" },
+  { id: "chocolate", nombre: "Chocolate", matiz: "profundo", tono: "#6B3E2A", fam: "Chocolate" },
+  { id: "marmoleado", nombre: "Marmoleado", matiz: "a dos tonos", tono: "#8C6A55", fam: "Clásicos" },
+  { id: "chispas", nombre: "Chispas de chocolate", matiz: "en cada bocado", tono: "#4A2C23", fam: "Chocolate" },
+  { id: "vainilla", nombre: "Vainilla", matiz: "clásico", tono: "#E6D3A3", fam: "Clásicos" },
+  { id: "oreo", nombre: "Oreo", matiz: "cremoso", tono: "#3B3B3B", fam: "Chocolate" }
+];
+const $ = (s, r = document) => r.querySelector(s);
+const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x) e.textContent = x; return e; };
+const pedir = (k, cls = "btn") => { const a = el("a", cls, "Pedir este"); a.href = "https://wa.me/51980592747?text=" + encodeURIComponent("Hola, El Delicioso. Quisiera pedir el keke rectangular de " + k.nombre.toLowerCase() + "."); a.target = "_blank"; a.rel = "noopener"; return a; };
+const tono = (e, k) => e.style.setProperty("--tono", k.tono);
+const oscuro = (hex) => { const n = parseInt(hex.slice(1), 16); const l = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)); return l > 150; };
+
+// 1 · Estantería
+(() => { const p = $("#e-pista");
+  KEKES.forEach((k) => { const f = el("article", "e-ficha" + (k.esp ? " e-ficha--esp" : "")); tono(f, k);
+    const fo = el("div", "forma"); fo.setAttribute("aria-hidden", "true");
+    const c = el("div", "cuerpo"); const h = el("h4", "", k.nombre); c.append(h, el("span", "matiz", k.matiz), el("span", "precio", "Consultar precio"), pedir(k)); f.append(fo, c); p.append(f); });
+  $("#e-sig").onclick = () => p.scrollBy({ left: 260, behavior: "smooth" }); $("#e-ant").onclick = () => p.scrollBy({ left: -260, behavior: "smooth" }); })();
+
+// 2 · Escaparate
+(() => { const chips = $("#s-chips"), v = $("#s-vitrina");
+  const pintar = (k) => { v.style.setProperty("--tono", k.tono); v.replaceChildren(); const fo = el("div", "forma anima"); fo.setAttribute("aria-hidden", "true");
+    const info = el("div", "s-info"); const a = el("div", "acciones"); a.append(pedir(k, "btn btn--rojo"), el("span", "precio", "Consultar precio"));
+    info.append(el("span", "alt__etq", k.esp ? "Edición especial" : k.fam), el("h4", "", k.nombre), el("span", "matiz", k.matiz), a); v.append(fo, info);
+    [...chips.children].forEach((c) => c.setAttribute("aria-checked", String(c.dataset.id === k.id))); };
+  KEKES.forEach((k) => { const c = el("button", "chip", k.nombre); c.type = "button"; c.setAttribute("role", "radio"); c.dataset.id = k.id; tono(c, k); c.onclick = () => pintar(k); chips.append(c); });
+  pintar(KEKES[1]); })();
+
+// 3 · Muestrario
+(() => { const w = $("#m-tiras"); const tiras = [];
+  const abrir = (t) => tiras.forEach((x) => x.setAttribute("aria-expanded", String(x === t)));
+  KEKES.forEach((k) => { const t = el("button", "tira"); t.type = "button"; tono(t, k); if (oscuro(k.tono)) t.style.color = "#2E1B1B";
+    const n = el("span", "tira__nombre", k.nombre); n.append(el("small", "", k.matiz));
+    const d = el("div", "tira__detalle"); d.append(el("span", "precio", "Consultar precio"), pedir(k, "btn")); if (oscuro(k.tono)) d.querySelector(".precio").style.color = "#2E1B1B"; else d.querySelector(".precio").style.color = "#fff";
+    t.append(n, d); t.setAttribute("aria-expanded", "false"); t.onclick = () => abrir(t); tiras.push(t); w.append(t); });
+  abrir(tiras[1]); })();
+
+// 4 · Por familias
+(() => { const fam = ["Todos", "Frutales", "Clásicos", "Chocolate", "Novia"]; const tabs = $("#f-pestanas"), g = $("#f-rejilla"); let activa = "Todos";
+  const pintar = () => { g.replaceChildren(); KEKES.filter((k) => activa === "Todos" || k.fam === activa).forEach((k) => { const f = el("article", "f-fila anima"); tono(f, k);
+    const fo = el("div", "forma"); fo.setAttribute("aria-hidden", "true"); const c = el("div", "cuerpo"); c.append(el("h4", "", k.nombre), el("span", "matiz", k.matiz), pedir(k)); f.append(fo, c); g.append(f); });
+    [...tabs.children].forEach((t) => t.setAttribute("aria-selected", String(t.dataset.f === activa))); };
+  fam.forEach((n) => { const cant = n === "Todos" ? KEKES.length : KEKES.filter((k) => k.fam === n).length; const t = el("button", "pestana", n); t.type = "button"; t.dataset.f = n; t.setAttribute("role", "tab"); t.append(el("small", "", cant)); t.onclick = () => { activa = n; pintar(); }; tabs.append(t); });
+  pintar(); })();
+
+// 5 · La carta
+(() => { const b = $("#c-banda"), l = $("#c-lista"); const nov = KEKES[0];
+  b.style.setProperty("--tono", nov.tono); b.append(el("h4", "", "Keke de Novia"), el("span", "matiz", "edición especial · para el día más importante"), pedir(nov, "btn btn--rojo")); b.lastChild.style.justifySelf = "start";
+  KEKES.slice(1).forEach((k) => { const li = el("li"); const a = el("a", "fila"); a.href = pedir(k).href; a.target = "_blank"; a.rel = "noopener"; tono(a, k); a.style.textDecoration = "none"; a.style.color = "inherit";
+    const n = el("span", "fila__nombre", k.nombre); n.append(" ", el("span", "matiz", k.matiz));
+    const ir = el("span", "fila__ir", "Consultar precio");
+    a.append(el("span", "fila__punto"), n, el("span", "fila__guia"), ir); li.append(a); l.append(li); });
+})();
+</script>
+</body>
+</html>
