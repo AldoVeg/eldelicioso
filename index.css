@@ -821,6 +821,11 @@ button { cursor: pointer; }
   .tira:has([aria-expanded="true"]) .tira__nombre { writing-mode: horizontal-tb; transform: none; font-size: var(--t-xl); }
   .tira:has([aria-expanded="true"]) .tira__nombre small { display: block; font-size: var(--t-sm); }
 }
+/* Con foto: la franja abierta la muestra de fondo, con un degradado oscuro abajo para que el texto se lea (siempre blanco) */
+.tira--foto:has([aria-expanded="true"]) {
+  background: linear-gradient(to top, rgba(46, 27, 27, .85), rgba(46, 27, 27, .15) 65%), var(--foto) center / cover, var(--tono);
+  color: #fff;
+}
 @media (prefers-reduced-motion: no-preference) {
   .tira { transition: flex-grow .45s var(--curva-suave), min-height .45s var(--curva-suave); }
 }

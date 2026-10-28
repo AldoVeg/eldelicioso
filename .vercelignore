@@ -14,3 +14,6 @@ tools/
 tests/
 package.json
 archivo/
+node_modules/
+package-lock.json
+fotos-kekes/

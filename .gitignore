@@ -1,1 +1,4 @@
 .claude/
+node_modules/
+fotos-kekes/*
+!fotos-kekes/LEEME.md

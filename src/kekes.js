@@ -7,6 +7,7 @@ import { agregarLineaOrigen } from "./origen.js";
 // "nombre" es el sabor real (va en el mensaje de WhatsApp); "matiz" es el apodo sutil que se ve junto al nombre y se puede
 // afinar sin tocar nada más. "tono" es el color del sabor (la franja lo usa de fondo) y "precioCentimos" queda en null
 // hasta tener el precio de cada versión: mientras tanto la franja dice "Consultar precio".
+// "foto" (opcional) la agrega `npm run fotos` al convertir las fotos de fotos-kekes/: al abrirse la franja, la foto va de fondo.
 export const KEKES = [
   { id: "novia", nombre: "Novia", matiz: "edición especial", tono: "#C9A227", precioCentimos: null },
   { id: "pina", nombre: "Piña", matiz: "soleada", tono: "#F2C94C", precioCentimos: null },

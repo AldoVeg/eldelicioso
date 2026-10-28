@@ -10,6 +10,11 @@ import { $, crear } from "./utiles.js";
 function crearTira(keke) {
   const tira = crear("div", esTonoClaro(keke.tono) ? "tira tira--clara" : "tira");
   tira.style.setProperty("--tono", keke.tono);
+  if (keke.foto) {
+    // La foto solo se pide cuando la franja se abre (la regla CSS usa --foto únicamente en la franja abierta).
+    tira.classList.add("tira--foto");
+    tira.style.setProperty("--foto", `url("${keke.foto}")`);
+  }
 
   const nombre = crear("button", "tira__nombre", keke.nombre);
   nombre.type = "button";
