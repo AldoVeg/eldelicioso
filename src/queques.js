@@ -56,6 +56,15 @@ export function textoPrecioQueque(queque) {
   return queque.precioCentimos === null ? "Consultar precio" : formatearMoneda(queque.precioCentimos);
 }
 
+// Referencia en dólares junto al precio en soles. El tipo de cambio es el de venta del 28/10/2026 (BCRP y SUNAT, soles por US$ 1);
+// si cambia mucho, se corrige aquí. El resultado se redondea al medio dólar más cercano: "≈ US$ 4,50". Sin precio, no hay referencia.
+const TIPO_CAMBIO_REFERENCIAL = 3.45;
+export function textoPrecioDolares(queque) {
+  if (queque.precioCentimos === null) return null;
+  const dolares = Math.round((queque.precioCentimos / 100 / TIPO_CAMBIO_REFERENCIAL) * 2) / 2;
+  return `≈ US$ ${dolares.toFixed(2).replace(".", ",")}`;
+}
+
 // Pedido de un queque por WhatsApp (con el precio si ya se conoce).
 export function construirMensajeQueque(queque, negocio = NEGOCIO, origen = null) {
   const precio = queque.precioCentimos === null ? "" : ` (${formatearMoneda(queque.precioCentimos)})`;

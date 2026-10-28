@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { DETALLES_QUEQUE, FAMILIAS, QUEQUES, construirMensajeQueque, miniaturaDe, rotuloFamilia, textoPrecioQueque } from "../src/queques.js";
+import { DETALLES_QUEQUE, FAMILIAS, QUEQUES, construirMensajeQueque, miniaturaDe, rotuloFamilia, textoPrecioDolares, textoPrecioQueque } from "../src/queques.js";
 
 const html = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "index.html"), "utf8");
 
@@ -58,4 +58,11 @@ test("el rótulo de la guía cuenta los sabores y omite el número si hay uno so
 test("la miniatura sale de la ruta de la foto y solo existe si hay foto", () => {
   assert.equal(miniaturaDe({ foto: "img/QUEQUES/pina.webp" }), "img/QUEQUES/min/pina.webp");
   assert.equal(miniaturaDe({}), null);
+});
+
+test("la referencia en dólares redondea al medio dólar y no aparece sin precio", () => {
+  const por = (id) => QUEQUES.find((q) => q.id === id);
+  assert.equal(textoPrecioDolares(por("pina")), "≈ US$ 4,00"); // S/ 13 a 3,45 = 3,77
+  assert.equal(textoPrecioDolares(por("arandano")), "≈ US$ 4,50"); // S/ 15 a 3,45 = 4,35
+  assert.equal(textoPrecioDolares(por("oreo")), null);
 });

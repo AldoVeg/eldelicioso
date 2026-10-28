@@ -1,6 +1,6 @@
 // "El pecado más vendido": un escenario grande con el queque elegido, flechas para recorrer los sabores en orden y una cinta
 // deslizable de miniaturas donde la guía de familias (Novia, Frutales, Clásicos, Chocolate) separa los grupos.
-import { DETALLES_QUEQUE, FAMILIAS, QUEQUES, construirMensajeQueque, miniaturaDe, rotuloFamilia, textoPrecioQueque } from "../queques.js";
+import { DETALLES_QUEQUE, FAMILIAS, QUEQUES, construirMensajeQueque, miniaturaDe, rotuloFamilia, textoPrecioDolares, textoPrecioQueque } from "../queques.js";
 import { construirEnlaceWhatsApp } from "../mensajes.js";
 import { $, crear } from "./utiles.js";
 
@@ -44,6 +44,8 @@ function crearEscenario(queque, origen) {
   pedir.setAttribute("aria-label", `Pedir el queque de ${queque.nombre.toLowerCase()} por WhatsApp`);
   const acciones = crear("div", "escenario__acciones");
   acciones.append(pedir, crear("span", queque.precioCentimos === null ? "escenario__precio escenario__precio--consultar" : "escenario__precio", textoPrecioQueque(queque)));
+  const dolares = textoPrecioDolares(queque);
+  if (dolares) acciones.append(crear("span", "escenario__dolares", dolares)); // la "sombra" del precio: pequeño y tenue, junto al precio en soles
   info.append(crear("p", "escenario__familia", queque.familia === "Novia" ? "Edición especial" : queque.familia), crear("h3", "escenario__nombre", queque.nombre), crear("p", "escenario__matiz", queque.matiz), acciones, crearDetalles());
   escenario.append(crearImagen(queque, "escenario__imagen", queque.foto), info);
   return escenario;
