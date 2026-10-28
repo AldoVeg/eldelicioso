@@ -23,9 +23,15 @@ export function normalizarNombre(nombreArchivo) {
 }
 
 // Busca el keke de una foto por su id o por su nombre ("fresa-arandano" y "fresa con arándano" sirven los dos).
+// Tolera lo que suele acompañar al sabor: "keke Piña", "kekes de piña", "Piña (2)", "piña-copia".
 export function buscarKeke(nombreArchivo, kekes) {
-  const clave = normalizarNombre(nombreArchivo);
-  return kekes.find((k) => k.id === clave || normalizarNombre(k.nombre) === clave) || null;
+  const base = normalizarNombre(nombreArchivo);
+  const limpia = base.replace(/^(keke|kekes|queque|queques|cake)-(de-)?/, "").replace(/-(copia|final|foto|\d+)$/g, "");
+  for (const clave of [base, limpia]) {
+    const keke = kekes.find((k) => k.id === clave || normalizarNombre(k.nombre) === clave);
+    if (keke) return keke;
+  }
+  return null;
 }
 
 // Pone (o reemplaza) el campo foto en la línea del keke dentro de src/kekes.js.

@@ -4,7 +4,7 @@ Deja aquí las fotos de cada versión. El resto lo hace `npm run fotos`: las con
 y las conecta con la web (cuando la franja de ese sabor se abre, la foto aparece de fondo).
 
 ## Cómo nombrar cada foto
-Usa el nombre del sabor, con o sin tildes y en mayúsculas o minúsculas. Todos estos sirven:
+Usa el nombre del sabor, con o sin tildes y en mayúsculas o minúsculas; también sirven "keke piña", "keke de piña" o "piña (2)". Todos estos sirven:
 
 | Sabor | Nombre de archivo (cualquiera de estos) |
 |---|---|

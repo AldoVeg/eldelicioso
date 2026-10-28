@@ -10,7 +10,7 @@ import { agregarLineaOrigen } from "./origen.js";
 // "foto" (opcional) la agrega `npm run fotos` al convertir las fotos de fotos-kekes/: al abrirse la franja, la foto va de fondo.
 export const KEKES = [
   { id: "novia", nombre: "Novia", matiz: "edición especial", tono: "#C9A227", precioCentimos: null },
-  { id: "pina", nombre: "Piña", matiz: "soleada", tono: "#F2C94C", precioCentimos: null },
+  { id: "pina", nombre: "Piña", matiz: "soleada", tono: "#F2C94C", precioCentimos: null, foto: "img/KEKES/pina.webp" },
   { id: "durazno", nombre: "Durazno", matiz: "jugoso", tono: "#F4A582", precioCentimos: null },
   { id: "arandano", nombre: "Arándano", matiz: "silvestre", tono: "#5C5AA7", precioCentimos: null },
   { id: "platano", nombre: "Plátano", matiz: "maduro", tono: "#D8B56A", precioCentimos: null },

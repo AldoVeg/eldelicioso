@@ -15,6 +15,8 @@ test("una foto se asocia al sabor por su id o por su nombre", () => {
   assert.equal(buscarKeke("fresa-arandano.webp", KEKES).id, "fresa-arandano");
   assert.equal(buscarKeke("Fresa con arándano.jpg", KEKES).id, "fresa-arandano");
   assert.equal(buscarKeke("Lúcuma.JPG", KEKES).id, "lucuma");
+  assert.equal(buscarKeke("keke Piña.jpg", KEKES).id, "pina");
+  assert.equal(buscarKeke("Keke de chocolate (2).png", KEKES).id, "chocolate");
   assert.equal(buscarKeke("torta tres leches.jpg", KEKES), null);
 });
 
