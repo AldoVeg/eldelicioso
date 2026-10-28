@@ -389,10 +389,10 @@ button { cursor: pointer; }
   line-height: 1.02;
   letter-spacing: -.01em;
 }
-/* Palabra resaltada con el color de acento y un subrayado dorado fino.
+/* Palabra resaltada con el color de acento y un subrayado dorado fino (la del título de la portada y la de "El pecado más vendido").
    Se usa text-decoration (no un fondo): así se ancla a la línea base de las letras,
    mide exactamente el ancho de la palabra y no depende de la altura interna de la fuente. */
-.portada__titulo em {
+.portada__titulo em, .seccion__titulo em {
   font-style: normal;
   color: var(--acento);
   text-decoration-line: underline;
@@ -401,6 +401,8 @@ button { cursor: pointer; }
   text-underline-offset: .1em;
   text-decoration-skip-ink: none;
 }
+/* En el título de la sección, "pecado" crece para ser lo primero que se lee */
+.seccion__titulo em { font-size: 1.35em; line-height: 1; }
 
 .portada__subtitulo {
   max-width: 32rem;
