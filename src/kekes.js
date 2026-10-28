@@ -11,7 +11,7 @@ import { agregarLineaOrigen } from "./origen.js";
 export const KEKES = [
   { id: "novia", nombre: "Novia", matiz: "edición especial", tono: "#C9A227", precioCentimos: null },
   { id: "pina", nombre: "Piña", matiz: "soleada", tono: "#F2C94C", precioCentimos: null, foto: "img/KEKES/pina.webp" },
-  { id: "durazno", nombre: "Durazno", matiz: "jugoso", tono: "#F4A582", precioCentimos: null },
+  { id: "durazno", nombre: "Durazno", matiz: "jugoso", tono: "#F4A582", precioCentimos: null, foto: "img/KEKES/durazno.webp" },
   { id: "arandano", nombre: "Arándano", matiz: "silvestre", tono: "#5C5AA7", precioCentimos: null },
   { id: "platano", nombre: "Plátano", matiz: "maduro", tono: "#D8B56A", precioCentimos: null },
   { id: "maracuya", nombre: "Maracuyá", matiz: "vibrante", tono: "#F59E0B", precioCentimos: null },
