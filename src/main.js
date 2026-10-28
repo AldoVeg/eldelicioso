@@ -31,6 +31,8 @@ function iniciar() {
   const sobrantesCalculadora = $("calculadora-sobrantes");
   const caminosCalculadora = $("calculadora-caminos");
   const opcionesCalculadora = $("calculadora-opciones");
+  const vacioCalculadora = $("calculadora-vacio");
+  const botonElegirCamino = $("elegir-camino");
 
   // Lista de compras: lista, total y último paso del pedido (panel horizontal en escritorio, barra en móvil)
   const listaRaiz = $("lista-compras");
@@ -552,7 +554,7 @@ function iniciar() {
   // para lectores de pantalla, que leen el texto final una sola vez.
   function crearUnidades(texto) {
     const parte = /^(\d+)(.*)$/.exec(texto);
-    const p = crear("p", "opcion__unidades");
+    const p = crear("span", "opcion__unidades");
     if (!parte) {
       p.textContent = texto;
       return p;
@@ -566,23 +568,45 @@ function iniciar() {
     return p;
   }
 
-  // Cada camino es una tarjeta: resumen (título, unidades, reparto y sobrantes), sugerencia por grupo y botón al pie.
-  function crearFilaOpcion(opcion) {
+  // Cada camino es una opción de radio: cabeza (marca, título, reparto y unidades) y, solo en la elegida, el detalle
+  // (sobrantes y sugerencia por grupo). Un único botón al pie lleva al catálogo con el camino marcado.
+  function crearFilaOpcion(opcion, indice) {
     const fila = crear("article", `opcion opcion--${opcion.clave}`);
-    const resumen = crear("div", "opcion__resumen");
-    resumen.append(crear("h4", "opcion__titulo", opcion.titulo), crearUnidades(opcion.unidades));
-    if (opcion.reparto) resumen.append(crear("p", "opcion__reparto", opcion.reparto));
-    resumen.append(crear("p", "opcion__sobrantes", opcion.sobrantes));
+    const cabeza = crear("label", "opcion__cabeza");
+    const radio = crear("input", "opcion__radio");
+    radio.type = "radio";
+    radio.name = "camino";
+    radio.value = opcion.clave;
+    radio.checked = plan.camino ? plan.camino === opcion.clave : indice === 0;
+    radio.dataset.titulo = opcion.titulo;
+    const marca = crear("span", "opcion__marca");
+    marca.setAttribute("aria-hidden", "true");
+    const texto = crear("span", "opcion__texto");
+    texto.append(crear("span", "opcion__titulo", opcion.titulo));
+    if (opcion.reparto) texto.append(crear("span", "opcion__reparto", opcion.reparto));
+    texto.append(crear("span", "opcion__elegido", "Elegido para tu lista"));
+    cabeza.append(radio, marca, texto, crearUnidades(opcion.unidades));
 
     const detalle = crear("div", "opcion__detalle");
+    detalle.append(crear("p", "opcion__sobrantes", opcion.sobrantes));
     opcion.grupos.forEach((grupo) => detalle.append(crearGrupoSugerencia(grupo)));
-    const elegir = crear("button", "boton boton--principal boton--bloque opcion__elegir", opcion.boton);
-    elegir.type = "button";
-    elegir.dataset.camino = opcion.clave;
-    elegir.setAttribute("aria-pressed", String(plan.camino === opcion.clave));
-
-    fila.append(resumen, detalle, elegir);
+    fila.append(cabeza, detalle);
     return fila;
+  }
+
+  function caminoMarcado() {
+    const radio = opcionesCalculadora.querySelector(".opcion__radio:checked");
+    return radio ? radio.value : null;
+  }
+
+  // El botón único dice qué camino llevará; las opciones muestran con "Elegido para tu lista" el que ya está en el plan.
+  function actualizarBotonCamino() {
+    const radio = opcionesCalculadora.querySelector(".opcion__radio:checked");
+    botonElegirCamino.textContent = radio ? `Armar mi lista con ${radio.dataset.titulo}` : "";
+    botonElegirCamino.disabled = !radio;
+    opcionesCalculadora.querySelectorAll(".opcion").forEach((fila) => {
+      fila.classList.toggle("opcion--elegida", Boolean(plan.camino) && fila.querySelector(".opcion__radio").value === plan.camino);
+    });
   }
 
   // Cuenta de 0 al valor en ~500 ms (con movimiento reducido, el valor final directo). Antes de contar se reserva
@@ -624,7 +648,9 @@ function iniciar() {
     resultadoCalculadora.textContent = modelo.frase;
     ponerTexto(sobrantesCalculadora, modelo.sobrantes);
     opcionesCalculadora.replaceChildren(...modelo.opciones.map(crearFilaOpcion));
+    vacioCalculadora.hidden = true;
     caminosCalculadora.hidden = false;
+    actualizarBotonCamino();
     if (contar) contarCifras(opcionesCalculadora);
   }
 
@@ -634,29 +660,29 @@ function iniciar() {
     resultadoCalculadora.textContent = mensaje;
     ponerTexto(sobrantesCalculadora, "");
     opcionesCalculadora.replaceChildren();
+    vacioCalculadora.hidden = true;
     caminosCalculadora.hidden = true;
   }
 
   function marcarCaminoElegido() {
-    opcionesCalculadora.querySelectorAll("[data-camino]").forEach((boton) => {
-      boton.setAttribute("aria-pressed", String(boton.dataset.camino === plan.camino));
-    });
+    const radio = [...opcionesCalculadora.querySelectorAll(".opcion__radio")].find((candidato) => candidato.value === plan.camino);
+    if (radio) radio.checked = true;
+    actualizarBotonCamino();
   }
 
   function dibujarContextoCamino() {
     ponerTexto(contextoCamino, textoContextoCamino(plan));
   }
 
-  // Datos a considerar: resalta el tramo (data-desde y data-hasta) que contiene lo escrito en "Bocaditos por invitado".
-  // Vacío, decimal o fuera de 3 a 20: ninguno. No cambia ni rellena el campo.
-  const itemsConsiderar = [...document.querySelectorAll(".considerar__item[data-desde]")];
-  function resaltarTramo() {
+  // Paso 2: marca (aria-pressed) el tipo de evento cuyo tramo (data-desde y data-hasta) contiene lo escrito en "Bocaditos por
+  // invitado". Vacío, decimal o fuera de 3 a 20: ninguno. Al pulsar un evento se rellena el campo con su valor típico.
+  const botonesEvento = [...document.querySelectorAll(".evento[data-desde]")];
+  function marcarEvento() {
     const texto = campoBocaditos.value.trim();
     const valor = texto === "" ? NaN : Number(texto);
-    itemsConsiderar.forEach((item) => {
-      const dentro = Number.isInteger(valor) && valor >= Number(item.dataset.desde) && valor <= Number(item.dataset.hasta);
-      if (dentro) item.setAttribute("aria-current", "true");
-      else item.removeAttribute("aria-current");
+    botonesEvento.forEach((boton) => {
+      const dentro = Number.isInteger(valor) && valor >= Number(boton.dataset.desde) && valor <= Number(boton.dataset.hasta);
+      boton.setAttribute("aria-pressed", String(dentro));
     });
   }
 
@@ -673,7 +699,7 @@ function iniciar() {
       return;
     }
     plan = { invitados: validacion.invitados, porInvitado: validacion.porInvitado, camino: plan.camino };
-    resaltarTramo();
+    marcarEvento();
     mostrarResultado(plan.invitados, plan.porInvitado, true);
     dibujarContextoCamino();
     dibujarLista();
@@ -1399,8 +1425,14 @@ function iniciar() {
   [campoInvitados, campoBocaditos].forEach((campo) => {
     campo.addEventListener("input", () => campo.removeAttribute("aria-invalid"));
   });
-  campoBocaditos.addEventListener("input", resaltarTramo);
-  campoBocaditos.addEventListener("change", resaltarTramo);
+  campoBocaditos.addEventListener("input", marcarEvento);
+  campoBocaditos.addEventListener("change", marcarEvento);
+  botonesEvento.forEach((boton) => {
+    boton.addEventListener("click", () => {
+      campoBocaditos.value = boton.dataset.bocaditos;
+      campoBocaditos.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  });
 
   rejillaCombos.addEventListener("change", (evento) => {
     const entrada = tarjetasCombos.find((candidata) => candidata.tarjeta.contains(evento.target));
@@ -1411,9 +1443,10 @@ function iniciar() {
     if (boton) agregarComboDesdeTarjeta(boton);
   });
 
-  opcionesCalculadora.addEventListener("click", (evento) => {
-    const boton = evento.target.closest("[data-camino]");
-    if (boton) elegirCamino(boton.dataset.camino);
+  opcionesCalculadora.addEventListener("change", actualizarBotonCamino);
+  botonElegirCamino.addEventListener("click", () => {
+    const clave = caminoMarcado();
+    if (clave) elegirCamino(clave);
   });
 
   // Selector de grupo: clic o flechas (Inicio y Fin también); las flechas mueven el foco y eligen.

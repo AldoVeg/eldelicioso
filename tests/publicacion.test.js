@@ -31,3 +31,21 @@ test("la política de seguridad ya no depende de Google Fonts", () => {
   const csp = JSON.stringify(JSON.parse(leer("vercel.json")).headers);
   assert.ok(!csp.includes("fonts.googleapis.com") && !csp.includes("fonts.gstatic.com"));
 });
+
+test("todo id que main.js busca con $(...) existe en index.html", () => {
+  const html = leer("index.html");
+  const ids = new Set([...leer("src/main.js").matchAll(/\$\("([\w-]+)"\)/g)].map((m) => m[1]));
+  const faltan = [...ids].filter((id) => !html.includes(`id="${id}"`));
+  assert.deepEqual(faltan, []);
+});
+
+test("los tipos de evento del planificador cubren de 3 a 20 bocaditos sin huecos", () => {
+  const tramos = [...leer("index.html").matchAll(/class="evento"[^>]*data-bocaditos="(\d+)" data-desde="(\d+)" data-hasta="(\d+)"/g)].map((m) => m.slice(1).map(Number));
+  assert.equal(tramos.length, 3);
+  assert.equal(tramos[0][1], 3);
+  assert.equal(tramos[2][2], 20);
+  tramos.forEach(([medio, desde, hasta], i) => {
+    assert.ok(medio >= desde && medio <= hasta, "el valor típico cae dentro de su tramo");
+    if (i > 0) assert.equal(desde, tramos[i - 1][2] + 1);
+  });
+});

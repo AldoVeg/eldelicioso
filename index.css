@@ -651,22 +651,62 @@ button { cursor: pointer; }
   height: 6px;
   background: var(--gradiente-pasion);
 }
-.calculadora__cabecera { display: grid; gap: var(--e-5); align-items: start; }
 .calculadora__texto { display: grid; gap: var(--e-3); align-content: start; }
-.calculadora__formulario { display: grid; gap: var(--e-4); align-content: start; }
-/* Dos campos lado a lado cuando caben (mínimo 11 rem cada uno); si no, apilados */
-.calculadora__campos {
-  display: grid;
-  gap: var(--e-4);
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
-  align-items: start;
+
+/* Planificador en tres etapas: a la izquierda los pasos 1 y 2 (formulario); a la derecha el resultado y el paso 3. */
+.calculadora__pasos { display: grid; gap: var(--e-6); align-items: start; }
+.calculadora__formulario { display: grid; gap: var(--e-5); align-content: start; min-width: 0; }
+.etapa { display: grid; gap: var(--e-3); align-content: start; min-width: 0; }
+.etapa__titulo { display: flex; align-items: center; gap: var(--e-3); font-size: var(--t-md); font-weight: 700; line-height: 1.2; }
+.etapa__num {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--acento);
+  border-radius: 50%;
+  color: #fff;
+  font-family: var(--fuente-titulo);
+  font-size: 1rem;
+  font-weight: 800;
 }
 
-/* Barra ancha de resultado: la frase, o el aviso si un dato no vale */
+/* Tipo de evento: botones que rellenan "Bocaditos por invitado" (el que contiene el valor queda marcado) */
+.calculadora__eventos { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.evento {
+  display: grid;
+  gap: .1rem;
+  min-height: 44px;
+  padding: var(--e-2) var(--e-4);
+  background: var(--superficie);
+  border: 1.5px solid var(--borde);
+  border-radius: var(--r-md);
+  color: var(--texto);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color .2s, border-color .2s, color .2s;
+}
+.evento small { font-size: var(--t-xs); font-weight: 400; color: var(--texto-suave); }
+.evento:hover { border-color: var(--acento); }
+.evento[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: #fff; }
+.evento[aria-pressed="true"] small { color: rgba(255, 255, 255, .88); }
+
+/* Resultado: aviso inicial, frase (o error), reparto y caminos */
+.calculadora__cuerpo { display: grid; gap: var(--e-4); align-content: start; min-width: 0; }
+.calculadora__vacio {
+  padding: var(--e-5);
+  border: 1.5px dashed var(--borde);
+  border-radius: var(--r-md);
+  color: var(--texto-suave);
+  font-size: var(--t-sm);
+}
 .calculadora__frase {
-  padding: var(--e-3) var(--e-4);
+  padding: var(--e-4) var(--e-5);
   background: var(--fondo-rosado);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   font-family: var(--fuente-titulo);
   font-size: var(--t-md);
   font-weight: 600;
@@ -674,91 +714,54 @@ button { cursor: pointer; }
 }
 .calculadora__frase:empty { display: none; }
 .calculadora__frase--error { font-family: var(--fuente-texto); font-size: var(--t-sm); font-weight: 600; color: var(--acento); }
-
-/* Cuerpo del planificador en una sola columna: reparto y caminos, a todo el ancho */
-.calculadora__cuerpo { display: grid; gap: var(--e-5); align-items: start; min-width: 0; }
 .calculadora__caminos { display: grid; gap: var(--e-3); align-content: start; min-width: 0; }
 /* Reparto: lo que sobra del total sugerido y cuánto tocaría a cada invitado */
 .calculadora__sobrantes { font-size: var(--t-sm); line-height: 1.45; color: var(--texto-suave); }
-.calculadora__camino-titulo { font-size: var(--t-lg); font-weight: 800; }
 
-/* Datos a considerar (columna izquierda del planificador): líneas compactas sin cajas ni rellenos. Cada ítem lleva una raya
-   dorada corta en línea con el texto; si el texto envuelve, la sangría lo alinea con el inicio de la etiqueta.
-   El script marca con aria-current="true" el tramo que contiene el valor escrito: la raya se alarga y la etiqueta pasa a --acento. */
-.considerar { display: grid; gap: var(--e-4); margin-top: var(--e-4); min-width: 0; }
-.considerar__titulo {
-  font-family: var(--fuente-mono);
-  font-size: var(--t-mono);
-  font-weight: 400;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--texto-suave);
-}
-.considerar__lista { display: grid; gap: var(--e-3); margin: 0; padding: 0; list-style: none; }
-.considerar__item {
-  position: relative;
-  min-width: 0;
-  /* Reserva el largo máximo de la raya (32 px) más un respiro: al resaltar no se mueve ni re-envuelve el texto */
-  padding-left: 2.5rem;
-  font-size: var(--t-sm);
-  line-height: 1.65;
-  color: var(--texto-suave);
-  overflow-wrap: anywhere;
-}
-.considerar__item::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: .82em; /* mitad de la primera línea (1,65 de interlínea) */
-  width: 18px;
-  height: 2px;
-  background: var(--acento-2);
-  border-radius: 1px;
-}
-.considerar__etiqueta { font-size: var(--t-base); font-weight: 500; color: var(--texto); }
-.considerar__item[aria-current="true"]::before { width: 32px; }
-.considerar__item[aria-current="true"] .considerar__etiqueta { color: var(--acento); }
-@media (prefers-reduced-motion: no-preference) {
-  .considerar__item::before { transition: width .25s ease; }
-  .considerar__etiqueta { transition: color .25s ease; }
-}
-
-/* Los tres caminos: tarjetas minimalistas (borde fino, sin sombras). Móvil: apiladas; escritorio: tres columnas. */
-.calculadora__opciones { display: grid; gap: var(--e-3); }
+/* Los tres caminos: opciones de radio (solo la elegida muestra su detalle) y un único botón debajo */
+.calculadora__opciones { display: grid; gap: var(--e-2); }
 .opcion {
-  display: flex;
-  flex-direction: column;
-  gap: var(--e-3);
   min-width: 0;
-  padding: var(--e-4);
-  background: var(--fondo);
-  border: 1px solid var(--borde);
+  background: var(--superficie);
+  border: 1.5px solid var(--borde);
   border-radius: var(--r-md);
   overflow-wrap: anywhere;
+  transition: border-color .2s, box-shadow .2s, background-color .2s;
 }
-.opcion__resumen { display: grid; gap: var(--e-1); min-width: 0; }
-/* Sugerencia: separada del resumen por una línea fina; ocupa el espacio libre para que el botón quede al pie */
-.opcion__detalle {
+.opcion:hover { border-color: var(--acento); }
+.opcion:has(.opcion__radio:checked) { background: #FFF7F8; border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento); }
+.opcion:has(.opcion__radio:focus-visible) { outline: 3px solid var(--foco); outline-offset: 2px; }
+.opcion__cabeza {
+  position: relative;
   display: grid;
-  flex: 1;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
   gap: var(--e-3);
-  align-content: start;
-  min-width: 0;
-  padding-top: var(--e-3);
-  border-top: 1px solid var(--borde);
+  padding: var(--e-3) var(--e-4);
+  cursor: pointer;
 }
-.opcion__titulo { margin: 0; font-family: var(--fuente-titulo); font-size: var(--t-md); font-weight: 700; line-height: 1.2; }
+.opcion__radio { position: absolute; opacity: 0; pointer-events: none; }
+.opcion__marca { display: grid; place-items: center; width: 1.375rem; height: 1.375rem; border: 2px solid var(--borde-campo); border-radius: 50%; }
+.opcion:has(.opcion__radio:checked) .opcion__marca { border-color: var(--acento); }
+.opcion:has(.opcion__radio:checked) .opcion__marca::after { content: ""; width: .625rem; height: .625rem; background: var(--acento); border-radius: 50%; }
+.opcion__texto { display: grid; gap: .1rem; min-width: 0; }
+.opcion__titulo { font-family: var(--fuente-titulo); font-size: var(--t-md); font-weight: 700; line-height: 1.2; }
+.opcion__reparto { font-size: var(--t-sm); color: var(--texto-suave); }
+.opcion__elegido { display: none; font-size: var(--t-xs); font-weight: 700; color: var(--acento); }
+.opcion--elegida .opcion__elegido { display: block; }
+.opcion__elegido::before { content: "\2713\00a0"; content: "\2713\00a0" / ""; }
 .opcion__unidades {
   font-family: var(--fuente-titulo);
-  font-size: clamp(1.625rem, 1.2rem + 1.2vw, 1.875rem);
+  font-size: 1.25rem;
   font-weight: 800;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
 /* Cifra que cuenta de 0 al valor: el script reserva su ancho final para que el resto no se mueva */
 .opcion__cifra { display: inline-block; text-align: right; }
-.opcion__reparto { font-size: var(--t-sm); color: var(--texto-suave); }
-.opcion__sobrantes { font-size: var(--t-xs); line-height: 1.4; color: var(--texto-suave); }
+.opcion__detalle { display: grid; gap: var(--e-3); padding: 0 var(--e-4) var(--e-4); }
+.opcion:not(:has(.opcion__radio:checked)) .opcion__detalle { display: none; }
+.opcion__sobrantes { padding-top: var(--e-3); border-top: 1px solid var(--borde); font-size: var(--t-xs); line-height: 1.4; color: var(--texto-suave); }
 /* Sugerencia concreta: productos con su cantidad, agrupados por categoría en el mixto */
 .opcion__grupo { display: grid; gap: var(--e-1); }
 .opcion__grupo-titulo {
@@ -777,19 +780,12 @@ button { cursor: pointer; }
   line-height: 1.35;
 }
 .opcion__linea--mas { color: var(--texto-suave); font-style: italic; }
-.opcion__elegir { min-height: 44px; padding-inline: var(--e-4); }
-/* Camino elegido: botón oscuro con marca (no depende solo del color) y borde rojo en la tarjeta */
-.opcion__elegir[aria-pressed="true"] { background: var(--texto); box-shadow: none; }
-.opcion__elegir[aria-pressed="true"]::before { content: "\2713"; content: "\2713" / ""; }
-.opcion:has(.opcion__elegir[aria-pressed="true"]) { border-color: var(--acento); box-shadow: 0 0 0 1px var(--acento); }
 
 @media (min-width: 48em) {
-  .calculadora__cabecera { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-7); }
+  .calculadora__pasos { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--e-7); }
 }
-@media (min-width: 62.5em) {
-  .calculadora__cabecera { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--e-7); }
-  /* Tres tarjetas del mismo alto en una sola fila */
-  .calculadora__opciones { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-4); }
+@media (prefers-reduced-motion: no-preference) {
+  .opcion:has(.opcion__radio:checked) .opcion__detalle { animation: entrada-suave .35s var(--curva-suave) both; }
 }
 
 /* ===== Campos ===== */
@@ -1805,549 +1801,16 @@ html.protegido body { visibility: hidden; }
   html::before { content: "Contenido protegido © El Delicioso"; display: block; padding: 2rem; font: 1rem sans-serif; }
 }
 
-/* ===== Movimiento sutil y engranado: todo con la misma curva y duración corta, solo con movimiento permitido ===== */
+/* ===== Movimiento sutil: misma curva y duración corta, solo con movimiento permitido ===== */
 @media (prefers-reduced-motion: no-preference) {
   :root { --curva-suave: cubic-bezier(.3, .7, .2, 1); }
 
   /* Respuesta al toque: el botón se hunde un poco al pulsarlo, como continuación de su elevación al pasar el cursor */
   .boton:active, .filtro:active { transform: translateY(0) scale(.97); transition-duration: .08s; }
 
-  /* La fila nueva de la lista entra suave (solo la recién agregada, para no repetir el movimiento al redibujar) */
-  .lista__item--nueva { animation: destello 1.6s ease-out; }
-  @keyframes destello {
-    0% { background: rgba(224, 162, 74, .5); }
-    100% { background: transparent; }
-  }
-  .lista__panel { transition: opacity .25s ease, translate .25s ease, visibility 0s linear .25s; }
-  .lista.abierta .lista__panel { transition: opacity .25s ease, translate .25s ease, visibility 0s; }
-  .avance__relleno { transition: width .4s ease; }
-  @media (min-width: 62.5em) {
-    /* Se desliza hacia abajo: el recorte va descubriendo el panel mientras baja unos píxeles */
-    .lista__panel { transition: opacity .3s ease, translate .3s ease, clip-path .3s ease, visibility 0s linear .3s; }
-    .lista.abierta .lista__panel { transition: opacity .3s ease, translate .3s ease, clip-path .3s ease, visibility 0s; }
-  }
-}
-
-/* Escritorio y tablet (desde 62,5em): panel horizontal bajo el encabezado, alineado con "Mi lista" */
-@media (min-width: 62.5em) {
-  .lista {
-    top: calc(var(--alto-encabezado) + var(--e-1));
-    bottom: auto;
-    left: auto;
-    /* Borde derecho del contenedor: coincide con el borde derecho del botón "Mi lista" */
-    right: calc((100% - min(100% - 2rem, var(--ancho-max))) / 2);
-    width: min(64rem, calc(100% - 2rem));
-    padding-bottom: 0;
-    background: transparent;
-    box-shadow: none;
-    pointer-events: none; /* La caja vacía no debe tapar clics; solo el panel abierto los recibe */
-  }
-  .lista__pestana { display: none; }
-
-  .lista__panel {
-    position: static;
-    max-height: 70vh;
-    max-height: min(70vh, calc(100dvh - var(--alto-encabezado) - 6.5rem)); /* nunca llega al botón de WhatsApp */
-    border: 1px solid var(--borde);
-    border-radius: var(--r-lg);
-    box-shadow: var(--sombra);
-    pointer-events: auto;
-    opacity: 0;
-    translate: 0 -1rem;
-    clip-path: inset(0 -3rem 100% -3rem);
-  }
-  .lista.abierta .lista__panel {
-    opacity: 1;
-    translate: 0 0;
-    clip-path: inset(0 -3rem -3rem -3rem);
-  }
-
-  /* Tres columnas; cada una se desplaza por su cuenta si no cabe */
-  .lista__cuerpo {
-    grid-template-columns: minmax(0, .95fr) minmax(0, 1.2fr) minmax(0, 1.1fr);
-    grid-template-rows: minmax(0, 1fr);
-    gap: 0;
-    padding: 0;
-    overflow: hidden;
-  }
-  .lista__resumen,
-  .lista__detalle,
-  .lista__cierre {
-    display: grid;
-    gap: var(--e-3);
-    align-content: start;
-    min-height: 0;
-    padding: var(--e-4) var(--e-5) var(--e-5);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
-  .lista__detalle,
-  .lista__cierre { border-left: 1px solid var(--borde); }
-
-  /* Sin nada en la lista: solo el resumen y "Seguir eligiendo" */
-  .lista--vacia .lista__cuerpo { grid-template-columns: minmax(0, 1fr) auto; }
-  .lista--vacia .lista__detalle,
-  .lista--vacia .lista__total { display: none; }
-}
-
-/* =====================================================================
-   Novedades: foto de portada por grupo, galería, sello "ya agregado",
-   nombre del producto, subrayado del menú y barra de lectura.
-   Todo movimiento vive dentro de prefers-reduced-motion: no-preference.
-   ===================================================================== */
-
-/* ===== Portada: foto que cambia con un fundido al elegir un grupo ===== */
-/* La foto nueva se superpone en transparencia y, al terminar el fundido, el script la deja como foto principal */
-.portada__foto .portada__foto-nueva {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-}
-.portada__foto .portada__foto-nueva--visible { opacity: 1; }
-@media (prefers-reduced-motion: no-preference) {
-  .portada__foto .portada__foto-nueva { transition: opacity .6s ease; }
-}
-
-/* ===== Galería: carrusel de imágenes grandes ===== */
-.galeria { padding-block: 0; }
-.galeria__marco { position: relative; }
-
-.galeria__pista {
-  --diapo: min(78vw, 22rem); /* móvil: ~78 % del ancho, así asoma la siguiente */
-  display: flex;
-  gap: var(--e-4);
-  align-items: flex-start;
-  /* Aire arriba y abajo para la sombra y el zoom; 8 px a los lados para que el contorno de foco no se recorte */
-  margin-inline: -8px;
-  padding: 1.25rem 8px 2rem;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  scroll-padding-inline: 8px;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-}
-.galeria__pista::-webkit-scrollbar { display: none; }
-
-.galeria__diapo {
-  flex: 0 0 var(--diapo);
-  aspect-ratio: 4 / 5;
-  padding: 0;
-  overflow: hidden;
-  background: var(--fondo-rosado);
-  border: 0;
-  border-radius: var(--r-lg);
-  box-shadow: 0 14px 28px -10px rgba(120, 50, 30, .3);
-  scroll-snap-align: start;
-  cursor: pointer;
-}
-.galeria__diapo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: saturate(1.04) contrast(1.02);
-}
-.galeria__diapo:focus-visible { outline-offset: 3px; }
-
-/* Botones circulares anterior/siguiente, sobre los bordes de la pista */
-.galeria__boton {
-  position: absolute;
-  top: calc(50% - 22px);
-  z-index: 3;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  background: rgba(255, 251, 246, .94);
-  border: 1.5px solid var(--borde-campo);
-  border-radius: 50%;
-  box-shadow: var(--sombra-suave);
-  color: var(--texto);
-  transition: background-color .2s, color .2s, border-color .2s;
-}
-.galeria__boton--anterior { left: .75rem; }
-.galeria__boton--siguiente { right: .75rem; }
-.galeria__boton--anterior .icono { rotate: 180deg; }
-.galeria__boton:hover { background: var(--acento); border-color: var(--acento); color: #fff; }
-
-@media (min-width: 48em) {
-  .galeria__pista { --diapo: 22rem; gap: var(--e-5); }
-  .galeria__boton { width: 48px; height: 48px; top: calc(50% - 24px); }
-}
-
-/* Resalte breve de la tarjeta a la que lleva una imagen (el script solo lo pone con movimiento permitido) */
-.tarjeta--resaltada { outline: 3px solid var(--acento); outline-offset: 5px; }
-
-@media (prefers-reduced-motion: no-preference) {
-  .galeria__diapo { transition: transform .35s ease, box-shadow .35s ease; }
-  @media (hover: hover) {
-    .galeria__diapo:hover { transform: scale(1.02); box-shadow: 0 18px 32px -10px rgba(120, 50, 30, .38); }
-  }
-  .tarjeta--resaltada { animation: resalte 1.8s ease-out; }
-  @keyframes resalte {
-    0%, 65% { outline-color: var(--acento); }
-    100% { outline-color: transparent; }
-  }
-}
-
-/* ===== Sello de la marca: "ya agregado" en la esquina de la foto ===== */
-.tarjeta__foto { position: relative; }
-.tarjeta__sello {
-  position: absolute;
-  top: .625rem;
-  right: .625rem;
-  z-index: 2;
-  width: 44px;
-  height: 44px;
-  /* Símbolo sobre un halo crema circular: se lee sobre cualquier foto */
-  background: url("img/marca-simbolo.png") center / 80% auto no-repeat, rgba(255, 251, 246, .93);
-  border-radius: 50%;
-  box-shadow: 0 2px 10px rgba(46, 27, 27, .28);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-.tarjeta[data-en-lista] .tarjeta__sello { opacity: 1; visibility: visible; }
-@media (min-width: 48em) {
-  .tarjeta__sello { width: 52px; height: 52px; }
-}
-@media (prefers-reduced-motion: no-preference) {
-  .tarjeta__sello--nuevo { animation: pop-sello .45s cubic-bezier(.3, 1.3, .5, 1); }
-  @keyframes pop-sello {
-    0% { transform: scale(.6); opacity: 0; }
-    60% { transform: scale(1.1); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-}
-
-/* ===== Nombre del producto: cambia de color al acercar el cursor o con el foco del teclado ===== */
-/* El relleno vertical (con margen negativo, para no mover nada) hace más cómodo "acercarse" al nombre */
-.tarjeta__nombre {
-  padding-block: .5rem;
-  margin-block: -.5rem;
-  transition: color .2s ease;
-}
-@media (hover: hover) {
-  .tarjeta__nombre:hover { color: var(--acento); }
-}
-.tarjeta:has(:focus-visible) .tarjeta__nombre { color: var(--acento); }
-
-/* ===== Subrayado del menú que sigue al cursor (solo escritorio con puntero fino) ===== */
-.menu { position: relative; }
-.menu__indicador { display: none; }
-@media (min-width: 48em) and (hover: hover) and (pointer: fine) {
-  .menu__indicador {
-    display: block;
-    position: absolute;
-    left: 0;
-    bottom: 2px;
-    width: 0;
-    height: 4px;
-    background: var(--gradiente-pasion);
-    border-radius: var(--r-pildora);
-    opacity: 0;
-    transform-origin: 0 100%;
-    pointer-events: none;
-  }
-}
-@media (min-width: 48em) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .menu__indicador {
-    transition: transform .35s cubic-bezier(.3, .7, .2, 1), width .35s cubic-bezier(.3, .7, .2, 1), opacity .25s ease;
-  }
-  /* Al aparecer, se coloca sin deslizar desde donde estuvo la última vez */
-  .menu__indicador--sin-deslizar { transition: opacity .25s ease; }
-}
-
-/* ===== Barra de progreso de lectura, en el borde inferior del encabezado ===== */
-.progreso {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 3px;
-  overflow: hidden;
-  pointer-events: none;
-}
-.progreso__barra {
-  display: block;
-  width: 100%;
-  height: 100%;
-  background: var(--gradiente-pasion);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-}
-/* Con movimiento reducido no se muestra (no hay crecimiento animado) */
-@media (prefers-reduced-motion: reduce) {
-  .progreso { display: none; }
-}
-
-/* =====================================================================
-   Guía de 3 pasos, promos por ocasión y control de pausa de la galería
-   ===================================================================== */
-
-/* ===== Galería: botón de pausa/reproducir (WCAG 2.2.2) ===== */
-/* Círculo de 44 px como los botones anterior/siguiente. aria-pressed="true" = en pausa: se pinta en rojo y muestra
-   "reproducir"; en marcha muestra "pausa". Con movimiento reducido el script lo oculta y su fila desaparece. */
-.galeria__control {
-  display: flex;
-  justify-content: center;
-  margin-top: -.5rem;
-  padding-bottom: var(--e-5);
-}
-.galeria__control:has(.galeria__pausa[hidden]) { display: none; }
-.galeria__pausa {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  background: rgba(255, 251, 246, .94);
-  border: 1.5px solid var(--borde-campo);
-  border-radius: 50%;
-  box-shadow: var(--sombra-suave);
-  color: var(--texto);
-  transition: background-color .2s, color .2s, border-color .2s;
-}
-.galeria__pausa:hover { background: var(--fondo-rosado); border-color: var(--acento); color: var(--acento-hover); }
-.galeria__pausa .galeria__icono-reproducir,
-.galeria__pausa[aria-pressed="true"] .galeria__icono-pausa { display: none; }
-.galeria__pausa[aria-pressed="true"] .galeria__icono-reproducir { display: block; }
-.galeria__pausa[aria-pressed="true"] { background: var(--acento); border-color: var(--acento); color: #fff; }
-.galeria__pausa[aria-pressed="true"]:hover { background: var(--acento-hover); border-color: var(--acento-hover); color: #fff; }
-
-/* ===== Cómo pedir en 3 pasos ===== */
-/* Tinte rosado (como Nosotros); las promos van en el fondo claro, así no se pegan dos bloques rosados */
-.pasos { background: var(--fondo-rosado); }
-.pasos__lista { display: grid; gap: var(--e-4); }
-.paso {
-  display: grid;
-  gap: var(--e-2);
-  align-content: start;
-  min-width: 0;
-  padding: var(--e-5);
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-lg);
-  box-shadow: inset 0 4px 0 var(--acento-2), var(--sombra-suave);
-}
-.paso__numero {
-  display: grid;
-  place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  margin-bottom: var(--e-1);
-  background: var(--acento);
-  border-radius: 50%;
-  color: #fff;
-  font-family: var(--fuente-titulo);
-  font-size: 1.375rem;
-  font-weight: 800;
-  line-height: 1;
-}
-.paso__titulo { font-size: var(--t-lg); font-weight: 700; }
-.paso p { color: var(--texto-suave); }
-
-/* ===== Promo para cada ocasión ===== */
-/* Una tarjeta por ocasión, en tono minimalista: título, datos suaves, precio y un solo botón. Las tarjetas son
-   blancas sobre el fondo claro. La foto de la ocasión es decorativa (el texto ya la nombra) y queda oculta de fondo
-   hasta que se acerca el cursor (o hay foco de teclado dentro, o se toca en pantallas táctiles); entonces cubre la
-   tarjeta y el texto pasa a un recuadro semitransparente (contraste AA sobre cualquier foto). */
-.promos { background: var(--fondo); }
-.promos__rejilla {
-  display: grid;
-  gap: var(--e-4);
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.promo {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: var(--e-5);
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--r-lg);
-  transition: box-shadow .25s;
-}
-.promo:hover, .promo:focus-within { box-shadow: var(--sombra); }
-.promo__foto {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  /* Ampliada para cubrir toda la tarjeta: se usan versiones de 1600 px de ancho, enfocadas, para que ampliada no se empañe */
-  object-fit: cover;
-  object-position: 50% 50%;
-  opacity: 0;
-  pointer-events: none;
-}
-.promo__cuerpo {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--e-2);
-  margin: calc(var(--e-5) * -1);
-  padding: var(--e-5);
-  border-radius: var(--r-md);
-  background-color: transparent;
-}
-.promo__titulo { padding-right: 3.5rem; font-size: var(--t-lg); font-weight: 700; }
-
-/* Datos secundarios en letra suave: color tenue, tamaño pequeño y un halo claro casi imperceptible */
-.promo__dato {
-  color: var(--texto-suave);
-  font-size: var(--t-sm);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .8);
-}
-.promo__personas { font-weight: 600; }
-
-/* "Cambiar productos": plegado por defecto */
-.promo__cambiar { margin-top: var(--e-1); }
-.promo__cambiar summary {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--e-2);
-  min-height: 44px;
-  cursor: pointer;
-  color: var(--acento);
-  font-family: var(--fuente-mono);
-  font-size: var(--t-mono);
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  list-style: none;
-}
-.promo__cambiar summary::-webkit-details-marker { display: none; }
-.promo__cambiar summary::after { content: "+"; font-size: 1.125rem; line-height: 1; }
-.promo__cambiar[open] summary::after { content: "\2212"; }
-.promo__cambiar summary:hover { color: var(--acento-hover); }
-.promo__campos { display: grid; gap: var(--e-3); padding-bottom: var(--e-2); }
-.promo .selector { margin: 0; }
-.selector__opciones--dos { grid-template-columns: repeat(2, 1fr); }
-
-.campo select {
-  width: 100%;
-  min-height: 48px;
-  padding: 0 var(--e-3);
-  background: var(--superficie);
-  border: 1.5px solid var(--borde-campo);
-  border-radius: var(--r-sm);
-  text-overflow: ellipsis;
-}
-.campo select:hover { border-color: var(--acento); }
-
-.promo__precio {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--e-1) var(--e-3);
-  margin-top: auto;
-  padding-top: var(--e-2);
-}
-.promo__antes { color: var(--texto-suave); font-size: var(--t-md); }
-.promo__ahora {
-  font-family: var(--fuente-titulo);
-  font-size: var(--t-xl);
-  font-weight: 800;
-  line-height: 1.1;
-  color: var(--acento);
-}
-.promo__ahorro {
-  padding: 2px 10px;
-  background: #FFF1D6;
-  border: 1.5px solid var(--acento-2);
-  border-radius: var(--r-pildora);
-  font-family: var(--fuente-mono);
-  font-size: var(--t-mono);
-  font-weight: 700;
-  letter-spacing: .04em;
-  color: var(--texto);
-}
-
-/* Enlace discreto de dudas por WhatsApp, centrado bajo el botón */
-.promo__dudas {
-  align-self: center;
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  font-size: var(--t-sm);
-  color: var(--texto-suave);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.promo__dudas:hover { color: var(--acento); }
-
-/* Sello de "ya agregado": el mismo de las tarjetas del catálogo */
-.promo[data-en-lista] .tarjeta__sello { opacity: 1; visibility: visible; }
-
-/* Foto de la ocasión: solo al acercar el cursor, con foco de teclado dentro o al pulsar (táctil). Ampliada, muy tenue (solo
-   un detalle) y NÍTIDA: sin desenfoque (nada de backdrop-filter) ni velo. Con tan poca opacidad el texto no necesita apoyo. */
-.promo:hover .promo__foto,
-.promo:focus-within .promo__foto,
-.promo:active .promo__foto { opacity: .02; }
-@media (prefers-reduced-motion: no-preference) {
-  .promo__foto { transition: opacity .3s ease; }
-}
-
-/* Fila de un combo en la lista: qué incluye y el precio anterior tachado */
-.lista__item-descuento { grid-column: 1; font-size: var(--t-xs); color: var(--texto-suave); }
-
-@media (min-width: 40em) {
-  .promos__rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .promo:last-child { grid-column: 1 / -1; }
-  .promo:last-child .promo__campos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (min-width: 62.5em) {
-  .promos__rejilla { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .promo { grid-column: span 2; }
-  .promo:nth-child(n+4) { grid-column: span 3; }
-  .promo:last-child .promo__campos { grid-template-columns: 1fr; }
-}
-
-@media (min-width: 48em) {
-  .pasos__lista { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e-5); }
-}
-
-/* Aparición suave al desplazar (misma que las demás tarjetas) */
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .paso, .promo {
-      animation: aparecer linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 35%;
-    }
-  }
-}
-
-/* ===== Protección contra copia (disuasión; ver comentario en index.js) ===== */
-body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-input, textarea, select { -webkit-user-select: text; user-select: text; }
-img { -webkit-user-drag: none; user-drag: none; }
-/* Contenido oculto mientras la ventana no tiene el foco (frena algunas capturas de escritorio) */
-html.protegido body { visibility: hidden; }
-/* Impresión y "guardar como PDF": página vacía con aviso */
-@media print {
-  body { display: none !important; }
-  html::before { content: "Contenido protegido © El Delicioso"; display: block; padding: 2rem; font: 1rem sans-serif; }
-}
-
-/* ===== Movimiento sutil y engranado: todo con la misma curva y duración corta, solo con movimiento permitido ===== */
-@media (prefers-reduced-motion: no-preference) {
-  :root { --curva-suave: cubic-bezier(.3, .7, .2, 1); }
-
-  /* Respuesta al toque: el botón se hunde un poco al pulsarlo, como continuación de su elevación al pasar el cursor */
-  .boton:active, .filtro:active { transform: translateY(0) scale(.97); transition-duration: .08s; }
-
-  /* La fila nueva de la lista entra suave (solo la recién agregada, para no repetir el movimiento al redibujar) */
-  .lista__item--nueva { animation: entrada-suave .35s var(--curva-suave) both; }
+  /* El detalle del camino elegido en el planificador entra suave */
   @keyframes entrada-suave {
     from { opacity: 0; translate: 0 .6rem; }
     to { opacity: 1; translate: 0 0; }
   }
-
 }
