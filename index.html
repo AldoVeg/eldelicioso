@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-version="202610281306">
+<html lang="es" data-version="202610281326">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -32,7 +32,7 @@
        cada vez que publiques un cambio en index.html, index.css o cualquier archivo de src/, hay que actualizar ESTOS TRES LUGARES
        A LA VEZ con la misma fecha y hora (AAAAMMDDHHmm): 1) el ?v= de index.css y de src/main.js aquí abajo,
        2) data-version en la etiqueta <html> de arriba, 3) el valor "v" de version.json en la raíz del repositorio. -->
-  <link rel="stylesheet" href="index.css?v=202610281306">
+  <link rel="stylesheet" href="index.css?v=202610281326">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -52,7 +52,7 @@
     "priceRange": "S/ 28 - S/ 255"
   }
   </script>
-  <script type="module" src="src/main.js?v=202610281306"></script>
+  <script type="module" src="src/main.js?v=202610281326"></script>
 </head>
 <body id="arriba">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -71,6 +71,7 @@
     <div class="contenedor encabezado__interior">
       <a class="logo" href="#arriba" aria-label="El Delicioso, ir al inicio"><img src="img/marca-eldelicioso.webp" width="1200" height="217" alt="El Delicioso"></a>
       <nav class="menu" aria-label="Principal">
+        <a href="#pecado">Kekes</a>
         <a href="#planificador">Planifica</a>
         <a href="#catalogo">Catálogo</a>
         <a href="#promos">Promos</a>
@@ -110,12 +111,27 @@
               Pedir por WhatsApp
             </a>
           </div>
+          <!-- Cinta discreta hacia "El pecado más vendido"; la cantidad de versiones la vigila una prueba contra src/kekes.js -->
+          <a class="portada__cinta" href="#pecado"><span aria-hidden="true">★</span> El pecado más vendido · 14 versiones <span aria-hidden="true">→</span></a>
         </div>
         <figure class="portada__foto">
           <img id="foto-portada" src="img/portada.webp" width="1365" height="1706" alt="Mini tartaleta con crema batida y media fresa, con un mordisco que muestra el relleno, sobre una mesa blanca con más tartaletas al fondo" fetchpriority="high" decoding="async">
           <!-- Sello decorativo: los labios de la marca sobre la esquina inferior izquierda de la foto -->
           <img class="portada__sello" src="img/marca-simbolo.png" width="512" height="449" alt="" aria-hidden="true">
         </figure>
+      </div>
+    </section>
+
+    <!-- El pecado más vendido: los kekes rectangulares. Las tarjetas las dibuja src/ui/kekes.js desde src/kekes.js (una sola
+         lista de versiones, nombres, matices, colores y precios); la sección nace oculta y se muestra al dibujarlas. -->
+    <section id="pecado" class="seccion pecado" aria-labelledby="titulo-pecado" hidden>
+      <div class="contenedor">
+        <header class="seccion__cabecera">
+          <span class="filete" aria-hidden="true"></span>
+          <h2 id="titulo-pecado" class="seccion__titulo">El pecado más vendido</h2>
+          <p class="seccion__intro">Kekes rectangulares para compartir, en 14 versiones. Elige la tuya y pídela por WhatsApp.</p>
+        </header>
+        <div class="pecado__rejilla" id="kekes-rejilla"></div>
       </div>
     </section>
 

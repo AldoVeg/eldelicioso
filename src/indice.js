@@ -10,3 +10,4 @@ export * from "./combos.js";
 export * from "./origen.js";
 export * from "./mensajes.js";
 export * from "./medicion.js";
+export * from "./kekes.js";

@@ -108,7 +108,8 @@ export function importacionesIncorrectas() {
       .replace(/(^|[^:])\/\/[^\n]*/g, "$1")
       .replace(/"(?:[^"\\\n]|\\.)*"/g, '""')
       .replace(/`((?:[^`\\]|\\.)*)`/g, (s, texto) => [...texto.matchAll(/\$\{([^}]*)\}/g)].map((m) => m[1]).join(" ; "));
-    const usa = (n) => new RegExp(`(?<![\\w$.])${n}(?![\\w$])`).test(codigo);
+    // No cuenta como uso lo que viene tras un punto simple (propiedad de otro objeto), pero sí tras "..." (propagación).
+    const usa = (n) => new RegExp(`(?<![\\w$])(?<![^.]\\.)${n}(?![\\w$])`).test(codigo);
     const locales = new Set([...codigo.matchAll(/(?:function|const|let)\s+([A-Za-z_]\w*)/g)].map((m) => m[1]));
     importados.filter((n) => !usa(n)).forEach((n) => problemas.push(`${f}: importa ${n} y no lo usa`));
     for (const [n, dueno] of exportados) {
